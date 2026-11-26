@@ -32,9 +32,9 @@ from artifact_sim import (  # noqa: E402
     Inventory, LoadoutPiece, PartyMember, compact_main_stats, get_damage_model,
     plan_party,
 )
-from artifact_sim.game_data import SETS  # noqa: E402
-from artifact_sim.loadout_optimizer import evaluate_loadout  # noqa: E402
-from artifact_sim.weapon_optimizer import (  # noqa: E402
+from data.game_data import SETS  # noqa: E402
+from optimization.loadout_optimizer import evaluate_loadout  # noqa: E402
+from optimization.weapon_optimizer import (  # noqa: E402
     WeaponMember, WeaponOption, evaluate_member_weapon,
     optimize_weapons_and_artifacts,
 )

@@ -5,13 +5,13 @@ from __future__ import annotations
 from math import isfinite
 from typing import Sequence
 
-from .build_objective import character_weapon_panel
-from .damage_models import DamageModel, farming_substats
+from core.models import Artifact
+from core.resin import estimate_first_upgrade
+from damage.build_objective import character_weapon_panel
+from damage.damage_models import DamageModel, farming_substats
+from data.game_data import SETS, lookup
+from optimization.loadout_optimizer import LoadoutPiece, evaluate_loadout, optimize_loadout
 from .farming import analyze_farming
-from .game_data import SETS, lookup
-from .loadout_optimizer import LoadoutPiece, evaluate_loadout, optimize_loadout
-from .models import Artifact
-from .resin import estimate_first_upgrade
 
 
 def plan_single_character(
@@ -55,7 +55,7 @@ def plan_single_character(
     if fixed_weapon is not None:
         if weapon is None:
             raise ValueError(f"伤害模型 {model.key} 需要武器「{fixed_weapon}」")
-        from .character_models import weapon_matches
+        from damage.character_models import weapon_matches
         if not weapon_matches(weapon.get("id"), fixed_weapon):
             raise ValueError(f"伤害模型 {model.key} 只覆盖武器「{fixed_weapon}」")
     bonus_stats = dict(model.panel_bonus_stats if bonus_stats is None else bonus_stats)

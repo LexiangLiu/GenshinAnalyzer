@@ -47,11 +47,11 @@ from artifact_sim import (  # noqa: E402
     Inventory, LoadoutPiece, PartyMember, Simulator, compact_main_stats,
     get_damage_model, optimize_loadout, plan_party,
 )
-from artifact_sim.character_models import catalog_metadata  # noqa: E402
-from artifact_sim.game_data import DATA, DOMAINS, SETS  # noqa: E402
+from damage.character_models import catalog_metadata  # noqa: E402
+from data.game_data import DATA, DOMAINS, SETS  # noqa: E402
 
 
-REFERENCE = ROOT / "artifact_sim" / "reference_data"
+REFERENCE = ROOT / "data" / "reference_data"
 DEFAULT_OUTPUT = ROOT / "examples" / "simulated-account"
 SLOTS = ("FLOWER", "PLUME", "SANDS", "GOBLET", "CIRCLET")
 LEVEL_WEIGHTS = {

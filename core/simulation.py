@@ -4,7 +4,7 @@ from dataclasses import replace
 from random import Random
 from typing import Mapping, Sequence
 
-from .game_data import DATA, DOMAINS, SETS, lookup
+from data.game_data import DATA, DOMAINS, SETS, lookup
 from .models import MILESTONES, Artifact, Enhancement, Roll, validate_integer
 
 

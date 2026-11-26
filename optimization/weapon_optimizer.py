@@ -23,12 +23,12 @@ from itertools import product
 from math import isfinite
 from typing import Mapping, Sequence
 
-from .build_objective import character_weapon_panel
-from .character_models import catalog_spec, model_from_spec
-from .damage_models import DamageModel
-from .game_data import SETS, lookup
+from core.models import Artifact
+from damage.build_objective import character_weapon_panel
+from damage.character_models import catalog_spec, model_from_spec
+from damage.damage_models import DamageModel
+from data.game_data import SETS, lookup
 from .loadout_optimizer import Loadout, LoadoutPiece, evaluate_loadout, optimize_loadout
-from .models import Artifact
 from .party_optimizer import PartyMember, PartyOptimizeResult, optimize_party
 
 

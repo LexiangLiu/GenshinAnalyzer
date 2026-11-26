@@ -6,7 +6,7 @@ from decimal import Decimal
 from math import isfinite
 from typing import Sequence
 
-from .game_data import SETS
+from data.game_data import SETS
 from .models import Artifact
 
 
