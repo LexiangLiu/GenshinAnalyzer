@@ -15,21 +15,22 @@ artifact-sim = "artifact_sim.__main__:main"
 [tool.setuptools]
 packages = [
     "artifact_sim",
-    "artifact_sim.core",
-    "artifact_sim.data",
-    "artifact_sim.damage",
-    "artifact_sim.inventory",
-    "artifact_sim.optimization",
-    "artifact_sim.planning",
+    "genshin_simulator",
+    "genshin_simulator.core",
+    "genshin_simulator.data",
+    "genshin_simulator.damage",
+    "genshin_simulator.inventory",
+    "genshin_simulator.optimization",
+    "genshin_simulator.planning",
 ]
 
 [tool.setuptools.package-data]
-"artifact_sim.data" = [
+"genshin_simulator.data" = [
     "data.json",
     "reference_data/manifest.json",
     "reference_data/*.json.gz",
 ]
-"artifact_sim.damage" = [
+"genshin_simulator.damage" = [
     "character_models.json",
     "go_damage/manifest.json",
     "go_damage/bridge.mjs",

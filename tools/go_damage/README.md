@@ -6,7 +6,7 @@ ArtifactSimulator 本体使用 Python 3.10+ 和 SQLite。伤害调用时由 Pyth
 
 固定 Genshin Optimizer **10.40.0**，提交 `916e46d14d1031c9188a6122f045f3308b0a1f37`，MIT。上游是 Node.js 24、Yarn 3.4.1 和 Nx 工作区。TypeScript 中的 `@genshin-optimizer/gi/formula` 与 `@genshin-optimizer/pando/engine` 由上游 `tsconfig.base.json` 解析到仓库内部路径。公开 npm 查询未找到可用的独立 GI 公式包。构建复用固定提交的公式、已提交的公式目录及 `gi/stats` 已生成的技能倍率和成长数据。 [固定源码](https://github.com/frzyc/genshin-optimizer/tree/916e46d14d1031c9188a6122f045f3308b0a1f37) · [那维莱特角色公式](https://github.com/frzyc/genshin-optimizer/blob/916e46d14d1031c9188a6122f045f3308b0a1f37/libs/gi/formula/src/data/char/Neuvillette.ts)
 
-实际打包依赖包括 `gi/formula`、`gi/stats`、`gi/consts`、`pando/engine`、`game-opt/engine`、`game-opt/formula` 和 `common/util`。构建工具为 esbuild 0.19.2（MIT），npm 依赖 fflate 0.8.3（MIT）随包解析。确切版本及校验见 [package-lock.json](package-lock.json) 和 [运行清单](../../artifact_sim/damage/go_damage/manifest.json)。两份发行时使用的许可证副本随引擎打包。 [Genshin Optimizer MIT](../../artifact_sim/damage/go_damage/LICENSE-genshin-optimizer.txt) · [fflate MIT](../../artifact_sim/damage/go_damage/LICENSE-fflate.txt)
+实际打包依赖包括 `gi/formula`、`gi/stats`、`gi/consts`、`pando/engine`、`game-opt/engine`、`game-opt/formula` 和 `common/util`。构建工具为 esbuild 0.19.2（MIT），npm 依赖 fflate 0.8.3（MIT）随包解析。确切版本及校验见 [package-lock.json](package-lock.json) 和 [运行清单](../../genshin_simulator/damage/go_damage/manifest.json)。两份发行时使用的许可证副本随引擎打包。 [Genshin Optimizer MIT](../../genshin_simulator/damage/go_damage/LICENSE-genshin-optimizer.txt) · [fflate MIT](../../genshin_simulator/damage/go_damage/LICENSE-fflate.txt)
 
 ## 调用
 

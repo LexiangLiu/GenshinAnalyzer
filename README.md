@@ -4,17 +4,18 @@ Python 3.10 或更新版本。运行只需要 Python 标准库。以下命令从
 
 ## 模块和调用入口
 
+`artifact_sim/` 仅保留公开 API 门面与命令行入口；实现组件统一位于仓库根目录的 `genshin_simulator/`，按职责划分：
+
 | 模块 | 职责 |
 | --- | --- |
-| `core/` | 圣遗物模型、随机模拟、评分、配装属性和副词条概率 |
-| `data/` | 游戏套装/秘境数值、离线图鉴快照及其查询 |
-| `damage/` | 伤害公式桥接、配装目标、伤害模型和角色模型目录 |
-| `inventory/` | SQLite 库存管理和旧版 JSON 转换 |
-| `optimization/` | 单角色、多角色及武器与圣遗物联合优化 |
-| `planning/` | 刷取收益、树脂估算及单角色/多角色计划 |
-| `__main__.py` | 命令行适配 |
+| `genshin_simulator/core/` | 圣遗物模型、随机模拟、评分、配装属性和副词条概率 |
+| `genshin_simulator/data/` | 游戏套装/秘境数值、离线图鉴快照及其查询 |
+| `genshin_simulator/damage/` | 伤害公式桥接、配装目标、伤害模型和角色模型目录 |
+| `genshin_simulator/inventory/` | SQLite 库存管理和旧版 JSON 转换 |
+| `genshin_simulator/optimization/` | 单角色、多角色及武器与圣遗物联合优化 |
+| `genshin_simulator/planning/` | 刷取收益、树脂估算及单角色/多角色计划 |
 
-原 `artifact_sim` 顶层模块导入路径继续作为兼容入口；新代码可按职责从上述子包导入。
+原 `artifact_sim` 顶层子模块导入路径继续作为兼容入口；新代码可从 `genshin_simulator` 下对应职责包导入。
 
 掉落、强化、评分和配装计算可以直接从 Python 调用，无需启动服务或打开数据库。推荐的公开入口是 `artifact_sim` 包。其他项目可以在自己的环境中运行 `python -m pip install D:\Projects\Genshin\ArtifactSimulator` 安装，也可以调用安装后的 `artifact-sim` 命令。
 
@@ -306,10 +307,10 @@ report = plan_party(pieces, members, threshold_pct=1.0)
 
 - 游戏快照为 7.2，包含 63 套圣遗物，其中 46 套有五星，22 个秘境有标准五星掉落，并提供 126 条角色数据。 [游戏 7.2 公告](https://genshin.hoyoverse.com/en/news/detail/167187) · [genshin-db 5.2.15](https://github.com/theBowja/genshin-db/tree/73d57660053377e55beb12e8f627aabd7ef4cc0d)
 - 主词条逐级数值、副词条档位取自 [游戏数据提取表](https://gitlab.com/Dimbreath/AnimeGameData/-/tree/433284d22ef1a704e9d49ae22fb96cf7a245828e/ExcelBinOutput) 的 `ReliquaryLevelExcelConfigData.json` 和 `ReliquaryAffixExcelConfigData.json`。原始数值的精度由提取表决定。
-- 概率取自本机 GenshinAnalyzer 的 [五星秘境 PMF](D:/Projects/GenshinAnalyzer/genshin_artifact_pmf_package/genshin_artifact_5star_domain_pmf.json)。秘境两套各 50%，五部位各 20%，初始三条与四条默认 80% / 20%，其余权重见 `artifact_sim/data/data.json`。这是概率模型，初始四条概率可配置。
+- 概率取自本机 GenshinAnalyzer 的 [五星秘境 PMF](D:/Projects/GenshinAnalyzer/genshin_artifact_pmf_package/genshin_artifact_5star_domain_pmf.json)。秘境两套各 50%，五部位各 20%，初始三条与四条默认 80% / 20%，其余权重见 `genshin_simulator/data/data.json`。这是概率模型，初始四条概率可配置。
 - [月之一官方公告](https://genshin.hoyoverse.com/en/news/detail/159349)确认了五星三词条件的第 4 条预览。本实现保存预览的属性、档位，并使用同一数值激活。
 - 圣遗物模拟覆盖五星秘境单件掉落及常规强化。实际树脂或强化材料消耗、还圣奥迹、圣遗物定轨与重塑不在模拟范围。
-- 角色模型目录由 `tools/calibrate_character_models.py` 生成，使用固定提交的 Genshin Optimizer 公式与倍率。模型是单段、无元素反应、无队伍增益的标量化近似；自动模型不含武器特效。标定误差、假设和来源随每个模型保存在 `artifact_sim/damage/character_models.json`。条件性套装效果只覆盖模型指定的目标四件套；散件套装中未被静态面板解析的二件套条件效果未计入。
+- 角色模型目录由 `tools/calibrate_character_models.py` 生成，使用固定提交的 Genshin Optimizer 公式与倍率。模型是单段、无元素反应、无队伍增益的标量化近似；自动模型不含武器特效。标定误差、假设和来源随每个模型保存在 `genshin_simulator/damage/character_models.json`。条件性套装效果只覆盖模型指定的目标四件套；散件套装中未被静态面板解析的二件套条件效果未计入。
 - 多角色联合配装在无圣遗物争用时精确；存在争用时使用贪心、坐标上升和同部位交换的启发式搜索。多角色刷取推荐复用精确的单件替换分布，但“多角色期望增幅之和”是上界，保守值见 `best_member_expected_gain_pct`。元素反应、队伍增益和全局多件联换仍未纳入。
 
 更新数据时，从上述来源取得新版本的套装、秘境和数值表，检查覆盖范围后运行下面的生成命令。脚本记录输入表的 SHA-256。更新测试中的版本与已核实的数量后运行回归测试。
@@ -318,7 +319,7 @@ report = plan_party(pieces, members, threshold_pct=1.0)
 node tools/build_snapshot.cjs <genshin-db包目录> <五星秘境PMF的JSON路径> <包含两张ExcelBinOutput表的目录> <已核实游戏版本>
 ```
 
-图鉴可独立生成。使用 genshin-db 5.2.15、TCG 发布提交 `db37a96e1dac3f56d0e6f015c4ff4f87c25577cd` 的 `data/gzips/` 中英文七圣召唤分表，以及 7.2 提取提交 `d54f6f0d423ded9d055bb740a3e5f3aa8f2667f1` 的中英文 TextMap 和 `MonsterDescribe`、`Monster`、`MonsterCurve`、`Material` 四张 `ExcelConfigData.json` 表。图鉴 [manifest.json](artifact_sim/data/reference_data/manifest.json) 记录输入和输出哈希及各分类数量。 [七圣召唤发布数据](https://github.com/theBowja/genshin-db-dist/tree/db37a96e1dac3f56d0e6f015c4ff4f87c25577cd/data/gzips) · [7.2 游戏提取表](https://gitlab.com/Dimbreath/animegamedata2/-/tree/d54f6f0d423ded9d055bb740a3e5f3aa8f2667f1) · [7.2 官方更新说明](https://ys.mihoyo.com/main/news/detail/167205)
+图鉴可独立生成。使用 genshin-db 5.2.15、TCG 发布提交 `db37a96e1dac3f56d0e6f015c4ff4f87c25577cd` 的 `data/gzips/` 中英文七圣召唤分表，以及 7.2 提取提交 `d54f6f0d423ded9d055bb740a3e5f3aa8f2667f1` 的中英文 TextMap 和 `MonsterDescribe`、`Monster`、`MonsterCurve`、`Material` 四张 `ExcelConfigData.json` 表。图鉴 [manifest.json](genshin_simulator/data/reference_data/manifest.json) 记录输入和输出哈希及各分类数量。 [七圣召唤发布数据](https://github.com/theBowja/genshin-db-dist/tree/db37a96e1dac3f56d0e6f015c4ff4f87c25577cd/data/gzips) · [7.2 游戏提取表](https://gitlab.com/Dimbreath/animegamedata2/-/tree/d54f6f0d423ded9d055bb740a3e5f3aa8f2667f1) · [7.2 官方更新说明](https://ys.mihoyo.com/main/news/detail/167205)
 
 ```powershell
 node tools/build_reference_data.cjs <genshin-db包目录> <TCG压缩数据目录> <TCG提交> <TextMap和Excel表目录> <7.2提取提交>
