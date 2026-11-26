@@ -11,6 +11,7 @@ from . import (
     Artifact, Inventory, LoadoutPiece, PartyMember, Simulator, analyze_farming, auto_main_stats,
     catalog, characters, get_damage_model, loadout, optimize_party, plan_party, plan_single_character,
 )
+from core.roll_probability import expected_full_level_substats
 from damage.character_models import catalog_available, catalog_spec
 from damage import calculate_damage, damage_engine_info, list_damage_formulas
 from data.game_data import SETS, character_profile, lookup
@@ -337,6 +338,22 @@ def _load_json_object(path: str, label: str) -> dict:
 
 
 def _party_pieces(config: dict, db: Path) -> list[LoadoutPiece]:
+    project_full_level = config.get("expected_full_level", False)
+    if not isinstance(project_full_level, bool):
+        raise ValueError("expected_full_level 必须是布尔值")
+
+    def load_piece(artifact: Artifact, artifact_id: str | None = None) -> LoadoutPiece:
+        expected = (
+            expected_full_level_substats(artifact)
+            if project_full_level and artifact.level < 20
+            else None
+        )
+        return LoadoutPiece(
+            artifact=artifact,
+            artifact_id=artifact_id,
+            expected_full_level_substats=expected,
+        )
+
     raw = config.get("pieces")
     if raw is not None:
         if not isinstance(raw, list):
@@ -344,12 +361,13 @@ def _party_pieces(config: dict, db: Path) -> list[LoadoutPiece]:
         pieces = []
         for item in raw:
             state = item.get("state", item) if isinstance(item, dict) else item
-            pieces.append(LoadoutPiece(Artifact.from_state(state)))
+            artifact_id = item.get("id") if isinstance(item, dict) else None
+            pieces.append(load_piece(Artifact.from_state(state), artifact_id))
         return pieces
     if not db.is_file():
         raise ValueError(f"库存数据库不存在：{db}")
     inventory = Inventory(db)
-    return [LoadoutPiece(artifact_id=artifact_id, artifact=artifact)
+    return [load_piece(artifact, artifact_id)
             for artifact_id, artifact in inventory.artifacts()]
 
 
@@ -390,9 +408,18 @@ def _party_members(config: dict) -> list[dict]:
         if weapon is not None:
             common["weapon"] = weapon["id"]
         common.update(options)
-        model = get_damage_model(row["character"], row.get("model"), **common)
         target = row.get("target_four_piece_set")
         target_id = None if target is None else int(lookup(SETS, target)["id"])
+        fixed_target = row.get("fixed_four_piece_set")
+        fixed_target_id = (
+            None if fixed_target is None else int(lookup(SETS, fixed_target)["id"])
+        )
+        model = get_damage_model(row["character"], row.get("model"), **common)
+        selected_target = fixed_target_id if fixed_target_id is not None else target_id
+        if model.key in catalog_available() and selected_target is not None:
+            model_options = dict(common)
+            model_options["target_four_piece_set"] = selected_target
+            model = get_damage_model(row["character"], model.key, **model_options)
         members.append({
             "member": PartyMember(
                 model=model,
@@ -405,6 +432,7 @@ def _party_members(config: dict) -> list[dict]:
                 bonus_stats=row.get("bonus_stats"),
                 weight=float(row.get("weight", 1.0)),
                 target_four_piece_set=target_id,
+                fixed_four_piece_set=fixed_target_id,
                 name=row.get("name") or row.get("profile"),
             ),
             "candidate_main_stats": row.get("candidate_main_stats"),

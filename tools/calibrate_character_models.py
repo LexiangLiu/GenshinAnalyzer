@@ -6,7 +6,8 @@ Run from the ArtifactSimulator directory:
 
 The script probes the pinned Genshin Optimizer bundle for every local
 character, fits a single-hit scalar model around a level-90 / C0 / 10-10-10
-scenario, validates the fit on random artifact-sized stat changes, and writes
+scenario, probes the selected attack at each relevant talent level from 1–10,
+validates the fit on random artifact-sized stat changes, and writes
 ``damage/character_models.json``.  It is a build-time tool; normal use of
 the simulator only reads the generated JSON.
 """
@@ -274,13 +275,13 @@ def _call(node: str, action: str, payload: dict) -> dict:
 
 def _calculate(node: str, go_key: str, attack: str, *, mode: str,
                conditions: dict | None = None, bonus_stats: dict | None = None,
-               weapon: str | None = None) -> dict:
+               weapon: str | None = None, talents: dict | None = None) -> dict:
     payload = {
         "character": go_key,
         "level": BASE_LEVEL,
         "ascension": BASE_ASCENSION,
         "constellation": 0,
-        "talents": TALENTS,
+        "talents": talents or TALENTS,
         "conditions": conditions or {},
         "bonus_stats": bonus_stats or {},
         "enemy": {"level": 90, "resistance": RESISTANCE},
@@ -306,6 +307,45 @@ def _category(attack: dict) -> str:
     if category == "burst":
         return "burst"
     return "normal"
+
+
+def _talent_scaling_curve(
+    node: str,
+    go_key: str,
+    attack: str,
+    category: str,
+    conditions: dict,
+    weapon: str | None,
+    baseline_damage: float,
+) -> dict:
+    slot = "auto" if category in ("normal", "charged", "plunge") else category
+    multipliers = {}
+    for level in range(1, 11):
+        if level == TALENTS[slot]:
+            damage = baseline_damage
+        else:
+            talents = dict(TALENTS)
+            talents[slot] = level
+            result = _calculate(
+                node,
+                go_key,
+                attack,
+                mode="noncrit",
+                conditions=conditions,
+                weapon=weapon,
+                talents=talents,
+            )
+            damage = float(result["attacks"][0]["damage"])
+        if not math.isfinite(damage) or damage <= 0 or baseline_damage <= 0:
+            raise ValueError(f"{slot} Lv.{level} 的上游标定倍率无效")
+        multipliers[str(level)] = _round(damage / baseline_damage)
+    multipliers[str(TALENTS[slot])] = 1.0
+    return {
+        "slot": slot,
+        "baseline_level": TALENTS[slot],
+        "multipliers": multipliers,
+        "source": "Genshin Optimizer 10.40.0 bridge；固定其余条件与面板，仅改变对应天赋等级",
+    }
 
 
 def _auto_conditions(conditions: dict) -> dict:
@@ -625,6 +665,9 @@ def calibrate_one(node: str, character: dict, *, seed: int = 0) -> dict | None:
         "set_effects": set_effects,
         "panel_bonus_stats": panel_bonus,
         "weapon": weapon_name,
+        "talent_scaling": _talent_scaling_curve(
+            node, go_key, attack_name, category, conditions, weapon, base_damage,
+        ),
         "assumptions": {
             "character_level": BASE_LEVEL,
             "ascension": BASE_ASCENSION,

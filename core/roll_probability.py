@@ -8,6 +8,7 @@ from functools import lru_cache
 from itertools import permutations
 from math import lcm
 
+from core.models import Artifact, MILESTONES
 from data.game_data import DATA, SUB_VALUES
 
 
@@ -26,6 +27,60 @@ _INITIAL_MEAN = {stat: sum(values[tier] * weight for tier, weight in _INITIAL_TI
                  for stat, values in _ROLL_VALUES.items()}
 _UPGRADE_MEAN = {stat: sum(values[tier] * weight for tier, weight in _UPGRADE_TIERS.items()) / 100
                  for stat, values in _ROLL_VALUES.items()}
+
+
+def _expected_roll_value(stat: str, tiers) -> Fraction:
+    return sum(
+        Fraction(_ROLL_VALUES[stat][tier], 100) * weight
+        for tier, weight in tiers.items()
+    )
+
+
+def expected_full_level_substats(artifact: Artifact) -> dict[str, float]:
+    """Return expected substat values at +20 without sampling or using hidden previews."""
+    current = artifact.substats()
+    expected = {stat: Fraction(str(value)) for stat, value in current.items()}
+    active = artifact.initial_rolls[:4 if artifact.level >= 4 or artifact.initial_count == 4 else 3]
+    future_levels = tuple(level for level in MILESTONES if artifact.level < level)
+
+    if artifact.initial_count == 3 and artifact.level < 4:
+        weights = {
+            stat: Fraction(str(weight))
+            for stat, weight in DATA["substat_weights"].items()
+            if stat != artifact.main_stat and stat not in current
+        }
+        total = sum(weights.values())
+        fourth_line = {
+            stat: weight / total
+            for stat, weight in weights.items()
+        }
+        for stat, probability in fourth_line.items():
+            expected[stat] = expected.get(stat, Fraction(0)) + probability * _expected_roll_value(
+                stat, _INITIAL_TIERS,
+            )
+
+        future_upgrades = sum(level > 4 for level in future_levels)
+        for position, roll in enumerate(active):
+            expected[roll.stat] = expected.get(roll.stat, Fraction(0)) + (
+                future_upgrades * _TARGET_WEIGHTS[position]
+                * _expected_roll_value(roll.stat, _UPGRADE_TIERS)
+            )
+        for stat, probability in fourth_line.items():
+            expected[stat] += (
+                future_upgrades * probability * _TARGET_WEIGHTS[3]
+                * _expected_roll_value(stat, _UPGRADE_TIERS)
+            )
+    else:
+        for level in future_levels:
+            if level == 4 and artifact.initial_count == 3:
+                continue
+            for position, roll in enumerate(active):
+                expected[roll.stat] += (
+                    _TARGET_WEIGHTS[position]
+                    * _expected_roll_value(roll.stat, _UPGRADE_TIERS)
+                )
+
+    return {stat: float(value) for stat, value in expected.items()}
 
 
 @lru_cache(maxsize=512)

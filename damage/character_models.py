@@ -28,7 +28,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Mapping
 
-from .damage_models import DamageModel
+from .damage_models import DamageModel, formula_expression
+from core.equipment import set_effects as panel_set_effects
 
 
 # Only conditional, damage-relevant set effects live here.  Unconditional ATK%,
@@ -184,71 +185,201 @@ def _number(value: float) -> str:
     return f"{float(value):.12g}"
 
 
-def _join(parts: list[str]) -> str:
-    return " + ".join(parts) if parts else "0"
+def _set_effect_is_panel_stat(set_id: int, pieces: int, key: str, value: float) -> bool:
+    stat = {
+        "atk_percent": "ATK_PERCENT",
+        "hp_percent": "HP_PERCENT",
+        "def_percent": "DEF_PERCENT",
+        "em": "ELEMENTAL_MASTERY",
+    }.get(key)
+    if stat is None:
+        return False
+    after, _ = panel_set_effects({set_id: pieces})
+    before, _ = panel_set_effects({set_id: pieces - 1})
+    return abs(float(after.get(stat, 0) - before.get(stat, 0)) - value) < 1e-9
 
 
-def build_expression(spec: Mapping[str, object], crit_mode: str = "average") -> str:
-    """Compose the scalar objective expression for one catalog model."""
+def _effective_set_effects(
+    spec: Mapping[str, object],
+    target_four_piece_set: int | None,
+) -> dict[str, dict]:
+    if target_four_piece_set is None:
+        return {}
+    original_target = spec.get("target_four_piece_set")
+    if original_target is not None and int(original_target) == target_four_piece_set:
+        configured = dict(spec.get("set_effects") or {})
+        if str(target_four_piece_set) in configured:
+            return {str(target_four_piece_set): configured[str(target_four_piece_set)]}
+    return {
+        str(target_four_piece_set): resolve_set_effects(
+            target_four_piece_set,
+            str(spec.get("category") or ""),
+            str(spec.get("element") or ""),
+        )
+    }
+
+
+def _formula_factors(
+    spec: Mapping[str, object],
+    crit_mode: str,
+    *,
+    target_four_piece_set: int | None,
+    talent_level: int,
+    talent_multiplier: float,
+) -> dict[str, object]:
     coefficients = dict(spec.get("coefficients") or {})
     element = str(spec.get("element") or "PHYSICAL").upper()
     element_stat = "PHYSICAL_DMG_BONUS" if element in ("PHYSICAL", "NONE") else f"{element}_DMG_BONUS"
-
     scaling_terms = [
-        f"{_number(float(coefficients[stat]))} * {stat}"
+        {"kind": "stat", "stat": stat, "coefficient": float(coefficients[stat])}
         for stat in ("HP", "ATK", "DEF", "ELEMENTAL_MASTERY", "ENERGY_RECHARGE")
         if abs(float(coefficients.get(stat, 0.0))) > 1e-12
     ]
     constant = float(spec.get("constant", 0.0))
     if abs(constant) > 1e-12:
-        scaling_terms.append(_number(constant))
+        scaling_terms.append({"kind": "constant", "value": constant})
 
-    effects = spec.get("set_effects") or {}
-    damage_terms = [element_stat]
-    crit_rate_terms = ["CRIT_RATE"]
-    crit_dmg_terms = ["CRIT_DMG"]
+    effects = _effective_set_effects(spec, target_four_piece_set)
+    damage_terms = [{"kind": "stat", "stat": element_stat}]
+    crit_rate_terms = [{"kind": "stat", "stat": "CRIT_RATE"}]
+    crit_dmg_terms = [{"kind": "stat", "stat": "CRIT_DMG"}]
     for set_id, levels in effects.items():
         for pieces, effect in levels.items():
-            flag = f"SET_{set_id}_{pieces}"
-            if "atk_percent" in effect and coefficients.get("ATK"):
+            set_number = int(set_id)
+            piece_count = int(pieces)
+            if "atk_percent" in effect and coefficients.get("ATK") and not _set_effect_is_panel_stat(
+                set_number, piece_count, "atk_percent", float(effect["atk_percent"]),
+            ):
                 scaling_terms.append(
-                    f"{_number(float(coefficients['ATK']) * float(effect['atk_percent']) / 100)} * BASE_ATK * {flag}",
+                    {
+                        "kind": "set_stat_percent",
+                        "coefficient": float(coefficients["ATK"]) * float(effect["atk_percent"]) / 100,
+                        "value": float(effect["atk_percent"]),
+                        "base_stat": "BASE_ATK",
+                        "set_id": set_number,
+                        "pieces": piece_count,
+                    },
                 )
-            if "hp_percent" in effect and coefficients.get("HP"):
+            if "hp_percent" in effect and coefficients.get("HP") and not _set_effect_is_panel_stat(
+                set_number, piece_count, "hp_percent", float(effect["hp_percent"]),
+            ):
                 scaling_terms.append(
-                    f"{_number(float(coefficients['HP']) * float(effect['hp_percent']) / 100)} * BASE_HP * {flag}",
+                    {
+                        "kind": "set_stat_percent",
+                        "coefficient": float(coefficients["HP"]) * float(effect["hp_percent"]) / 100,
+                        "value": float(effect["hp_percent"]),
+                        "base_stat": "BASE_HP",
+                        "set_id": set_number,
+                        "pieces": piece_count,
+                    },
                 )
-            if "def_percent" in effect and coefficients.get("DEF"):
+            if "def_percent" in effect and coefficients.get("DEF") and not _set_effect_is_panel_stat(
+                set_number, piece_count, "def_percent", float(effect["def_percent"]),
+            ):
                 scaling_terms.append(
-                    f"{_number(float(coefficients['DEF']) * float(effect['def_percent']) / 100)} * BASE_DEF * {flag}",
+                    {
+                        "kind": "set_stat_percent",
+                        "coefficient": float(coefficients["DEF"]) * float(effect["def_percent"]) / 100,
+                        "value": float(effect["def_percent"]),
+                        "base_stat": "BASE_DEF",
+                        "set_id": set_number,
+                        "pieces": piece_count,
+                    },
                 )
-            if "em" in effect and coefficients.get("ELEMENTAL_MASTERY"):
+            if "em" in effect and coefficients.get("ELEMENTAL_MASTERY") and not _set_effect_is_panel_stat(
+                set_number, piece_count, "em", float(effect["em"]),
+            ):
                 scaling_terms.append(
-                    f"{_number(float(coefficients['ELEMENTAL_MASTERY']) * float(effect['em']))} * {flag}",
+                    {
+                        "kind": "set_stat_flat",
+                        "coefficient": float(coefficients["ELEMENTAL_MASTERY"]) * float(effect["em"]),
+                        "value": float(effect["em"]),
+                        "set_id": set_number,
+                        "pieces": piece_count,
+                    },
                 )
             if effect.get("dmg"):
-                damage_terms.append(f"{_number(float(effect['dmg']))} * {flag}")
+                damage_terms.append({
+                    "kind": "set_percent", "value": float(effect["dmg"]),
+                    "set_id": set_number, "pieces": piece_count,
+                })
             if effect.get("er_burst_dmg"):
-                damage_terms.append(f"min(75, {_number(float(effect['er_burst_dmg']))} * ENERGY_RECHARGE) * {flag}")
+                damage_terms.append({
+                    "kind": "set_er_percent", "value": float(effect["er_burst_dmg"]),
+                    "cap": 75, "set_id": set_number, "pieces": piece_count,
+                })
             if effect.get("crit_rate"):
-                crit_rate_terms.append(f"{_number(float(effect['crit_rate']))} * {flag}")
+                crit_rate_terms.append({
+                    "kind": "set_percent", "value": float(effect["crit_rate"]),
+                    "set_id": set_number, "pieces": piece_count,
+                })
             if effect.get("crit_dmg"):
-                crit_dmg_terms.append(f"{_number(float(effect['crit_dmg']))} * {flag}")
+                crit_dmg_terms.append({
+                    "kind": "set_percent", "value": float(effect["crit_dmg"]),
+                    "set_id": set_number, "pieces": piece_count,
+                })
 
     if spec.get("dmg_bonus"):
-        damage_terms.append(_number(float(spec["dmg_bonus"])))
+        damage_terms.append({"kind": "constant_percent", "value": float(spec["dmg_bonus"])})
     if spec.get("crit_rate_bonus"):
-        crit_rate_terms.append(_number(float(spec["crit_rate_bonus"])))
+        crit_rate_terms.append({"kind": "constant_percent", "value": float(spec["crit_rate_bonus"])})
     if spec.get("crit_dmg_bonus"):
-        crit_dmg_terms.append(_number(float(spec["crit_dmg_bonus"])))
+        crit_dmg_terms.append({"kind": "constant_percent", "value": float(spec["crit_dmg_bonus"])})
+    talent_scaling = dict(spec.get("talent_scaling") or {})
+    assumptions = dict(spec.get("assumptions") or {})
+    baseline_talents = assumptions.get("talents") or {"auto": 10, "skill": 10, "burst": 10}
+    category = str(spec.get("category") or "normal")
+    talent_slot = "auto" if category in ("normal", "charged", "plunge") else category
+    baseline_level = int(talent_scaling.get("baseline_level", baseline_talents.get(talent_slot, 10)))
+    external_set_effects = [
+        {"set_id": int(set_id), "pieces": int(pieces), "values": dict(effect)}
+        for set_id, levels in effects.items()
+        for pieces, effect in levels.items()
+    ]
+    return {
+        "scaling_terms": scaling_terms,
+        "damage_terms": damage_terms,
+        "crit_rate_terms": crit_rate_terms,
+        "crit_dmg_terms": crit_dmg_terms,
+        "crit_enabled": crit_mode == "average" and bool(spec.get("crit_enabled", True)),
+        "fixed_multipliers": [],
+        "talent": {
+            "slot": talent_slot,
+            "level": talent_level,
+            "baseline_level": baseline_level,
+            "multiplier": talent_multiplier,
+            "source": talent_scaling.get("source"),
+        },
+        "external_inputs": {
+            "panel": "角色与武器面板、圣遗物主副词条和已解析的常驻套装属性",
+            "weapon_passive": dict(spec.get("assumptions") or {}).get(
+                "weapon_passive", "未建模的武器被动不计入评分",
+            ),
+            "set_effects": external_set_effects,
+            "set_effects_note": (
+                "只计入列表中的条件套装效果；静态面板加成已并入角色面板，"
+                "其他未建模套装效果不计入评分。"
+            ),
+        },
+    }
 
-    scaling = _join(scaling_terms)
-    damage = f"(1 + ({_join(damage_terms)}) / 100)"
-    parts = [f"({scaling})", damage]
-    if crit_mode == "average" and spec.get("crit_enabled", True):
-        crit = f"(1 + min(100, {_join(crit_rate_terms)}) * ({_join(crit_dmg_terms)}) / 10000)"
-        parts.append(crit)
-    return " * ".join(parts)
+
+def build_expression(spec: Mapping[str, object], crit_mode: str = "average") -> str:
+    """Compose the scalar objective expression from its structured factors."""
+    assumptions = dict(spec.get("assumptions") or {})
+    talents = assumptions.get("talents") or {"auto": 10, "skill": 10, "burst": 10}
+    category = str(spec.get("category") or "normal")
+    talent_slot = "auto" if category in ("normal", "charged", "plunge") else category
+    factors = _formula_factors(
+        spec,
+        crit_mode,
+        target_four_piece_set=(
+            int(spec["target_four_piece_set"]) if spec.get("target_four_piece_set") is not None else None
+        ),
+        talent_level=int(talents.get(talent_slot, 10)),
+        talent_multiplier=1.0,
+    )
+    return formula_expression(factors)
 
 
 def _spec_monotone(spec: Mapping[str, object]) -> bool:
@@ -262,12 +393,56 @@ def _spec_monotone(spec: Mapping[str, object]) -> bool:
     return True
 
 
-def model_from_spec(spec: Mapping[str, object], crit_mode: str = "average") -> DamageModel:
+_USE_SPEC_TARGET = object()
+
+
+def model_from_spec(
+    spec: Mapping[str, object],
+    crit_mode: str = "average",
+    *,
+    talents: Mapping[str, int] | None = None,
+    target_four_piece_set: int | None | object = _USE_SPEC_TARGET,
+) -> DamageModel:
     if crit_mode not in ("average", "noncrit"):
         raise ValueError("crit_mode 只能是 average 或 noncrit")
-    expression = build_expression(spec, crit_mode)
+    assumptions = dict(spec.get("assumptions") or {})
+    baseline_talents = dict(assumptions.get("talents") or {"auto": 10, "skill": 10, "burst": 10})
+    selected_talents = dict(baseline_talents)
+    selected_talents.update(talents or {})
+    category = str(spec.get("category") or "normal")
+    talent_slot = "auto" if category in ("normal", "charged", "plunge") else category
+    selected_level = int(selected_talents.get(talent_slot, 10))
+    talent_scaling = dict(spec.get("talent_scaling") or {})
+    baseline_level = int(talent_scaling.get("baseline_level", baseline_talents.get(talent_slot, 10)))
+    ratios = dict(talent_scaling.get("multipliers") or {})
+    if selected_level == baseline_level:
+        talent_multiplier = 1.0
+    elif str(selected_level) in ratios:
+        talent_multiplier = float(ratios[str(selected_level)])
+    else:
+        raise ValueError(
+            f"模型 {spec['key']} 没有天赋 {talent_slot} Lv.{selected_level} 的标定倍率",
+        )
+    selected_target = (
+        spec.get("target_four_piece_set")
+        if target_four_piece_set is _USE_SPEC_TARGET
+        else target_four_piece_set
+    )
+    if selected_target is not None:
+        selected_target = int(selected_target)
+    factors = _formula_factors(
+        spec,
+        crit_mode,
+        target_four_piece_set=selected_target,
+        talent_level=selected_level,
+        talent_multiplier=talent_multiplier,
+    )
+    expression = formula_expression(factors)
     assumptions = dict(spec.get("assumptions") or {})
     assumptions["crit_mode"] = crit_mode
+    assumptions["talents"] = selected_talents
+    assumptions["talent_multiplier"] = talent_multiplier
+    assumptions["talent_scaling_source"] = talent_scaling.get("source")
     assumptions.setdefault("attack", spec.get("attack"))
     assumptions.setdefault("category", spec.get("category"))
     assumptions.setdefault("element", spec.get("element"))
@@ -279,11 +454,12 @@ def model_from_spec(spec: Mapping[str, object], crit_mode: str = "average") -> D
         character=str(spec["character"]),
         label=str(spec["label"]),
         expression=expression,
-        scale=1.0,
+        scale=talent_multiplier,
         assumptions=assumptions,
         panel_bonus_stats=dict(spec.get("panel_bonus_stats") or {}),
-        target_four_piece_set=int(spec["target_four_piece_set"]) if spec.get("target_four_piece_set") is not None else None,
+        target_four_piece_set=selected_target,
         monotone=_spec_monotone(spec),
+        formula_factors=factors,
     )
 
 
@@ -349,7 +525,7 @@ def _validate_catalog_options(key: str, spec: Mapping[str, object], crit_mode: s
         raise ValueError("crit_mode 只能是 average 或 noncrit")
     unknown = set(options) - {
         "level", "ascension", "constellation", "talents", "weapon",
-        "weapon_level", "weapon_ascension", "refinement",
+        "weapon_level", "weapon_ascension", "refinement", "target_four_piece_set",
     }
     if unknown:
         raise ValueError(f"模型 {key} 不支持参数：{', '.join(sorted(unknown))}")
@@ -364,23 +540,60 @@ def _validate_catalog_options(key: str, spec: Mapping[str, object], crit_mode: s
         raise ValueError(f"模型 {key} 固定在突破 {expected_ascension}")
     if "constellation" in options and int(options["constellation"]) != expected_constellation:
         raise ValueError(f"模型 {key} 固定在 C{expected_constellation}")
-    if "talents" in options and dict(options["talents"]) != expected_talents:
-        raise ValueError(f"模型 {key} 固定在天赋 {expected_talents}")
+    if "talents" in options:
+        talents = options["talents"]
+        if not isinstance(talents, Mapping):
+            raise ValueError("talents 必须是包含 auto、skill、burst 等级的对象")
+        for talent in ("auto", "skill", "burst"):
+            level = talents.get(talent, expected_talents.get(talent, 10))
+            if type(level) is not int or not 1 <= level <= 10:
+                raise ValueError(f"talents.{talent} 必须是 1 到 10 的整数")
+    if "target_four_piece_set" in options:
+        target = options["target_four_piece_set"]
+        if target is not None and (type(target) is not int or target < 0):
+            raise ValueError("target_four_piece_set 必须是非负整数或 null")
     fixed_weapon = spec.get("weapon")
     if fixed_weapon is not None and "weapon" in options:
         if not weapon_matches(options["weapon"], fixed_weapon):
             raise ValueError(f"模型 {key} 只覆盖武器 {fixed_weapon}")
 
 
-@lru_cache(maxsize=2048)
-def _cached_catalog_model(key: str, crit_mode: str) -> DamageModel:
-    return model_from_spec(catalog_spec(key), crit_mode)
+@lru_cache(maxsize=4096)
+def _cached_catalog_model(
+    key: str,
+    crit_mode: str,
+    auto: int,
+    skill: int,
+    burst: int,
+    target_four_piece_set: int | None,
+) -> DamageModel:
+    return model_from_spec(
+        catalog_spec(key),
+        crit_mode,
+        talents={"auto": auto, "skill": skill, "burst": burst},
+        target_four_piece_set=target_four_piece_set,
+    )
 
 
 def get_catalog_model(key: str, crit_mode: str = "average", **options) -> DamageModel:
     spec = catalog_spec(key)
     _validate_catalog_options(key, spec, crit_mode, options)
-    return _cached_catalog_model(key, crit_mode)
+    baseline = dict((spec.get("assumptions") or {}).get("talents") or {
+        "auto": 10, "skill": 10, "burst": 10,
+    })
+    selected = dict(baseline)
+    selected.update(options.get("talents") or {})
+    target = options.get("target_four_piece_set")
+    if "target_four_piece_set" not in options:
+        target = spec.get("target_four_piece_set")
+    return _cached_catalog_model(
+        key,
+        crit_mode,
+        int(selected.get("auto", 10)),
+        int(selected.get("skill", 10)),
+        int(selected.get("burst", 10)),
+        int(target) if target is not None else None,
+    )
 
 
 def default_catalog_key(character: str) -> str | None:

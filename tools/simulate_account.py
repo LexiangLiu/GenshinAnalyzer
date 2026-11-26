@@ -54,8 +54,10 @@ from data.game_data import DATA, DOMAINS, SETS  # noqa: E402
 REFERENCE = ROOT / "data" / "reference_data"
 DEFAULT_OUTPUT = ROOT / "examples" / "simulated-account"
 SLOTS = ("FLOWER", "PLUME", "SANDS", "GOBLET", "CIRCLET")
+# Genshin Impact Version 5.0 update details raised the artifact bag limit to 1,800.
+MAX_ARTIFACT_INVENTORY = 1800
 LEVEL_WEIGHTS = {
-    0: 0.25, 4: 0.15, 8: 0.10, 12: 0.12, 16: 0.13, 20: 0.25,
+    0: 0.40, 4: 0.12, 8: 0.09, 12: 0.08, 16: 0.06, 20: 0.25,
 }
 
 # A realistic end-game roster: several elements, weapon types and popular
@@ -84,6 +86,18 @@ def _load_gzip(name: str) -> dict:
         return json.load(handle)
 
 
+def available_character_count() -> int:
+    characters = _load_gzip("characters.en.json.gz")
+    excluded = {"aether", "lumine", "manekin", "manekina"}
+    return sum(key not in excluded for key in characters)
+
+
+def validate_artifact_count(count: object) -> int:
+    if isinstance(count, bool) or not isinstance(count, int) or not 20 <= count <= MAX_ARTIFACT_INVENTORY:
+        raise ValueError(f"圣遗物数量必须介于 20 和 {MAX_ARTIFACT_INVENTORY} 之间")
+    return count
+
+
 def _weighted_choice(rng: random.Random, weights: dict[str, float]) -> str:
     keys = list(weights)
     return rng.choices(keys, weights=[weights[key] for key in keys])[0]
@@ -96,6 +110,12 @@ def _weapon_pool(weapons: dict, weapon_type: str, rarity: int) -> list[str]:
     )
 
 
+def _sample_artifact_level(rng: random.Random) -> int:
+    levels = tuple(LEVEL_WEIGHTS)
+    weights = tuple(LEVEL_WEIGHTS[level] for level in levels)
+    return rng.choices(levels, weights=weights)[0]
+
+
 def _build_roster(seed: int, owned_count: int, invested_count: int) -> tuple[list[dict], dict[int, int]]:
     rng = random.Random(seed)
     characters = _load_gzip("characters.en.json.gz")
@@ -105,6 +125,8 @@ def _build_roster(seed: int, owned_count: int, invested_count: int) -> tuple[lis
         key: record["name"] for key, record in characters.items()
         if key not in ("aether", "lumine", "manekin", "manekina")
     }
+    if owned_count < 1 or owned_count > len(names):
+        raise ValueError(f"角色数量必须介于 1 和当前图鉴角色数 {len(names)} 之间")
     by_name = {record["name"]: record for record in characters.values()}
     zh_by_key = {
         key: characters_zh[key]["name"] for key in characters if key in characters_zh
@@ -208,6 +230,7 @@ def _generate_artifacts(
     target_sets: list[int],
     extra_sets: list[int],
 ) -> list:
+    validate_artifact_count(count)
     set_weights = {}
     for set_id in target_sets:
         set_weights[set_id] = 0.7 / max(1, len(target_sets))
@@ -220,7 +243,7 @@ def _generate_artifacts(
         main_weights = DATA["main_stat_weights"][slot]
         main = rng.choices(list(main_weights), weights=[main_weights[key] for key in main_weights])[0]
         artifact = sim.create(set_id, slot=slot, main_stat=main)
-        level = rng.choices(list(LEVEL_WEIGHTS), weights=[LEVEL_WEIGHTS[key] for key in LEVEL_WEIGHTS])[0]
+        level = _sample_artifact_level(rng)
         if level:
             artifact = sim.enhance(artifact, level)
         artifacts.append(artifact)
@@ -452,9 +475,16 @@ def _markdown(summary: dict, account: dict, output: Path) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description="生成拟真原神账号并运行整体配装与刷本推荐")
     parser.add_argument("--seed", type=int, default=20261126)
-    parser.add_argument("--characters", type=int, default=36, help="角色库规模")
-    parser.add_argument("--invested", type=int, default=12, help="参与联合优化的角色数")
-    parser.add_argument("--artifacts", type=int, default=1500, help="五星圣遗物数量")
+    parser.add_argument("--characters", type=int, default=36,
+                        help=f"角色库规模（最多 {available_character_count()}，取决于离线图鉴）")
+    parser.add_argument("--invested", type=int, default=min(12, len(MAIN_ROSTER)),
+                        help="使用预设目标套装的角色数（受 MAIN_ROSTER 可用角色数限制）")
+    parser.add_argument(
+        "--artifacts",
+        type=int,
+        default=1500,
+        help=f"五星圣遗物数量（20–{MAX_ARTIFACT_INVENTORY}，当前游戏背包容量）",
+    )
     parser.add_argument("--domains", default=",".join(str(item) for item in DEFAULT_DOMAINS),
                         help="候选秘境 ID，逗号分隔")
     parser.add_argument("--threshold", type=float, default=1.0)
@@ -466,6 +496,15 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--skip-plan", action="store_true", help="只生成账号和当前配装，不运行副本推荐")
     args = parser.parse_args()
+
+    if args.invested < 1 or args.invested > len(MAIN_ROSTER):
+        parser.error(f"--invested 必须介于 1 和预设目标阵容人数 {len(MAIN_ROSTER)} 之间")
+    if args.characters < 1 or args.characters > available_character_count():
+        parser.error(f"--characters 必须介于 1 和当前图鉴角色数 {available_character_count()} 之间")
+    try:
+        validate_artifact_count(args.artifacts)
+    except ValueError as exc:
+        parser.error(str(exc))
 
     output = args.output
     output.mkdir(parents=True, exist_ok=True)
@@ -531,6 +570,9 @@ def main() -> None:
             "owned_characters": len(roster),
             "invested_characters": len(members),
             "artifact_count": len(artifacts),
+            "artifact_level_weights": {
+                str(level): weight for level, weight in LEVEL_WEIGHTS.items()
+            },
             "weapon_count": len(_weapon_inventory(roster, args.seed)),
             "level_counts": dict(level_counts),
             "set_counts": dict(set_counts.most_common()),

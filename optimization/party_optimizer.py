@@ -38,6 +38,7 @@ class PartyMember:
     bonus_stats: Mapping[str, float] | None = None
     weight: float = 1.0
     target_four_piece_set: int | None = None
+    fixed_four_piece_set: int | None = None
     name: str | None = None
 
     def __post_init__(self) -> None:
@@ -47,20 +48,48 @@ class PartyMember:
             raise ValueError("bonus_stats 必须是属性名到数值的对象")
         if self.target_four_piece_set is not None and not isinstance(self.target_four_piece_set, int):
             raise ValueError("target_four_piece_set 必须是套装 ID")
+        if self.fixed_four_piece_set is not None and type(self.fixed_four_piece_set) is not int:
+            raise ValueError("fixed_four_piece_set 必须是套装 ID")
+        selected_set = (
+            self.fixed_four_piece_set
+            if self.fixed_four_piece_set is not None
+            else self.target_four_piece_set
+        )
+        if selected_set is not None and selected_set != self.model.target_four_piece_set:
+            from damage.character_models import catalog_spec, get_catalog_model
+
+            try:
+                catalog_spec(self.model.key)
+            except ValueError:
+                return
+            assumptions = self.model.assumptions
+            object.__setattr__(
+                self,
+                "model",
+                get_catalog_model(
+                    self.model.key,
+                    crit_mode=str(assumptions.get("crit_mode", "average")),
+                    talents=assumptions.get("talents"),
+                    target_four_piece_set=selected_set,
+                ),
+            )
 
     @property
     def label(self) -> str:
         return self.name or str(self.character.get("id") or self.model.character)
 
     def resolved_set(self) -> int | None:
-        value = self.target_four_piece_set if self.target_four_piece_set is not None else self.model.target_four_piece_set
+        if self.fixed_four_piece_set is not None:
+            value = self.fixed_four_piece_set
+        else:
+            value = self.target_four_piece_set if self.target_four_piece_set is not None else self.model.target_four_piece_set
+            if self.model.target_four_piece_set is not None and value != self.model.target_four_piece_set:
+                raise ValueError(
+                    f"伤害模型 {self.model.key} 只覆盖套装 {self.model.target_four_piece_set}，"
+                    f"不能改用 {value}",
+                )
         if value is None:
             return None
-        if self.model.target_four_piece_set is not None and value != self.model.target_four_piece_set:
-            raise ValueError(
-                f"伤害模型 {self.model.key} 只覆盖套装 {self.model.target_four_piece_set}，"
-                f"不能改用 {value}",
-            )
         target = lookup(SETS, value)
         if 5 not in target["rarities"] or "4" not in target["effects"]:
             raise ValueError("目标四件套必须是有四件套效果的五星套装")
@@ -417,6 +446,17 @@ def optimize_party(
             )
         if member.weapon is None and member.model.assumptions.get("weapon") is None:
             warnings.append(f"{member.label} 未提供武器；模型只使用角色白值，武器特效未计入。")
+        if (
+            member.fixed_four_piece_set is not None
+            and member.fixed_four_piece_set != member.model.target_four_piece_set
+        ):
+            target_name = SETS[member.fixed_four_piece_set]["name"]
+            model_set = member.model.target_four_piece_set
+            model_name = SETS[model_set]["name"] if model_set in SETS else "无"
+            warnings.append(
+                f"{member.label} 固定为「{target_name}」四件套，但伤害模型覆盖的是「{model_name}」；"
+                "未被该模型覆盖的条件套装效果不会计入目标值。",
+            )
     if conflicts == 0:
         used = set(usage)
         unused = [piece for piece in normalized_pieces if _identity(piece) not in used]
