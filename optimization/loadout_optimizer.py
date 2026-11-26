@@ -12,7 +12,7 @@ from core.equipment import set_effects
 from core.models import Artifact
 from damage.build_objective import as_decimal
 from damage.damage_models import DamageModel
-from data.game_data import SETS, lookup
+from data.game_data import MAIN_VALUES, SETS, lookup
 
 
 _SLOTS = ("FLOWER", "PLUME", "SANDS", "GOBLET", "CIRCLET")
@@ -22,6 +22,7 @@ _SLOTS = ("FLOWER", "PLUME", "SANDS", "GOBLET", "CIRCLET")
 class LoadoutPiece:
     artifact: Artifact
     artifact_id: str | None = None
+    expected_full_level_substats: Mapping[str, float] | None = None
 
 
 @dataclass(frozen=True)
@@ -43,10 +44,17 @@ class Loadout:
             if piece is None:
                 pieces.append({"slot": slot, "id": None, "artifact": None})
                 continue
+            description = piece.artifact.describe()
+            if piece.expected_full_level_substats is not None:
+                description["expected_full_level"] = {
+                    "level": 20,
+                    "main_value": MAIN_VALUES[piece.artifact.main_stat][20],
+                    "substats": dict(piece.expected_full_level_substats),
+                }
             pieces.append({
                 "slot": slot,
                 "id": piece.artifact_id,
-                **piece.artifact.describe(),
+                **description,
             })
         counts = {str(key): value for key, value in sorted(self.set_counts.items())}
         return {
@@ -85,6 +93,15 @@ class OptimizeResult:
 def _artifact_contribution(artifact: Artifact) -> tuple[tuple[str, Decimal], ...]:
     stats = {artifact.main_stat: as_decimal(artifact.main_value)}
     for stat, value in artifact.substats().items():
+        stats[stat] = stats.get(stat, Decimal(0)) + as_decimal(value)
+    return tuple(sorted(stats.items()))
+
+
+def _piece_contribution(piece: LoadoutPiece) -> tuple[tuple[str, Decimal], ...]:
+    if piece.expected_full_level_substats is None:
+        return _artifact_contribution(piece.artifact)
+    stats = {piece.artifact.main_stat: as_decimal(MAIN_VALUES[piece.artifact.main_stat][20])}
+    for stat, value in piece.expected_full_level_substats.items():
         stats[stat] = stats.get(stat, Decimal(0)) + as_decimal(value)
     return tuple(sorted(stats.items()))
 
@@ -151,7 +168,7 @@ def evaluate_loadout(
     for piece in ordered:
         if piece is None:
             continue
-        for stat, value in _artifact_contribution(piece.artifact):
+        for stat, value in _piece_contribution(piece):
             stats[stat] = stats.get(stat, Decimal(0)) + value
         counts[piece.artifact.set_id] = counts.get(piece.artifact.set_id, 0) + 1
     static, bonuses = _set_effects_cached(tuple(sorted(counts.items())))
@@ -242,18 +259,77 @@ def _search_case(candidate_map, base, relevant, target_id, model, max_nodes):
     max_static = _max_static_bonus(frozenset(relevant), target_id)
     upper_flags = model.set_flags
     order = tuple(sorted(_SLOTS, key=lambda slot: len(candidate_map[slot])))
+    suffix_max = [{} for _ in range(len(order) + 1)]
+    for index in range(len(order) - 1, -1, -1):
+        maximum = suffix_max[index + 1].copy()
+        for stat, value in slot_max[order[index]].items():
+            maximum[stat] = maximum.get(stat, Decimal(0)) + value
+        suffix_max[index] = maximum
+
+    if model.monotone:
+        def candidate_upper_bound(slot, contribution):
+            upper = base.copy()
+            for other_slot, maximum in slot_max.items():
+                if other_slot == slot:
+                    continue
+                for stat, value in maximum.items():
+                    upper[stat] = upper.get(stat, Decimal(0)) + value
+            for stat, value in contribution.items():
+                upper[stat] = upper.get(stat, Decimal(0)) + value
+            for stat, value in max_static.items():
+                upper[stat] = upper.get(stat, Decimal(0)) + value
+            return model.evaluate(upper, upper_flags)
+
+        candidate_map = {
+            slot: sorted(
+                rows,
+                key=lambda row: candidate_upper_bound(slot, row[1]),
+                reverse=True,
+            )
+            for slot, rows in candidate_map.items()
+        }
+
+    def evaluate_rows(rows):
+        stats = base.copy()
+        counts = {}
+        selected = {}
+        for slot, (piece, contribution, set_id) in rows.items():
+            selected[slot] = piece
+            for stat, value in contribution.items():
+                stats[stat] = stats.get(stat, Decimal(0)) + value
+            if set_id is not None:
+                counts[set_id] = counts.get(set_id, 0) + 1
+        static, bonuses = _set_effects_cached(tuple(sorted(counts.items())))
+        for stat, value in static:
+            stats[stat] = stats.get(stat, Decimal(0)) + value
+        flags = frozenset(f"SET_{bonus['set_id']}_{bonus['pieces']}" for bonus in bonuses)
+        return model.evaluate(stats, flags), selected
+
+    seed_rows = {slot: rows[0] for slot, rows in candidate_map.items()}
+    seed_damage, seed_selected = evaluate_rows(seed_rows)
+    for slot in order:
+        best_row = seed_rows[slot]
+        best_damage_at_slot = seed_damage
+        for row in candidate_map[slot]:
+            seed_rows[slot] = row
+            candidate_damage, _ = evaluate_rows(seed_rows)
+            if candidate_damage > best_damage_at_slot:
+                best_row = row
+                best_damage_at_slot = candidate_damage
+        seed_rows[slot] = best_row
+        seed_damage, seed_selected = evaluate_rows(seed_rows)
+
     nodes = 0
     exact = True
-    best_damage = -inf
-    best_selected = None
+    best_damage = seed_damage
+    best_selected = seed_selected
 
     def upper_bound(index: int, stats: dict[str, Decimal]) -> float:
         if not model.monotone:
             return inf
         upper = stats.copy()
-        for remaining_slot in order[index:]:
-            for stat, value in slot_max[remaining_slot].items():
-                upper[stat] = upper.get(stat, Decimal(0)) + value
+        for stat, value in suffix_max[index].items():
+            upper[stat] = upper.get(stat, Decimal(0)) + value
         for stat, value in max_static.items():
             upper[stat] = upper.get(stat, Decimal(0)) + value
         return model.evaluate(upper, upper_flags)
@@ -306,10 +382,10 @@ def optimize_loadout(
 ) -> OptimizeResult:
     """Find the highest-damage five-slot loadout under the given constraint.
 
-    With a required four-piece set the search is decomposed into the five
-    possible off-piece slots. Dominated artifacts are removed per set before
-    the branch-and-bound search, which keeps larger simulated inventories
-    practical. The result is exact when every case finishes within ``max_nodes``.
+    With a required four-piece set, feasible loadouts are partitioned into an
+    all-target-set case and five disjoint cases with exactly one off-piece.
+    Dominated artifacts are removed per set before branch-and-bound. ``exact``
+    is true only when every case finishes within its ``max_nodes`` budget.
     """
     if type(max_nodes) is not int or max_nodes < 1:
         raise ValueError("max_nodes 必须是正整数")
@@ -327,7 +403,7 @@ def optimize_loadout(
         slot = piece.artifact.slot
         if slot not in by_slot:
             raise ValueError(f"未知的圣遗物部位：{slot}")
-        by_slot[slot].append((piece, dict(_artifact_contribution(piece.artifact)), piece.artifact.set_id))
+        by_slot[slot].append((piece, dict(_piece_contribution(piece)), piece.artifact.set_id))
     empty = (None, {}, None)
     relevant = tuple(sorted(model.relevant_stats))
     base = _normalize_base(base_stats)
@@ -360,13 +436,24 @@ def optimize_loadout(
             slot: _pareto_rows(by_slot[slot], relevant, model.monotone) or [empty]
             for slot in _SLOTS
         }
+        # Every valid loadout has either five target pieces or one unique off-slot.
+        cases = []
+        if all(target_front[slot] for slot in _SLOTS):
+            cases.append(target_front)
         for off_slot in _SLOTS:
             if any(not target_front[slot] for slot in _SLOTS if slot != off_slot):
                 continue
+            off_set_rows = [
+                row for row in all_front[off_slot] if row[2] != target_id
+            ]
+            if not off_set_rows:
+                continue
             candidate_map = {
-                slot: (all_front[slot] if slot == off_slot else target_front[slot])
+                slot: (off_set_rows if slot == off_slot else target_front[slot])
                 for slot in _SLOTS
             }
+            cases.append(candidate_map)
+        for candidate_map in cases:
             selected, damage, nodes, case_exact = _search_case(
                 candidate_map, base, relevant, target_id, model, max_nodes,
             )

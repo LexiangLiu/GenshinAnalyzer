@@ -1,6 +1,9 @@
 import unittest
+from dataclasses import replace
 
 from artifact_sim import Simulator
+from artifact_sim.__main__ import _party_members
+from core.roll_probability import expected_full_level_substats
 from artifact_sim.damage_models import get_damage_model
 from artifact_sim.loadout_optimizer import LoadoutPiece
 from artifact_sim.party_optimizer import PartyMember, optimize_party
@@ -55,6 +58,33 @@ def _members():
 
 
 class PartyOptimizerTests(unittest.TestCase):
+    def test_cli_member_request_applies_fixed_four_piece_set(self):
+        members = _party_members({
+            "members": [{
+                "character": "Neuvillette",
+                "weapon": {"id": "Tome of the Eternal Flow"},
+                "fixed_four_piece_set": 15035,
+            }],
+        })
+
+        member = members[0]["member"]
+        self.assertEqual(member.fixed_four_piece_set, 15035)
+        self.assertEqual(member.resolved_set(), 15035)
+
+    def test_cli_catalog_model_uses_selected_set_and_account_talents(self):
+        members = _party_members({
+            "members": [{
+                "character": "Arlecchino",
+                "talents": {"auto": 8, "skill": 7, "burst": 6},
+                "fixed_four_piece_set": 15001,
+            }],
+        })
+
+        member = members[0]["member"]
+        self.assertEqual(member.model.target_four_piece_set, 15001)
+        self.assertIn("SET_15001_4", member.model.set_flags)
+        self.assertEqual(member.model.assumptions["talents"]["auto"], 8)
+
     def test_disjoint_inventory_is_exact(self):
         sim = Simulator(3)
         pieces = _pieces(sim, 15031, 1) + _pieces(sim, 15035, 1)
@@ -66,6 +96,59 @@ class PartyOptimizerTests(unittest.TestCase):
             self.assertEqual(len(member.loadout.artifacts()), 5)
         used = [piece for member in result.members for piece in member.loadout.artifacts()]
         self.assertEqual(len(used), len({id(piece) for piece in used}))
+
+    def test_members_can_use_distinct_fixed_sets(self):
+        sim = Simulator(37)
+        pieces = _pieces(sim, 15031, 1) + _pieces(sim, 15035, 1)
+        members = [
+            replace(_members()[0], fixed_four_piece_set=15035),
+            replace(_members()[1], fixed_four_piece_set=15031),
+        ]
+        self.assertEqual(members[1].model.target_four_piece_set, 15031)
+
+        result = optimize_party(pieces, members, restarts=1, max_iterations=1)
+
+        self.assertTrue(result.exact)
+        self.assertEqual(
+            [member.target_four_piece_set for member in result.members],
+            [15035, 15031],
+        )
+        for member in result.members:
+            self.assertGreaterEqual(
+                sum(piece.set_id == member.target_four_piece_set
+                    for piece in member.loadout.artifacts()),
+                4,
+            )
+        self.assertTrue(any("未被该模型覆盖" in warning for warning in result.warnings))
+
+    def test_projected_multi_member_loadouts_share_inventory_without_reuse(self):
+        sim = Simulator(11)
+        actual = _pieces(sim, 15031, 1) + _pieces(sim, 15035, 1)
+        projected = [
+            LoadoutPiece(
+                piece.artifact,
+                piece.artifact_id,
+                expected_full_level_substats(piece.artifact),
+            )
+            for piece in actual
+        ]
+        result = optimize_party(projected, _members(), restarts=1, max_iterations=1)
+        selected = [
+            piece
+            for member in result.members
+            for piece in member.loadout.pieces
+            if piece is not None
+        ]
+
+        self.assertEqual(len(result.members), 2)
+        self.assertEqual(len(selected), 10)
+        self.assertEqual(len({id(piece.artifact) for piece in selected}), 10)
+        self.assertTrue(all(
+            piece.expected_full_level_substats is not None
+            for member in result.members
+            for piece in member.loadout.pieces
+            if piece is not None
+        ))
 
     def test_contested_inventory_stays_feasible(self):
         sim = Simulator(5)

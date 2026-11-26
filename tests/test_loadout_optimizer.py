@@ -94,6 +94,50 @@ class LoadoutOptimizerTests(unittest.TestCase):
             places=9,
         )
 
+    def test_expected_full_level_piece_can_replace_current_best(self):
+        pieces = [_piece(self.sim, 15031, slot, 0) for slot in _SLOTS]
+        current_flower = pieces[0]
+        projected_flower = LoadoutPiece(
+            current_flower.artifact,
+            "flower-projected",
+            {"CRIT_RATE": 80.0, "CRIT_DMG": 160.0},
+        )
+        result = optimize_loadout(
+            pieces + [projected_flower],
+            self.model,
+            self.base,
+            required_four_piece_set=15031,
+        )
+
+        self.assertEqual(result.loadout.pieces[0], projected_flower)
+        described_flower = result.loadout.describe()["pieces"][0]
+        self.assertEqual(described_flower["state"]["level"], 0)
+        self.assertEqual(described_flower["expected_full_level"]["level"], 20)
+        self.assertAlmostEqual(described_flower["expected_full_level"]["substats"]["CRIT_RATE"], 80.0)
+
+    def test_node_budget_returns_feasible_result_and_preserves_non_exact_flag(self):
+        pieces = [
+            _piece(self.sim, 15031, slot, variant)
+            for slot in _SLOTS for variant in (0, 1)
+        ]
+        model = DamageModel(
+            key="test_budget",
+            character="Traveler",
+            label="bounded search",
+            expression="HP + ATK",
+            monotone=False,
+        )
+        result = optimize_loadout(
+            pieces,
+            model,
+            self.base,
+            required_four_piece_set=15031,
+            max_nodes=1,
+        )
+
+        self.assertFalse(result.exact)
+        self.assertEqual(len(result.loadout.artifacts()), 5)
+
     def test_impossible_constraint_and_duplicate_slot(self):
         pieces = [_piece(self.sim, 15048, slot, 0) for slot in _SLOTS]
         with self.assertRaisesRegex(ValueError, "四件套"):

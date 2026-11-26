@@ -1,4 +1,5 @@
 import json
+import random
 import subprocess
 import sys
 import tempfile
@@ -7,6 +8,7 @@ from collections import Counter
 from pathlib import Path
 
 from artifact_sim import Artifact, Simulator, catalog, loadout
+from tools.simulate_account import LEVEL_WEIGHTS, _sample_artifact_level
 
 
 class SimulationTests(unittest.TestCase):
@@ -95,6 +97,25 @@ class SimulationTests(unittest.TestCase):
         self.assertTrue(850 <= sum(piece.initial_count == 4 for piece in pieces) <= 1150)
         self.assertEqual(self.sim.drop(domain["id"], four_line_probability=0).initial_count, 3)
         self.assertEqual(self.sim.drop(domain["id"], four_line_probability=1).initial_count, 4)
+
+    def test_simulated_account_level_distribution_is_seeded_and_weighted(self):
+        rng = random.Random(20261126)
+        levels = [_sample_artifact_level(rng) for _ in range(20000)]
+        counts = Counter(levels)
+
+        self.assertAlmostEqual(sum(LEVEL_WEIGHTS.values()), 1.0)
+        self.assertEqual(set(counts), set(LEVEL_WEIGHTS))
+        self.assertGreater(counts[0], counts[20])
+        self.assertGreater(counts[20], max(counts[level] for level in (4, 8, 12, 16)))
+        for level, weight in LEVEL_WEIGHTS.items():
+            with self.subTest(level=level):
+                self.assertAlmostEqual(counts[level] / len(levels), weight, delta=0.015)
+
+        def sample_sequence(seed):
+            seeded_rng = random.Random(seed)
+            return [_sample_artifact_level(seeded_rng) for _ in range(100)]
+
+        self.assertEqual(sample_sequence(73), sample_sequence(73))
 
     def test_loadout_keeps_pending_out_until_active(self):
         plume = self.sim.create(15048, slot="PLUME", initial_count=3, substats=[

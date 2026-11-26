@@ -9,11 +9,165 @@ new characters are added by registering a model here or by constructing a
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from functools import lru_cache
 from math import isfinite
 from typing import Mapping
 
 from .build_objective import BuildObjective
 from data.game_data import character_profile
+
+
+@lru_cache(maxsize=10)
+def _neuvillette_talent_multiplier(level: int) -> float:
+    from data.references import get_game_record
+
+    record = get_game_record("talents", "Neuvillette", language="en")
+    values = record["combat1"]["attributes"]["parameters"]["param5"]
+    if type(level) is not int or not 1 <= level <= 10 or len(values) < 10:
+        raise ValueError("那维莱特普攻天赋等级必须是 1 到 10")
+    return float(values[level - 1]) / float(values[9])
+
+
+def _number(value: float) -> str:
+    return f"{float(value):.12g}"
+
+
+def _sum_expression(terms: list[str]) -> str:
+    return " + ".join(terms) if terms else "0"
+
+
+def _formula_term_expression(term: Mapping[str, object]) -> str:
+    kind = term.get("kind")
+    if kind == "stat":
+        coefficient = float(term.get("coefficient", 1.0))
+        stat = str(term["stat"])
+        return stat if coefficient == 1 else f"{_number(coefficient)} * {stat}"
+    if kind == "constant":
+        return _number(float(term["value"]))
+    if kind == "constant_percent":
+        return _number(float(term["value"]))
+    flag = f"SET_{int(term['set_id'])}_{int(term['pieces'])}"
+    if kind == "set_stat_percent":
+        return f"{_number(float(term['coefficient']))} * {term['base_stat']} * {flag}"
+    if kind == "set_stat_flat":
+        return f"{_number(float(term['coefficient']))} * {flag}"
+    if kind == "set_percent":
+        return f"{_number(float(term['value']))} * {flag}"
+    if kind == "set_er_percent":
+        return f"min({_number(float(term['cap']))}, {_number(float(term['value']))} * ENERGY_RECHARGE) * {flag}"
+    raise ValueError(f"不支持的公式因子类型：{kind}")
+
+
+def formula_expression(factors: Mapping[str, object]) -> str:
+    """Render the scoring expression from the same factors used by evaluation."""
+    scaling = _sum_expression([
+        _formula_term_expression(term) for term in factors.get("scaling_terms", [])
+    ])
+    damage_bonus = _sum_expression([
+        _formula_term_expression(term) for term in factors.get("damage_terms", [])
+    ])
+    parts = [f"({scaling})", f"(1 + ({damage_bonus}) / 100)"]
+    if factors.get("crit_enabled", True):
+        crit_rate = _sum_expression([
+            _formula_term_expression(term) for term in factors.get("crit_rate_terms", [])
+        ])
+        crit_dmg = _sum_expression([
+            _formula_term_expression(term) for term in factors.get("crit_dmg_terms", [])
+        ])
+        parts.append(f"(1 + min(100, {crit_rate}) * ({crit_dmg}) / 10000)")
+    for multiplier in factors.get("fixed_multipliers", []):
+        parts.append(_number(float(multiplier["value"])))
+    return " * ".join(parts)
+
+
+def evaluate_formula_breakdown(
+    factors: Mapping[str, object],
+    stats: Mapping[str, object],
+    active_sets,
+    increases: Mapping[str, object] | None = None,
+) -> dict[str, object]:
+    """Return term-level inputs and the exact product used by formula scoring."""
+    extra = increases or {}
+
+    def stat_value(name: str) -> float:
+        if name in {"HP", "ATK", "DEF"}:
+            base = float(stats.get(f"BASE_{name}", 0))
+            percent = float(stats.get(f"{name}_PERCENT", 0)) + float(extra.get(f"{name}_PERCENT", 0))
+            return base + base * percent / 100 + float(stats.get(name, 0)) + float(extra.get(name, 0))
+        return float(stats.get(name, 0)) + float(extra.get(name, 0))
+
+    def term_value(term: Mapping[str, object]) -> float:
+        kind = term.get("kind")
+        if kind == "stat":
+            return float(term.get("coefficient", 1.0)) * stat_value(str(term["stat"]))
+        if kind == "constant":
+            return float(term["value"])
+        if kind == "constant_percent":
+            return float(term["value"])
+        flag = f"SET_{int(term['set_id'])}_{int(term['pieces'])}"
+        if flag not in active_sets:
+            return 0.0
+        if kind == "set_stat_percent":
+            return float(term["coefficient"]) * stat_value(str(term["base_stat"]))
+        if kind == "set_stat_flat":
+            return float(term["coefficient"])
+        if kind == "set_percent":
+            return float(term["value"])
+        if kind == "set_er_percent":
+            return min(float(term["cap"]), float(term["value"]) * stat_value("ENERGY_RECHARGE"))
+        raise ValueError(f"不支持的公式因子类型：{kind}")
+
+    scaling_values = [term_value(term) for term in factors.get("scaling_terms", [])]
+    damage_values = [term_value(term) for term in factors.get("damage_terms", [])]
+    scaling = sum(scaling_values)
+    damage_bonus = sum(damage_values)
+    damage_multiplier = 1 + damage_bonus / 100
+    result = scaling * damage_multiplier
+    crit_rate_values = []
+    crit_dmg_values = []
+    crit_rate = None
+    crit_dmg = None
+    crit_multiplier = None
+    if factors.get("crit_enabled", True):
+        crit_rate_values = [
+            term_value(term) for term in factors.get("crit_rate_terms", [])
+        ]
+        crit_dmg_values = [
+            term_value(term) for term in factors.get("crit_dmg_terms", [])
+        ]
+        crit_rate = sum(crit_rate_values)
+        crit_dmg = sum(crit_dmg_values)
+        crit_multiplier = 1 + min(100, crit_rate) * crit_dmg / 10000
+        result *= crit_multiplier
+    fixed_multiplier_values = [
+        float(multiplier["value"]) for multiplier in factors.get("fixed_multipliers", [])
+    ]
+    for value in fixed_multiplier_values:
+        result *= value
+    return {
+        "scaling_term_values": scaling_values,
+        "damage_term_values": damage_values,
+        "crit_rate_term_values": crit_rate_values,
+        "crit_dmg_term_values": crit_dmg_values,
+        "fixed_multiplier_values": fixed_multiplier_values,
+        "scaling": scaling,
+        "damage_bonus": damage_bonus,
+        "damage_multiplier": damage_multiplier,
+        "crit_rate": crit_rate,
+        "crit_dmg": crit_dmg,
+        "crit_multiplier": crit_multiplier,
+        "unscaled_score": result,
+    }
+
+
+def evaluate_formula_factors(
+    factors: Mapping[str, object],
+    stats: Mapping[str, object],
+    active_sets,
+    increases: Mapping[str, object] | None = None,
+) -> float:
+    """Evaluate the structured scoring factors shared with formula display."""
+    return float(evaluate_formula_breakdown(factors, stats, active_sets, increases)["unscaled_score"])
 
 
 @dataclass(frozen=True)
@@ -29,6 +183,7 @@ class DamageModel:
     panel_bonus_stats: Mapping[str, float] = field(default_factory=dict)
     target_four_piece_set: int | None = None
     monotone: bool = False
+    formula_factors: Mapping[str, object] = field(default_factory=dict)
     increases_evaluator: object | None = field(default=None, repr=False, compare=False)
     _objective: BuildObjective = field(init=False, repr=False, compare=False)
 
@@ -63,12 +218,16 @@ class DamageModel:
         return self._objective.substats
 
     def evaluate(self, stats: Mapping[str, object], active_sets) -> float:
+        if self.formula_factors:
+            return evaluate_formula_factors(self.formula_factors, stats, active_sets) * self.scale
         return float(self._objective.evaluate(stats, active_sets)) * self.scale
 
     def evaluate_increases(self, stats: Mapping[str, object], active_sets, increases) -> float:
         """Evaluate a candidate substat increment, optionally with a fast path."""
         if self.increases_evaluator is not None:
             return float(self.increases_evaluator(stats, active_sets, increases))
+        if self.formula_factors:
+            return evaluate_formula_factors(self.formula_factors, stats, active_sets, increases) * self.scale
         return float(self._objective.evaluate(stats, active_sets, increases)) * self.scale
 
     def scaled_expression(self) -> str:
@@ -87,6 +246,7 @@ class DamageModel:
             "target_four_piece_set": self.target_four_piece_set,
             "monotone": self.monotone,
             "relevant_stats": sorted(self.relevant_stats),
+            "formula_factors": dict(self.formula_factors),
         }
 
 
@@ -125,8 +285,11 @@ def neuvillette_charged_judgment(
     if constellation != 0:
         raise ValueError("那维莱特模型当前只支持 C0")
     talents = dict(talents or {"auto": 10, "skill": 9, "burst": 10})
-    if talents.get("auto") != 10:
-        raise ValueError("那维莱特模型当前只支持普攻天赋 10")
+    for talent, value in talents.items():
+        if type(value) is not int or not 1 <= value <= 10:
+            raise ValueError(f"talents.{talent} 必须是 1 到 10 的整数")
+    talent_level = talents.get("auto", 10)
+    talent_multiplier = _neuvillette_talent_multiplier(talent_level)
     if str(weapon).strip().casefold() not in _TOME_NAMES:
         raise ValueError("那维莱特模型当前只支持精一专武「万世流涌大典」")
     if weapon_level != 90 or weapon_ascension != 6 or refinement != 1:
@@ -146,14 +309,47 @@ def neuvillette_charged_judgment(
     a4_bonus = min(30.0, 0.6 * a4_hp)
     weapon_bonus = 8.0 * weapon_ca_stacks
     four_piece_crit = 12.0 * four_piece_stacks
-    crit = (
-        f"(1 + min(100, CRIT_RATE + {four_piece_crit:g} * SET_15031_4) * CRIT_DMG / 10000)"
-        if crit_mode == "average" else "1"
-    )
-    expression = (
-        f"HP * (1 + ({a4_bonus:g} + 15 * SET_15031_2 + {weapon_bonus:g} + "
-        f"HYDRO_DMG_BONUS) / 100) * {crit} * {a1_multiplier:g}"
-    )
+    factors = {
+        "scaling_terms": [{"kind": "stat", "stat": "HP", "coefficient": 1.0}],
+        "damage_terms": [
+            {
+                "kind": "constant_percent",
+                "value": a4_bonus,
+                "source_label": "角色固有天赋伤害加成",
+            },
+            {"kind": "set_percent", "value": 15.0, "set_id": 15031, "pieces": 2},
+            {
+                "kind": "constant_percent",
+                "value": weapon_bonus,
+                "source_label": "万世流涌大典被动伤害加成",
+            },
+            {"kind": "stat", "stat": "HYDRO_DMG_BONUS"},
+        ],
+        "crit_rate_terms": [
+            {"kind": "stat", "stat": "CRIT_RATE"},
+            {"kind": "set_percent", "value": four_piece_crit, "set_id": 15031, "pieces": 4},
+        ],
+        "crit_dmg_terms": [{"kind": "stat", "stat": "CRIT_DMG"}],
+        "crit_enabled": crit_mode == "average",
+        "fixed_multipliers": [{"label": "那维莱特固有天赋", "value": a1_multiplier}],
+        "talent": {
+            "slot": "auto",
+            "level": talent_level,
+            "baseline_level": 10,
+            "multiplier": talent_multiplier,
+            "source": "本地角色天赋数据 combat1.param5；以 Lv.10 为基准",
+        },
+        "external_inputs": {
+            "panel": "角色与武器面板、圣遗物主副词条和已解析的常驻套装属性",
+            "weapon_passive": f"万世流涌大典重击伤害加成 {weapon_bonus:g}%",
+            "set_effects": [
+                {"set_id": 15031, "pieces": 2, "values": {"dmg": 15.0}},
+                {"set_id": 15031, "pieces": 4, "values": {"crit_rate": four_piece_crit}},
+            ],
+            "set_effects_note": "只计入逐影猎人已建模效果；其他套装效果不计入评分。",
+        },
+    }
+    expression = formula_expression(factors)
 
     def evaluate_increases(stats, active_sets, increases) -> float:
         hp_percent = float(stats.get("HP_PERCENT", 0)) + float(increases.get("HP_PERCENT", 0))
@@ -174,18 +370,22 @@ def neuvillette_charged_judgment(
         )
         crit_dmg = float(stats.get("CRIT_DMG", 0)) + float(increases.get("CRIT_DMG", 0))
         crit_factor = 1.0 if crit_mode == "noncrit" else 1.0 + min(100.0, crit_rate) * crit_dmg / 10000
-        return hp * (1 + dmg / 100) * crit_factor * a1_multiplier * _NEUVILLETTE_SCALE
+        return (
+            hp * (1 + dmg / 100) * crit_factor * a1_multiplier
+            * _NEUVILLETTE_SCALE * talent_multiplier
+        )
 
     return DamageModel(
         key="neuvillette_charged_judgment",
         character="Neuvillette",
         label="那维莱特重击单段（C0/精一专武）",
         expression=expression,
-        scale=_NEUVILLETTE_SCALE,
+        scale=_NEUVILLETTE_SCALE * talent_multiplier,
         assumptions={
             "character_level": level,
             "ascension": ascension,
             "talents": talents,
+            "talent_multiplier": talent_multiplier,
             "constellation": constellation,
             "weapon": "Tome of the Eternal Flow",
             "weapon_level": weapon_level,
@@ -205,6 +405,7 @@ def neuvillette_charged_judgment(
         panel_bonus_stats={"HP_PERCENT": 16.0},
         target_four_piece_set=15031,
         monotone=True,
+        formula_factors=factors,
         increases_evaluator=evaluate_increases,
     )
 
