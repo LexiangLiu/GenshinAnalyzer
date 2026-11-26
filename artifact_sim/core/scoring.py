@@ -3,7 +3,7 @@ from __future__ import annotations
 from math import isfinite
 from typing import Mapping, Sequence
 
-from .game_data import SUB_VALUES
+from ..data.game_data import SUB_VALUES
 
 
 _CRIT = {"CRIT_RATE": 2, "CRIT_DMG": 1}

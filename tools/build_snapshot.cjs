@@ -101,5 +101,5 @@ const snapshot = {
   substat_values: rollValues,
   stat_units: pmf.stat_units,
 };
-writeFileSync(resolve(__dirname, '../artifact_sim/data.json'), JSON.stringify(snapshot, null, 2) + '\n', 'utf8');
+writeFileSync(resolve(__dirname, '../artifact_sim/data/data.json'), JSON.stringify(snapshot, null, 2) + '\n', 'utf8');
 console.log(JSON.stringify({sets: sets.length, fiveStarSets: fiveStarSets.size, domains: domains.length}));

@@ -17,18 +17,18 @@ from dataclasses import dataclass, replace
 from math import isfinite
 from typing import Sequence
 
-from .damage_models import DamageModel
-from .game_data import DOMAINS, lookup
-from .inventory import Inventory
-from .loadout_optimizer import Loadout, LoadoutPiece
-from .models import Artifact
-from .party_optimizer import PartyMember
-from .party_plan import compact_main_stats, rank_domains_for_loadouts
-from .simulation import Simulator
-from .weapon_optimizer import (
+from ..core.models import Artifact
+from ..core.simulation import Simulator
+from ..damage.damage_models import DamageModel
+from ..data.game_data import DOMAINS, lookup
+from ..inventory import Inventory
+from ..optimization.loadout_optimizer import Loadout, LoadoutPiece
+from ..optimization.party_optimizer import PartyMember
+from ..optimization.weapon_optimizer import (
     WeaponChoice, WeaponMember, WeaponOption, evaluate_member_weapon,
     optimize_weapons_and_artifacts,
 )
+from .party_plan import compact_main_stats, rank_domains_for_loadouts
 
 
 @dataclass(frozen=True)

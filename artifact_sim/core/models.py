@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass, replace
 from decimal import Decimal
 from typing import Mapping, Sequence
 
-from .game_data import DATA, MAIN_VALUES, SETS, SUB_VALUES
+from ..data.game_data import DATA, MAIN_VALUES, SETS, SUB_VALUES
 from .scoring import score, score_weights
 
 

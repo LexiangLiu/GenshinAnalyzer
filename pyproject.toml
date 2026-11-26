@@ -13,14 +13,24 @@ requires-python = ">=3.10"
 artifact-sim = "artifact_sim.__main__:main"
 
 [tool.setuptools]
-packages = ["artifact_sim"]
+packages = [
+    "artifact_sim",
+    "artifact_sim.core",
+    "artifact_sim.data",
+    "artifact_sim.damage",
+    "artifact_sim.inventory",
+    "artifact_sim.optimization",
+    "artifact_sim.planning",
+]
 
 [tool.setuptools.package-data]
-artifact_sim = [
+"artifact_sim.data" = [
     "data.json",
-    "character_models.json",
     "reference_data/manifest.json",
     "reference_data/*.json.gz",
+]
+"artifact_sim.damage" = [
+    "character_models.json",
     "go_damage/manifest.json",
     "go_damage/bridge.mjs",
     "go_damage/LICENSE-*.txt",

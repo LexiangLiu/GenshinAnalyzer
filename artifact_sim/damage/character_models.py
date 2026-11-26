@@ -326,7 +326,7 @@ def _token(value: object) -> str:
 @lru_cache(maxsize=256)
 def _english_weapon_name(value: str) -> str | None:
     try:
-        from .references import get_game_record
+        from ..data.references import get_game_record
         record = get_game_record("weapons", value)
         english = get_game_record("weapons", record["id"], language="en")
         return str(english.get("name") or "")

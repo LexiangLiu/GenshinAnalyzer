@@ -8,11 +8,11 @@ from functools import lru_cache
 from math import exp, expm1, fsum, isfinite, log, log1p
 from typing import Sequence
 
-from .build_objective import BuildObjective, as_decimal, character_weapon_panel
-from .equipment import set_effects
-from .game_data import DATA, DOMAINS, MAIN_VALUES, SETS, SUB_VALUES, lookup
-from .models import Artifact
-from .roll_probability import probabilities, roll_groups, roll_outcomes
+from ..core.equipment import set_effects
+from ..core.models import Artifact
+from ..core.roll_probability import probabilities, roll_groups, roll_outcomes
+from ..damage.build_objective import BuildObjective, as_decimal, character_weapon_panel
+from ..data.game_data import DATA, DOMAINS, MAIN_VALUES, SETS, SUB_VALUES, lookup
 
 
 _SLOTS = tuple(DATA["slot_weights"])

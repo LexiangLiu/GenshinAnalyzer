@@ -6,9 +6,9 @@ import json
 from hashlib import sha256
 from math import isclose, isfinite
 
-from .game_data import character_profile
-from .models import Artifact, Enhancement, Roll
-from .simulation import Simulator
+from ..core.models import Artifact, Enhancement, Roll
+from ..core.simulation import Simulator
+from ..data.game_data import character_profile
 
 
 _STATS = {
