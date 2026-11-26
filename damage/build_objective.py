@@ -6,8 +6,8 @@ import ast
 import re
 from decimal import Decimal, DecimalException
 
-from ..data.game_data import MAIN_VALUES, SETS, SUB_VALUES
-from ..data.references import get_game_record, get_game_stats
+from data.game_data import MAIN_VALUES, SETS, SUB_VALUES
+from data.references import get_game_record, get_game_stats
 
 
 _CORE = ("HP", "ATK", "DEF")

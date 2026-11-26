@@ -16,7 +16,7 @@ assert.ok(gameVersion, 'The upstream package must declare its game version.');
 const rawPath = resolve(packagePath, 'src/min/data.min.json');
 const upstream = require(rawPath);
 const design = require(resolve(packagePath, 'src/design.json'));
-const output = resolve(__dirname, '../genshin_simulator/data/reference_data');
+const output = resolve(__dirname, '../data/reference_data');
 const languages = {zh: 'ChineseSimplified', en: 'English'};
 const englishOnly = new Set(['elements', 'rarity', 'weaponmaterialtypes', 'talentmaterialtypes']);
 const updateNotice = 'https://ys.mihoyo.com/main/news/detail/167205';

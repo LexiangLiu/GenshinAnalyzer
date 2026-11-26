@@ -7,7 +7,7 @@ Run from the ArtifactSimulator directory:
 The script probes the pinned Genshin Optimizer bundle for every local
 character, fits a single-hit scalar model around a level-90 / C0 / 10-10-10
 scenario, validates the fit on random artifact-sized stat changes, and writes
-``genshin_simulator/damage/character_models.json``.  It is a build-time tool; normal use of
+``damage/character_models.json``.  It is a build-time tool; normal use of
 the simulator only reads the generated JSON.
 """
 
@@ -31,16 +31,16 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from genshin_simulator.damage.build_objective import character_weapon_panel  # noqa: E402
-from genshin_simulator.damage.character_models import (  # noqa: E402
+from damage.build_objective import character_weapon_panel  # noqa: E402
+from damage.character_models import (  # noqa: E402
     build_expression, model_from_spec, resolve_set_effects,
 )
-from genshin_simulator.data.game_data import SETS  # noqa: E402
+from data.game_data import SETS  # noqa: E402
 
 
-BRIDGE = ROOT / "genshin_simulator" / "damage" / "go_damage" / "bridge.mjs"
-REFERENCE = ROOT / "genshin_simulator" / "data" / "reference_data"
-OUTPUT = ROOT / "genshin_simulator" / "damage" / "character_models.json"
+BRIDGE = ROOT / "damage" / "go_damage" / "bridge.mjs"
+REFERENCE = ROOT / "data" / "reference_data"
+OUTPUT = ROOT / "damage" / "character_models.json"
 
 TALENTS = {"auto": 10, "skill": 10, "burst": 10}
 BASE_LEVEL = 90

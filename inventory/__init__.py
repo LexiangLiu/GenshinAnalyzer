@@ -8,11 +8,11 @@ from math import isfinite
 from pathlib import Path
 from uuid import uuid4
 
-from ..core.equipment import loadout
-from ..core.models import Artifact
-from ..core.scoring import score_weights
-from ..core.simulation import Simulator
-from ..data.game_data import character_profile, set_id
+from core.equipment import loadout
+from core.models import Artifact
+from core.scoring import score_weights
+from core.simulation import Simulator
+from data.game_data import character_profile, set_id
 
 
 _DEFAULTS = {"language": "zh", "score_rules": ["default"], "high_score": 35}

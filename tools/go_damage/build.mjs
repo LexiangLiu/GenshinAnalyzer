@@ -42,7 +42,7 @@ const result = await build({
   banner: { js: '// Generated from Genshin Optimizer and the ArtifactSimulator adapter. See adjacent MIT notices.' },
 })
 const output = result.outputFiles[0].contents
-const runtime = resolve(directory, '../../genshin_simulator/damage/go_damage')
+const runtime = resolve(directory, '../../damage/go_damage')
 mkdirSync(runtime, { recursive: true })
 writeFileSync(join(runtime, 'bridge.mjs'), output)
 writeFileSync(join(runtime, 'LICENSE-genshin-optimizer.txt'), readFileSync(join(upstream, 'LICENSE')))

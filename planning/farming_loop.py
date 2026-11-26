@@ -17,14 +17,14 @@ from dataclasses import dataclass, replace
 from math import isfinite
 from typing import Sequence
 
-from ..core.models import Artifact
-from ..core.simulation import Simulator
-from ..damage.damage_models import DamageModel
-from ..data.game_data import DOMAINS, lookup
-from ..inventory import Inventory
-from ..optimization.loadout_optimizer import Loadout, LoadoutPiece
-from ..optimization.party_optimizer import PartyMember
-from ..optimization.weapon_optimizer import (
+from core.models import Artifact
+from core.simulation import Simulator
+from damage.damage_models import DamageModel
+from data.game_data import DOMAINS, lookup
+from inventory import Inventory
+from optimization.loadout_optimizer import Loadout, LoadoutPiece
+from optimization.party_optimizer import PartyMember
+from optimization.weapon_optimizer import (
     WeaponChoice, WeaponMember, WeaponOption, evaluate_member_weapon,
     optimize_weapons_and_artifacts,
 )

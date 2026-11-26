@@ -21,9 +21,9 @@ from dataclasses import dataclass
 from math import isfinite
 from typing import Mapping, Sequence
 
-from ..damage.build_objective import character_weapon_panel
-from ..damage.damage_models import DamageModel
-from ..data.game_data import SETS, lookup
+from damage.build_objective import character_weapon_panel
+from damage.damage_models import DamageModel
+from data.game_data import SETS, lookup
 from .loadout_optimizer import Loadout, LoadoutPiece, evaluate_loadout, optimize_loadout
 
 
@@ -72,7 +72,7 @@ class PartyMember:
         if fixed is not None:
             if self.weapon is None:
                 raise ValueError(f"{self.label} 的模型 {self.model.key} 需要武器「{fixed}」")
-            from ..damage.character_models import weapon_matches
+            from damage.character_models import weapon_matches
             if not weapon_matches(self.weapon.get("id"), fixed):
                 raise ValueError(f"{self.label} 的模型 {self.model.key} 只覆盖武器「{fixed}」")
         stats, _ = character_weapon_panel(self.character, self.weapon, bonus)
@@ -376,7 +376,7 @@ def optimize_party(
         if isinstance(item, LoadoutPiece):
             normalized_pieces.append(item)
         else:
-            from ..core.models import Artifact
+            from core.models import Artifact
             if isinstance(item, Artifact):
                 normalized_pieces.append(LoadoutPiece(item))
             else:

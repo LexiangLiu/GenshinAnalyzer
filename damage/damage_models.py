@@ -13,7 +13,7 @@ from math import isfinite
 from typing import Mapping
 
 from .build_objective import BuildObjective
-from ..data.game_data import character_profile
+from data.game_data import character_profile
 
 
 @dataclass(frozen=True)

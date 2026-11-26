@@ -8,7 +8,7 @@ from functools import lru_cache
 from itertools import permutations
 from math import lcm
 
-from ..data.game_data import DATA, SUB_VALUES
+from data.game_data import DATA, SUB_VALUES
 
 
 def probabilities(weights):

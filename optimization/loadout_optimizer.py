@@ -8,11 +8,11 @@ from functools import lru_cache
 from math import inf
 from typing import Mapping, Sequence
 
-from ..core.equipment import set_effects
-from ..core.models import Artifact
-from ..damage.build_objective import as_decimal
-from ..damage.damage_models import DamageModel
-from ..data.game_data import SETS, lookup
+from core.equipment import set_effects
+from core.models import Artifact
+from damage.build_objective import as_decimal
+from damage.damage_models import DamageModel
+from data.game_data import SETS, lookup
 
 
 _SLOTS = ("FLOWER", "PLUME", "SANDS", "GOBLET", "CIRCLET")

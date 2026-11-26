@@ -15,14 +15,14 @@ from __future__ import annotations
 from math import isfinite, prod
 from typing import Sequence
 
-from ..core.models import Artifact
-from ..core.resin import estimate_first_upgrade
-from ..damage.build_objective import character_weapon_panel
-from ..damage.character_models import catalog_metadata
-from ..damage.damage_models import farming_substats
-from ..data.game_data import DOMAINS, MAIN_VALUES, SETS, SUB_VALUES, lookup
-from ..optimization.loadout_optimizer import LoadoutPiece, evaluate_loadout
-from ..optimization.party_optimizer import PartyMember, optimize_party
+from core.models import Artifact
+from core.resin import estimate_first_upgrade
+from damage.build_objective import character_weapon_panel
+from damage.character_models import catalog_metadata
+from damage.damage_models import farming_substats
+from data.game_data import DOMAINS, MAIN_VALUES, SETS, SUB_VALUES, lookup
+from optimization.loadout_optimizer import LoadoutPiece, evaluate_loadout
+from optimization.party_optimizer import PartyMember, optimize_party
 from .farming import analyze_farming
 
 

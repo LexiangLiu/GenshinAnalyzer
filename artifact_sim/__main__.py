@@ -11,11 +11,11 @@ from . import (
     Artifact, Inventory, LoadoutPiece, PartyMember, Simulator, analyze_farming, auto_main_stats,
     catalog, characters, get_damage_model, loadout, optimize_party, plan_party, plan_single_character,
 )
-from genshin_simulator.damage.character_models import catalog_available, catalog_spec
-from genshin_simulator.damage import calculate_damage, damage_engine_info, list_damage_formulas
-from genshin_simulator.data.game_data import SETS, character_profile, lookup
-from genshin_simulator.inventory.legacy import legacy_backup
-from genshin_simulator.data.references import game_data_info, get_character_profile, get_game_record, get_game_stats, list_game_records
+from damage.character_models import catalog_available, catalog_spec
+from damage import calculate_damage, damage_engine_info, list_damage_formulas
+from data.game_data import SETS, character_profile, lookup
+from inventory.legacy import legacy_backup
+from data.references import game_data_info, get_character_profile, get_game_record, get_game_stats, list_game_records
 
 
 def _read_artifact(path: str) -> Artifact:
@@ -283,7 +283,7 @@ def _models_parser(commands):
 
 
 def _models_command(args):
-    from genshin_simulator.damage.damage_models import available_models
+    from damage.damage_models import available_models
     catalog_rows = catalog_available()
     for key, row in available_models().items():
         catalog_rows.setdefault(key, {**row, "accuracy": "hand-written"})
