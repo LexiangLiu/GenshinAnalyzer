@@ -1,0 +1,51 @@
+{
+  "character": {
+    "id": "Neuvillette",
+    "level": 90
+  },
+  "weapon": {
+    "id": "Tome of the Eternal Flow",
+    "level": 90
+  },
+  "objective": "HP * (1 + (42 + 15 * SET_15031_2 + HYDRO_DMG_BONUS) / 100) * (1 + min(100, CRIT_RATE + 36 * SET_15031_4) * CRIT_DMG / 10000)",
+  "bonus_stats": {
+    "HP_PERCENT": 16
+  },
+  "target_four_piece_set": 15031,
+  "resin": 2000,
+  "five_star_per_claim": {
+    "1": 1
+  },
+  "min_gain_pct_per_100_resin": 0.1,
+  "main_stats": {
+    "FLOWER": [
+      "HP"
+    ],
+    "PLUME": [
+      "ATK"
+    ],
+    "SANDS": [
+      "HP_PERCENT"
+    ],
+    "GOBLET": [
+      "HYDRO_DMG_BONUS"
+    ],
+    "CIRCLET": [
+      "CRIT_RATE"
+    ]
+  },
+  "report_substats": [
+    "HP",
+    "HP_PERCENT",
+    "CRIT_RATE",
+    "CRIT_DMG",
+    "ENERGY_RECHARGE"
+  ],
+  "equipped": [
+    {"schema_version": 1, "set_id": 15031, "slot": "FLOWER", "main_stat": "HP", "initial_count": 3, "initial_rolls": [{"stat": "CRIT_RATE", "tier": 2}, {"stat": "CRIT_DMG", "tier": 2}, {"stat": "HP_PERCENT", "tier": 3}, {"stat": "ENERGY_RECHARGE", "tier": 1}], "level": 20, "enhancements": [{"level": 8, "slot": 2, "tier": 2}, {"level": 12, "slot": 0, "tier": 3}, {"level": 16, "slot": 3, "tier": 2}, {"level": 20, "slot": 2, "tier": 4}]},
+    {"schema_version": 1, "set_id": 15031, "slot": "PLUME", "main_stat": "ATK", "initial_count": 3, "initial_rolls": [{"stat": "CRIT_RATE", "tier": 2}, {"stat": "CRIT_DMG", "tier": 1}, {"stat": "HP_PERCENT", "tier": 2}, {"stat": "ENERGY_RECHARGE", "tier": 3}], "level": 20, "enhancements": [{"level": 8, "slot": 3, "tier": 2}, {"level": 12, "slot": 1, "tier": 3}, {"level": 16, "slot": 1, "tier": 4}, {"level": 20, "slot": 1, "tier": 1}]},
+    {"schema_version": 1, "set_id": 15031, "slot": "SANDS", "main_stat": "HP_PERCENT", "initial_count": 4, "initial_rolls": [{"stat": "CRIT_RATE", "tier": 2}, {"stat": "CRIT_DMG", "tier": 4}, {"stat": "ENERGY_RECHARGE", "tier": 4}, {"stat": "ATK_PERCENT", "tier": 3}], "level": 20, "enhancements": [{"level": 4, "slot": 2, "tier": 4}, {"level": 8, "slot": 2, "tier": 4}, {"level": 12, "slot": 3, "tier": 2}, {"level": 16, "slot": 2, "tier": 1}, {"level": 20, "slot": 2, "tier": 3}]},
+    {"schema_version": 1, "set_id": 15048, "slot": "GOBLET", "main_stat": "HYDRO_DMG_BONUS", "initial_count": 4, "initial_rolls": [{"stat": "CRIT_RATE", "tier": 4}, {"stat": "CRIT_DMG", "tier": 1}, {"stat": "HP_PERCENT", "tier": 4}, {"stat": "ENERGY_RECHARGE", "tier": 1}], "level": 20, "enhancements": [{"level": 4, "slot": 2, "tier": 4}, {"level": 8, "slot": 3, "tier": 3}, {"level": 12, "slot": 0, "tier": 4}, {"level": 16, "slot": 0, "tier": 1}, {"level": 20, "slot": 3, "tier": 3}]},
+    {"schema_version": 1, "set_id": 15031, "slot": "CIRCLET", "main_stat": "CRIT_RATE", "initial_count": 3, "initial_rolls": [{"stat": "CRIT_DMG", "tier": 2}, {"stat": "HP_PERCENT", "tier": 3}, {"stat": "ENERGY_RECHARGE", "tier": 2}, {"stat": "ATK_PERCENT", "tier": 2}], "level": 20, "enhancements": [{"level": 8, "slot": 1, "tier": 4}, {"level": 12, "slot": 1, "tier": 3}, {"level": 16, "slot": 3, "tier": 4}, {"level": 20, "slot": 0, "tier": 2}]}
+  ]
+}

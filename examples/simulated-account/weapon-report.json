@@ -1,0 +1,3403 @@
+{
+  "account": {
+    "artifact_count": 1500,
+    "weapon_count": 8,
+    "roster": [
+      "Arlecchino",
+      "Raiden Shogun",
+      "Furina",
+      "Kamisato Ayaka"
+    ]
+  },
+  "totals": {
+    "current": 52875.42003232015,
+    "optimal": 56403.83934372506,
+    "gain_pct": 6.6730804393575704
+  },
+  "public_weapons": [
+    {
+      "name": "Crimson Moon's Semblance",
+      "weapon_type": "WEAPON_POLE",
+      "level": 90,
+      "refinement": 1,
+      "panel_bonus": {
+        "ATK_PERCENT": 15.0
+      },
+      "dmg_bonus": 36.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst",
+        "charged",
+        "normal",
+        "plunge",
+        "skill"
+      ],
+      "notes": "精一：攻击力+15%，生命之契≥30% 时增伤+36%"
+    },
+    {
+      "name": "Engulfing Lightning",
+      "weapon_type": "WEAPON_POLE",
+      "level": 90,
+      "refinement": 1,
+      "panel_bonus": {
+        "ATK_PERCENT": 28.0
+      },
+      "dmg_bonus": 0.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst",
+        "charged",
+        "normal",
+        "plunge",
+        "skill"
+      ],
+      "notes": "精一：按充能折算攻击力，实验按约 200% 充能给 28% 攻击力"
+    },
+    {
+      "name": "\"The Catch\"",
+      "weapon_type": "WEAPON_POLE",
+      "level": 90,
+      "refinement": 5,
+      "panel_bonus": {},
+      "dmg_bonus": 32.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst"
+      ],
+      "notes": "精五：元素爆发增伤+32%，仅对爆发节点生效"
+    },
+    {
+      "name": "Deathmatch",
+      "weapon_type": "WEAPON_POLE",
+      "level": 90,
+      "refinement": 5,
+      "panel_bonus": {
+        "ATK_PERCENT": 32.0
+      },
+      "dmg_bonus": 0.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst",
+        "charged",
+        "normal",
+        "plunge",
+        "skill"
+      ],
+      "notes": "精五：按少敌场景近似攻击力+32%"
+    },
+    {
+      "name": "Splendor of Tranquil Waters",
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "level": 90,
+      "refinement": 1,
+      "panel_bonus": {
+        "HP_PERCENT": 16.0
+      },
+      "dmg_bonus": 24.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst",
+        "charged",
+        "normal",
+        "plunge",
+        "skill"
+      ],
+      "notes": "精一：生命值+16%，生命变化后增伤按满层近似+24%"
+    },
+    {
+      "name": "Mistsplitter Reforged",
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "level": 90,
+      "refinement": 1,
+      "panel_bonus": {},
+      "dmg_bonus": 24.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst",
+        "charged",
+        "normal",
+        "plunge",
+        "skill"
+      ],
+      "notes": "精一：元素伤害加成按两层近似+24%"
+    },
+    {
+      "name": "Amenoma Kageuchi",
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "level": 90,
+      "refinement": 5,
+      "panel_bonus": {},
+      "dmg_bonus": 0.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst",
+        "charged",
+        "normal",
+        "plunge",
+        "skill"
+      ],
+      "notes": "精五：主要提供回能，未计增伤"
+    },
+    {
+      "name": "Wolf-Fang",
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "level": 90,
+      "refinement": 5,
+      "panel_bonus": {},
+      "dmg_bonus": 32.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst",
+        "skill"
+      ],
+      "notes": "精五：战技/爆发增伤+32%（实验近似）"
+    }
+  ],
+  "members": [
+    {
+      "name": "阿蕾奇诺",
+      "character": "Arlecchino",
+      "weapon": {
+        "name": "Crimson Moon's Semblance",
+        "weapon_type": "WEAPON_POLE",
+        "level": 90,
+        "refinement": 1,
+        "panel_bonus": {
+          "ATK_PERCENT": 15.0
+        },
+        "dmg_bonus": 36.0,
+        "crit_rate": 0.0,
+        "crit_dmg": 0.0,
+        "applies_to": [
+          "burst",
+          "charged",
+          "normal",
+          "plunge",
+          "skill"
+        ],
+        "notes": "精一：攻击力+15%，生命之契≥30% 时增伤+36%"
+      },
+      "current_weapon": "Crimson Moon's Semblance",
+      "current_damage": 35506.24149057923,
+      "damage": 38199.68615944704,
+      "gain_pct": 7.5858343654381155,
+      "independent_damage": 38199.68615944704,
+      "target_four_piece_set": {
+        "id": 15035,
+        "name": "谐律异想断章"
+      },
+      "set_names": [
+        "谐律异想断章",
+        "谐律异想断章",
+        "谐律异想断章",
+        "谐律异想断章",
+        "饰金之梦"
+      ],
+      "loadout": {
+        "damage": 38199.68615944704,
+        "pieces": [
+          {
+            "slot": "FLOWER",
+            "id": "e7b3e77a-ee50-4927-b397-93f843c3f079",
+            "set_name": "谐律异想断章",
+            "piece_name": "谐律交响的前奏",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15035,
+              "slot": "FLOWER",
+              "main_stat": "HP",
+              "initial_count": 4,
+              "initial_rolls": [
+                {
+                  "stat": "CRIT_RATE",
+                  "tier": 4
+                },
+                {
+                  "stat": "DEF_PERCENT",
+                  "tier": 2
+                },
+                {
+                  "stat": "ELEMENTAL_MASTERY",
+                  "tier": 2
+                },
+                {
+                  "stat": "CRIT_DMG",
+                  "tier": 1
+                }
+              ],
+              "level": 8,
+              "enhancements": [
+                {
+                  "level": 4,
+                  "slot": 0,
+                  "tier": 2
+                },
+                {
+                  "level": 8,
+                  "slot": 3,
+                  "tier": 3
+                }
+              ]
+            },
+            "main_value": 2342,
+            "active_substats": {
+              "CRIT_RATE": 7.0,
+              "DEF_PERCENT": 5.83,
+              "ELEMENTAL_MASTERY": 18.65,
+              "CRIT_DMG": 12.43
+            },
+            "pending_substat": null,
+            "crit_value": 26.43,
+            "score": 26.43,
+            "history": [
+              {
+                "level": 4,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 2,
+                "value": 3.11
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "CRIT_DMG",
+                "tier": 3,
+                "value": 6.99
+              }
+            ]
+          },
+          {
+            "slot": "PLUME",
+            "id": "8a79bb92-cfee-4e19-81a3-433b75eb8858",
+            "set_name": "谐律异想断章",
+            "piece_name": "古海玄幽的夜想",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15035,
+              "slot": "PLUME",
+              "main_stat": "ATK",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "CRIT_DMG",
+                  "tier": 2
+                },
+                {
+                  "stat": "ATK_PERCENT",
+                  "tier": 4
+                },
+                {
+                  "stat": "HP",
+                  "tier": 3
+                },
+                {
+                  "stat": "ELEMENTAL_MASTERY",
+                  "tier": 2
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 8,
+                  "slot": 1,
+                  "tier": 3
+                },
+                {
+                  "level": 12,
+                  "slot": 2,
+                  "tier": 2
+                },
+                {
+                  "level": 16,
+                  "slot": 3,
+                  "tier": 3
+                },
+                {
+                  "level": 20,
+                  "slot": 2,
+                  "tier": 2
+                }
+              ]
+            },
+            "main_value": 311,
+            "active_substats": {
+              "CRIT_DMG": 6.22,
+              "ATK_PERCENT": 11.08,
+              "HP": 746.88,
+              "ELEMENTAL_MASTERY": 39.63
+            },
+            "pending_substat": null,
+            "crit_value": 6.22,
+            "score": 21.1226,
+            "history": [
+              {
+                "level": 4,
+                "kind": "activate",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 2,
+                "value": 18.65
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "ATK_PERCENT",
+                "tier": 3,
+                "value": 5.25
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "HP",
+                "tier": 2,
+                "value": 239
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 3,
+                "value": 20.98
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "HP",
+                "tier": 2,
+                "value": 239
+              }
+            ]
+          },
+          {
+            "slot": "SANDS",
+            "id": "051c9903-cbd6-44d6-a07d-49eba47165ab",
+            "set_name": "谐律异想断章",
+            "piece_name": "命途轮转的谐谑",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15035,
+              "slot": "SANDS",
+              "main_stat": "ATK_PERCENT",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "ELEMENTAL_MASTERY",
+                  "tier": 3
+                },
+                {
+                  "stat": "ENERGY_RECHARGE",
+                  "tier": 2
+                },
+                {
+                  "stat": "CRIT_RATE",
+                  "tier": 2
+                },
+                {
+                  "stat": "DEF",
+                  "tier": 1
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 8,
+                  "slot": 2,
+                  "tier": 1
+                },
+                {
+                  "level": 12,
+                  "slot": 3,
+                  "tier": 4
+                },
+                {
+                  "level": 16,
+                  "slot": 2,
+                  "tier": 4
+                },
+                {
+                  "level": 20,
+                  "slot": 1,
+                  "tier": 1
+                }
+              ]
+            },
+            "main_value": 46.6,
+            "active_substats": {
+              "ELEMENTAL_MASTERY": 20.98,
+              "ENERGY_RECHARGE": 9.71,
+              "CRIT_RATE": 9.72,
+              "DEF": 39.35
+            },
+            "pending_substat": null,
+            "crit_value": 19.44,
+            "score": 19.44,
+            "history": [
+              {
+                "level": 4,
+                "kind": "activate",
+                "stat": "DEF",
+                "tier": 1,
+                "value": 16.2
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 1,
+                "value": 2.72
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "DEF",
+                "tier": 4,
+                "value": 23.15
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 4,
+                "value": 3.89
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "ENERGY_RECHARGE",
+                "tier": 1,
+                "value": 4.53
+              }
+            ]
+          },
+          {
+            "slot": "GOBLET",
+            "id": "6ddb1ba6-9385-4cc3-bbd9-832b0c8c9606",
+            "set_name": "谐律异想断章",
+            "piece_name": "灵露倾洒的狂诗",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15035,
+              "slot": "GOBLET",
+              "main_stat": "PYRO_DMG_BONUS",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "ATK_PERCENT",
+                  "tier": 1
+                },
+                {
+                  "stat": "CRIT_DMG",
+                  "tier": 2
+                },
+                {
+                  "stat": "CRIT_RATE",
+                  "tier": 4
+                },
+                {
+                  "stat": "DEF",
+                  "tier": 3
+                }
+              ],
+              "level": 16,
+              "enhancements": [
+                {
+                  "level": 8,
+                  "slot": 2,
+                  "tier": 2
+                },
+                {
+                  "level": 12,
+                  "slot": 0,
+                  "tier": 1
+                },
+                {
+                  "level": 16,
+                  "slot": 1,
+                  "tier": 2
+                }
+              ]
+            },
+            "main_value": 38.7,
+            "active_substats": {
+              "ATK_PERCENT": 8.16,
+              "CRIT_DMG": 12.44,
+              "CRIT_RATE": 7.0,
+              "DEF": 20.83
+            },
+            "pending_substat": null,
+            "crit_value": 26.44,
+            "score": 37.4152,
+            "history": [
+              {
+                "level": 4,
+                "kind": "activate",
+                "stat": "DEF",
+                "tier": 3,
+                "value": 20.83
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 2,
+                "value": 3.11
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "ATK_PERCENT",
+                "tier": 1,
+                "value": 4.08
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "CRIT_DMG",
+                "tier": 2,
+                "value": 6.22
+              }
+            ]
+          },
+          {
+            "slot": "CIRCLET",
+            "id": "a86ebf3b-1bb3-4d51-b956-6ba4a153b9ad",
+            "set_name": "饰金之梦",
+            "piece_name": "沙王的投影",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15026,
+              "slot": "CIRCLET",
+              "main_stat": "CRIT_DMG",
+              "initial_count": 4,
+              "initial_rolls": [
+                {
+                  "stat": "DEF",
+                  "tier": 2
+                },
+                {
+                  "stat": "ATK_PERCENT",
+                  "tier": 3
+                },
+                {
+                  "stat": "ATK",
+                  "tier": 3
+                },
+                {
+                  "stat": "CRIT_RATE",
+                  "tier": 1
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 4,
+                  "slot": 1,
+                  "tier": 4
+                },
+                {
+                  "level": 8,
+                  "slot": 2,
+                  "tier": 4
+                },
+                {
+                  "level": 12,
+                  "slot": 3,
+                  "tier": 3
+                },
+                {
+                  "level": 16,
+                  "slot": 2,
+                  "tier": 4
+                },
+                {
+                  "level": 20,
+                  "slot": 1,
+                  "tier": 1
+                }
+              ]
+            },
+            "main_value": 62.2,
+            "active_substats": {
+              "DEF": 18.52,
+              "ATK_PERCENT": 15.16,
+              "ATK": 56.41,
+              "CRIT_RATE": 6.22
+            },
+            "pending_substat": null,
+            "crit_value": 12.44,
+            "score": 40.1635,
+            "history": [
+              {
+                "level": 4,
+                "kind": "increase",
+                "stat": "ATK_PERCENT",
+                "tier": 4,
+                "value": 5.83
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "ATK",
+                "tier": 4,
+                "value": 19.45
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 3,
+                "value": 3.5
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "ATK",
+                "tier": 4,
+                "value": 19.45
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "ATK_PERCENT",
+                "tier": 1,
+                "value": 4.08
+              }
+            ]
+          }
+        ],
+        "set_counts": {
+          "15026": 1,
+          "15035": 4
+        },
+        "set_names": {
+          "15035": "谐律异想断章",
+          "15026": "饰金之梦"
+        },
+        "set_flags": [
+          "SET_15035_2",
+          "SET_15035_4"
+        ],
+        "active_set_bonuses": [
+          {
+            "set_id": 15035,
+            "name": "谐律异想断章",
+            "pieces": 2,
+            "effect": "攻击力提高18%。"
+          },
+          {
+            "set_id": 15035,
+            "name": "谐律异想断章",
+            "pieces": 4,
+            "effect": "生命之契的数值提升或降低时，角色造成的伤害提升18%，该效果持续6秒，至多叠加3次。"
+          }
+        ],
+        "panel_stats": {
+          "ANEMO_DMG_BONUS": 0.0,
+          "ANEMO_RES": 0.0,
+          "ATK": 367.41,
+          "ATK_PERCENT": 114.0,
+          "BASE_ATK": 1016.3596333999999,
+          "BASE_DEF": 764.7115981500001,
+          "BASE_HP": 13103.1246236,
+          "CRIT_DMG": 181.69,
+          "CRIT_RATE": 56.9912,
+          "CRYO_DMG_BONUS": 0.0,
+          "CRYO_RES": 0.0,
+          "DEF": 78.7,
+          "DEF_PERCENT": 5.83,
+          "DENDRO_DMG_BONUS": 0.0,
+          "DENDRO_RES": 0.0,
+          "ELECTRO_DMG_BONUS": 0.0,
+          "ELECTRO_RES": 0.0,
+          "ELEMENTAL_MASTERY": 79.26,
+          "ENERGY_RECHARGE": 109.71,
+          "GEO_DMG_BONUS": 0.0,
+          "GEO_RES": 0.0,
+          "HEALING_BONUS": 0.0,
+          "HP": 3088.88,
+          "HP_PERCENT": 0.0,
+          "HYDRO_DMG_BONUS": 0.0,
+          "HYDRO_RES": 0.0,
+          "PHYSICAL_DMG_BONUS": 0.0,
+          "PYRO_DMG_BONUS": 38.7,
+          "PYRO_RES": 0.0,
+          "SHIELD_STRENGTH": 0.0
+        },
+        "final_panel": {
+          "HP": 16192.0046236,
+          "ATK": 2542.4196154759998,
+          "DEF": 887.9942843221451,
+          "CRIT_RATE": 56.9912,
+          "CRIT_DMG": 181.69,
+          "ENERGY_RECHARGE": 109.71,
+          "ELEMENTAL_MASTERY": 79.26,
+          "HYDRO_DMG_BONUS": 0.0
+        }
+      },
+      "weapon_scores": [
+        {
+          "weapon": "Crimson Moon's Semblance",
+          "independent_damage": 38199.68615944704,
+          "passive": "精一：攻击力+15%，生命之契≥30% 时增伤+36%"
+        },
+        {
+          "weapon": "Deathmatch",
+          "independent_damage": 32486.625733982048,
+          "passive": "精五：按少敌场景近似攻击力+32%"
+        },
+        {
+          "weapon": "Engulfing Lightning",
+          "independent_damage": 27662.434195871843,
+          "passive": "精一：按充能折算攻击力，实验按约 200% 充能给 28% 攻击力"
+        },
+        {
+          "weapon": "\"The Catch\"",
+          "independent_damage": 22451.210841773493,
+          "passive": "精五：元素爆发增伤+32%，仅对爆发节点生效"
+        }
+      ]
+    },
+    {
+      "name": "雷电将军",
+      "character": "Raiden Shogun",
+      "weapon": {
+        "name": "Deathmatch",
+        "weapon_type": "WEAPON_POLE",
+        "level": 90,
+        "refinement": 5,
+        "panel_bonus": {
+          "ATK_PERCENT": 32.0
+        },
+        "dmg_bonus": 0.0,
+        "crit_rate": 0.0,
+        "crit_dmg": 0.0,
+        "applies_to": [
+          "burst",
+          "charged",
+          "normal",
+          "plunge",
+          "skill"
+        ],
+        "notes": "精五：按少敌场景近似攻击力+32%"
+      },
+      "current_weapon": "Engulfing Lightning",
+      "current_damage": 3626.1693396545106,
+      "damage": 3788.4549091113918,
+      "gain_pct": 4.475399636806343,
+      "independent_damage": 3788.4549091113918,
+      "target_four_piece_set": {
+        "id": 15020,
+        "name": "绝缘之旗印"
+      },
+      "set_names": [
+        "绝缘之旗印",
+        "染血的骑士道",
+        "绝缘之旗印",
+        "绝缘之旗印",
+        "绝缘之旗印"
+      ],
+      "loadout": {
+        "damage": 3788.4549091113918,
+        "pieces": [
+          {
+            "slot": "FLOWER",
+            "id": "9aed2106-eb26-43d8-97f9-283e70cb1519",
+            "set_name": "绝缘之旗印",
+            "piece_name": "明威之镡",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15020,
+              "slot": "FLOWER",
+              "main_stat": "HP",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "DEF_PERCENT",
+                  "tier": 4
+                },
+                {
+                  "stat": "ELEMENTAL_MASTERY",
+                  "tier": 4
+                },
+                {
+                  "stat": "CRIT_DMG",
+                  "tier": 3
+                },
+                {
+                  "stat": "DEF",
+                  "tier": 1
+                }
+              ],
+              "level": 0,
+              "enhancements": []
+            },
+            "main_value": 717,
+            "active_substats": {
+              "DEF_PERCENT": 7.29,
+              "ELEMENTAL_MASTERY": 23.31,
+              "CRIT_DMG": 6.99
+            },
+            "pending_substat": {
+              "stat": "DEF",
+              "tier": 1,
+              "value": 16.2,
+              "activates_at": 4
+            },
+            "crit_value": 6.99,
+            "score": 6.99,
+            "history": []
+          },
+          {
+            "slot": "PLUME",
+            "id": "a0d25f46-7c90-4ec2-9fca-ee30fbd6dfa5",
+            "set_name": "染血的骑士道",
+            "piece_name": "染血的黑之羽",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15008,
+              "slot": "PLUME",
+              "main_stat": "ATK",
+              "initial_count": 4,
+              "initial_rolls": [
+                {
+                  "stat": "CRIT_RATE",
+                  "tier": 2
+                },
+                {
+                  "stat": "ELEMENTAL_MASTERY",
+                  "tier": 3
+                },
+                {
+                  "stat": "ATK_PERCENT",
+                  "tier": 3
+                },
+                {
+                  "stat": "DEF_PERCENT",
+                  "tier": 1
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 4,
+                  "slot": 1,
+                  "tier": 4
+                },
+                {
+                  "level": 8,
+                  "slot": 1,
+                  "tier": 2
+                },
+                {
+                  "level": 12,
+                  "slot": 0,
+                  "tier": 4
+                },
+                {
+                  "level": 16,
+                  "slot": 2,
+                  "tier": 4
+                },
+                {
+                  "level": 20,
+                  "slot": 2,
+                  "tier": 3
+                }
+              ]
+            },
+            "main_value": 311,
+            "active_substats": {
+              "CRIT_RATE": 7.0,
+              "ELEMENTAL_MASTERY": 62.94,
+              "ATK_PERCENT": 16.33,
+              "DEF_PERCENT": 5.1
+            },
+            "pending_substat": null,
+            "crit_value": 14.0,
+            "score": 35.96385,
+            "history": [
+              {
+                "level": 4,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 4,
+                "value": 23.31
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 2,
+                "value": 18.65
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 4,
+                "value": 3.89
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "ATK_PERCENT",
+                "tier": 4,
+                "value": 5.83
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "ATK_PERCENT",
+                "tier": 3,
+                "value": 5.25
+              }
+            ]
+          },
+          {
+            "slot": "SANDS",
+            "id": "289d82e6-c0cd-4711-afa1-c7234de4dfe6",
+            "set_name": "绝缘之旗印",
+            "piece_name": "雷云之笼",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15020,
+              "slot": "SANDS",
+              "main_stat": "HP_PERCENT",
+              "initial_count": 4,
+              "initial_rolls": [
+                {
+                  "stat": "CRIT_DMG",
+                  "tier": 1
+                },
+                {
+                  "stat": "HP",
+                  "tier": 1
+                },
+                {
+                  "stat": "ATK",
+                  "tier": 4
+                },
+                {
+                  "stat": "ATK_PERCENT",
+                  "tier": 1
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 4,
+                  "slot": 1,
+                  "tier": 1
+                },
+                {
+                  "level": 8,
+                  "slot": 2,
+                  "tier": 1
+                },
+                {
+                  "level": 12,
+                  "slot": 0,
+                  "tier": 2
+                },
+                {
+                  "level": 16,
+                  "slot": 0,
+                  "tier": 3
+                },
+                {
+                  "level": 20,
+                  "slot": 3,
+                  "tier": 2
+                }
+              ]
+            },
+            "main_value": 46.6,
+            "active_substats": {
+              "CRIT_DMG": 18.65,
+              "HP": 418.26,
+              "ATK": 33.07,
+              "ATK_PERCENT": 8.74
+            },
+            "pending_substat": null,
+            "crit_value": 18.65,
+            "score": 34.7044,
+            "history": [
+              {
+                "level": 4,
+                "kind": "increase",
+                "stat": "HP",
+                "tier": 1,
+                "value": 209.13
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "ATK",
+                "tier": 1,
+                "value": 13.62
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "CRIT_DMG",
+                "tier": 2,
+                "value": 6.22
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "CRIT_DMG",
+                "tier": 3,
+                "value": 6.99
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "ATK_PERCENT",
+                "tier": 2,
+                "value": 4.66
+              }
+            ]
+          },
+          {
+            "slot": "GOBLET",
+            "id": "885d5cbc-ef90-481a-87a3-6616434bed7b",
+            "set_name": "绝缘之旗印",
+            "piece_name": "绯花之壶",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15020,
+              "slot": "GOBLET",
+              "main_stat": "ELECTRO_DMG_BONUS",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "CRIT_RATE",
+                  "tier": 2
+                },
+                {
+                  "stat": "DEF",
+                  "tier": 3
+                },
+                {
+                  "stat": "ELEMENTAL_MASTERY",
+                  "tier": 1
+                },
+                {
+                  "stat": "ATK_PERCENT",
+                  "tier": 1
+                }
+              ],
+              "level": 16,
+              "enhancements": [
+                {
+                  "level": 8,
+                  "slot": 0,
+                  "tier": 1
+                },
+                {
+                  "level": 12,
+                  "slot": 3,
+                  "tier": 4
+                },
+                {
+                  "level": 16,
+                  "slot": 2,
+                  "tier": 4
+                }
+              ]
+            },
+            "main_value": 38.7,
+            "active_substats": {
+              "CRIT_RATE": 5.83,
+              "DEF": 20.83,
+              "ELEMENTAL_MASTERY": 39.63,
+              "ATK_PERCENT": 9.91
+            },
+            "pending_substat": null,
+            "crit_value": 11.66,
+            "score": 24.98895,
+            "history": [
+              {
+                "level": 4,
+                "kind": "activate",
+                "stat": "ATK_PERCENT",
+                "tier": 1,
+                "value": 4.08
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 1,
+                "value": 2.72
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "ATK_PERCENT",
+                "tier": 4,
+                "value": 5.83
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 4,
+                "value": 23.31
+              }
+            ]
+          },
+          {
+            "slot": "CIRCLET",
+            "id": "9c328d52-e8a3-4a69-b98e-2e4943b6a390",
+            "set_name": "绝缘之旗印",
+            "piece_name": "华饰之兜",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15020,
+              "slot": "CIRCLET",
+              "main_stat": "CRIT_DMG",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "ATK_PERCENT",
+                  "tier": 4
+                },
+                {
+                  "stat": "ENERGY_RECHARGE",
+                  "tier": 3
+                },
+                {
+                  "stat": "ATK",
+                  "tier": 2
+                },
+                {
+                  "stat": "ELEMENTAL_MASTERY",
+                  "tier": 4
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 8,
+                  "slot": 1,
+                  "tier": 2
+                },
+                {
+                  "level": 12,
+                  "slot": 3,
+                  "tier": 3
+                },
+                {
+                  "level": 16,
+                  "slot": 3,
+                  "tier": 4
+                },
+                {
+                  "level": 20,
+                  "slot": 0,
+                  "tier": 2
+                }
+              ]
+            },
+            "main_value": 62.2,
+            "active_substats": {
+              "ATK_PERCENT": 10.49,
+              "ENERGY_RECHARGE": 11.01,
+              "ATK": 15.56,
+              "ELEMENTAL_MASTERY": 67.6
+            },
+            "pending_substat": null,
+            "crit_value": 0.0,
+            "score": 16.13185,
+            "history": [
+              {
+                "level": 4,
+                "kind": "activate",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 4,
+                "value": 23.31
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "ENERGY_RECHARGE",
+                "tier": 2,
+                "value": 5.18
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 3,
+                "value": 20.98
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 4,
+                "value": 23.31
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "ATK_PERCENT",
+                "tier": 2,
+                "value": 4.66
+              }
+            ]
+          }
+        ],
+        "set_counts": {
+          "15008": 1,
+          "15020": 4
+        },
+        "set_names": {
+          "15020": "绝缘之旗印",
+          "15008": "染血的骑士道"
+        },
+        "set_flags": [
+          "SET_15020_2",
+          "SET_15020_4"
+        ],
+        "active_set_bonuses": [
+          {
+            "set_id": 15020,
+            "name": "绝缘之旗印",
+            "pieces": 2,
+            "effect": "元素充能效率提高20%。"
+          },
+          {
+            "set_id": 15020,
+            "name": "绝缘之旗印",
+            "pieces": 4,
+            "effect": "基于元素充能效率的25%，提高元素爆发造成的伤害。至多通过这种方式获得75%提升。"
+          }
+        ],
+        "panel_stats": {
+          "ANEMO_DMG_BONUS": 0.0,
+          "ANEMO_RES": 0.0,
+          "ATK": 359.63,
+          "ATK_PERCENT": 77.47,
+          "BASE_ATK": 791.6046663000001,
+          "BASE_DEF": 789.30533799,
+          "BASE_HP": 12907.189733140001,
+          "CRIT_DMG": 137.84,
+          "CRIT_RATE": 54.582,
+          "CRYO_DMG_BONUS": 0.0,
+          "CRYO_RES": 0.0,
+          "DEF": 20.83,
+          "DEF_PERCENT": 12.39,
+          "DENDRO_DMG_BONUS": 0.0,
+          "DENDRO_RES": 0.0,
+          "ELECTRO_DMG_BONUS": 38.7,
+          "ELECTRO_RES": 0.0,
+          "ELEMENTAL_MASTERY": 193.48,
+          "ENERGY_RECHARGE": 163.01,
+          "GEO_DMG_BONUS": 0.0,
+          "GEO_RES": 0.0,
+          "HEALING_BONUS": 0.0,
+          "HP": 1135.26,
+          "HP_PERCENT": 46.6,
+          "HYDRO_DMG_BONUS": 0.0,
+          "HYDRO_RES": 0.0,
+          "PHYSICAL_DMG_BONUS": 0.0,
+          "PYRO_DMG_BONUS": 0.0,
+          "PYRO_RES": 0.0,
+          "SHIELD_STRENGTH": 0.0
+        },
+        "final_panel": {
+          "HP": 20057.200148783242,
+          "ATK": 1764.4908012826102,
+          "DEF": 907.930269366961,
+          "CRIT_RATE": 54.582,
+          "CRIT_DMG": 137.84,
+          "ENERGY_RECHARGE": 163.01,
+          "ELEMENTAL_MASTERY": 193.48,
+          "HYDRO_DMG_BONUS": 0.0
+        }
+      },
+      "weapon_scores": [
+        {
+          "weapon": "Crimson Moon's Semblance",
+          "independent_damage": 4509.697984865193,
+          "passive": "精一：攻击力+15%，生命之契≥30% 时增伤+36%"
+        },
+        {
+          "weapon": "Deathmatch",
+          "independent_damage": 3788.4549091113918,
+          "passive": "精五：按少敌场景近似攻击力+32%"
+        },
+        {
+          "weapon": "Engulfing Lightning",
+          "independent_damage": 3576.44039112339,
+          "passive": "精一：按充能折算攻击力，实验按约 200% 充能给 28% 攻击力"
+        },
+        {
+          "weapon": "\"The Catch\"",
+          "independent_damage": 3351.3049443712807,
+          "passive": "精五：元素爆发增伤+32%，仅对爆发节点生效"
+        }
+      ]
+    },
+    {
+      "name": "芙宁娜",
+      "character": "Furina",
+      "weapon": {
+        "name": "Splendor of Tranquil Waters",
+        "weapon_type": "WEAPON_SWORD_ONE_HAND",
+        "level": 90,
+        "refinement": 1,
+        "panel_bonus": {
+          "HP_PERCENT": 16.0
+        },
+        "dmg_bonus": 24.0,
+        "crit_rate": 0.0,
+        "crit_dmg": 0.0,
+        "applies_to": [
+          "burst",
+          "charged",
+          "normal",
+          "plunge",
+          "skill"
+        ],
+        "notes": "精一：生命值+16%，生命变化后增伤按满层近似+24%"
+      },
+      "current_weapon": "Splendor of Tranquil Waters",
+      "current_damage": 5612.975257757012,
+      "damage": 5879.5634808159975,
+      "gain_pct": 4.7494993442304345,
+      "independent_damage": 5879.5634808159975,
+      "target_four_piece_set": {
+        "id": 15032,
+        "name": "黄金剧团"
+      },
+      "set_names": [
+        "黄金剧团",
+        "黄金剧团",
+        "黄金剧团",
+        "逐影猎人",
+        "黄金剧团"
+      ],
+      "loadout": {
+        "damage": 5879.5634808159975,
+        "pieces": [
+          {
+            "slot": "FLOWER",
+            "id": "130a5c66-4a45-487f-90d5-90f73164744c",
+            "set_name": "黄金剧团",
+            "piece_name": "黄金乐曲的变奏",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15032,
+              "slot": "FLOWER",
+              "main_stat": "HP",
+              "initial_count": 4,
+              "initial_rolls": [
+                {
+                  "stat": "ATK",
+                  "tier": 3
+                },
+                {
+                  "stat": "DEF",
+                  "tier": 3
+                },
+                {
+                  "stat": "DEF_PERCENT",
+                  "tier": 4
+                },
+                {
+                  "stat": "ENERGY_RECHARGE",
+                  "tier": 1
+                }
+              ],
+              "level": 16,
+              "enhancements": [
+                {
+                  "level": 4,
+                  "slot": 1,
+                  "tier": 3
+                },
+                {
+                  "level": 8,
+                  "slot": 2,
+                  "tier": 1
+                },
+                {
+                  "level": 12,
+                  "slot": 2,
+                  "tier": 1
+                },
+                {
+                  "level": 16,
+                  "slot": 3,
+                  "tier": 3
+                }
+              ]
+            },
+            "main_value": 3967,
+            "active_substats": {
+              "ATK": 17.51,
+              "DEF": 41.66,
+              "DEF_PERCENT": 17.49,
+              "ENERGY_RECHARGE": 10.36
+            },
+            "pending_substat": null,
+            "crit_value": 0.0,
+            "score": 2.2763,
+            "history": [
+              {
+                "level": 4,
+                "kind": "increase",
+                "stat": "DEF",
+                "tier": 3,
+                "value": 20.83
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "DEF_PERCENT",
+                "tier": 1,
+                "value": 5.1
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "DEF_PERCENT",
+                "tier": 1,
+                "value": 5.1
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "ENERGY_RECHARGE",
+                "tier": 3,
+                "value": 5.83
+              }
+            ]
+          },
+          {
+            "slot": "PLUME",
+            "id": "f1e6d8f2-da1a-4976-9947-42314808af1f",
+            "set_name": "黄金剧团",
+            "piece_name": "黄金飞鸟的落羽",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15032,
+              "slot": "PLUME",
+              "main_stat": "ATK",
+              "initial_count": 4,
+              "initial_rolls": [
+                {
+                  "stat": "ENERGY_RECHARGE",
+                  "tier": 1
+                },
+                {
+                  "stat": "HP_PERCENT",
+                  "tier": 4
+                },
+                {
+                  "stat": "DEF",
+                  "tier": 4
+                },
+                {
+                  "stat": "CRIT_RATE",
+                  "tier": 2
+                }
+              ],
+              "level": 0,
+              "enhancements": []
+            },
+            "main_value": 47,
+            "active_substats": {
+              "ENERGY_RECHARGE": 4.53,
+              "HP_PERCENT": 5.83,
+              "DEF": 23.15,
+              "CRIT_RATE": 3.11
+            },
+            "pending_substat": null,
+            "crit_value": 6.22,
+            "score": 6.22,
+            "history": []
+          },
+          {
+            "slot": "SANDS",
+            "id": "fa4a0a4d-18ab-469e-a5c4-67df0c680c5c",
+            "set_name": "黄金剧团",
+            "piece_name": "黄金时代的先声",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15032,
+              "slot": "SANDS",
+              "main_stat": "HP_PERCENT",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "DEF",
+                  "tier": 2
+                },
+                {
+                  "stat": "HP",
+                  "tier": 2
+                },
+                {
+                  "stat": "CRIT_DMG",
+                  "tier": 3
+                },
+                {
+                  "stat": "ELEMENTAL_MASTERY",
+                  "tier": 4
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 8,
+                  "slot": 3,
+                  "tier": 4
+                },
+                {
+                  "level": 12,
+                  "slot": 1,
+                  "tier": 1
+                },
+                {
+                  "level": 16,
+                  "slot": 3,
+                  "tier": 1
+                },
+                {
+                  "level": 20,
+                  "slot": 3,
+                  "tier": 3
+                }
+              ]
+            },
+            "main_value": 46.6,
+            "active_substats": {
+              "DEF": 18.52,
+              "HP": 448.13,
+              "CRIT_DMG": 6.99,
+              "ELEMENTAL_MASTERY": 83.92
+            },
+            "pending_substat": null,
+            "crit_value": 6.99,
+            "score": 6.99,
+            "history": [
+              {
+                "level": 4,
+                "kind": "activate",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 4,
+                "value": 23.31
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 4,
+                "value": 23.31
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "HP",
+                "tier": 1,
+                "value": 209.13
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 1,
+                "value": 16.32
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 3,
+                "value": 20.98
+              }
+            ]
+          },
+          {
+            "slot": "GOBLET",
+            "id": "13b980c7-8c67-4873-9377-b6a2e89210fb",
+            "set_name": "逐影猎人",
+            "piece_name": "遗忘的容器",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15031,
+              "slot": "GOBLET",
+              "main_stat": "HYDRO_DMG_BONUS",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "DEF_PERCENT",
+                  "tier": 4
+                },
+                {
+                  "stat": "ATK_PERCENT",
+                  "tier": 3
+                },
+                {
+                  "stat": "CRIT_RATE",
+                  "tier": 1
+                },
+                {
+                  "stat": "HP_PERCENT",
+                  "tier": 2
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 8,
+                  "slot": 1,
+                  "tier": 2
+                },
+                {
+                  "level": 12,
+                  "slot": 0,
+                  "tier": 1
+                },
+                {
+                  "level": 16,
+                  "slot": 3,
+                  "tier": 2
+                },
+                {
+                  "level": 20,
+                  "slot": 2,
+                  "tier": 3
+                }
+              ]
+            },
+            "main_value": 46.6,
+            "active_substats": {
+              "DEF_PERCENT": 12.39,
+              "ATK_PERCENT": 9.91,
+              "CRIT_RATE": 6.22,
+              "HP_PERCENT": 9.32
+            },
+            "pending_substat": null,
+            "crit_value": 12.44,
+            "score": 25.76895,
+            "history": [
+              {
+                "level": 4,
+                "kind": "activate",
+                "stat": "HP_PERCENT",
+                "tier": 2,
+                "value": 4.66
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "ATK_PERCENT",
+                "tier": 2,
+                "value": 4.66
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "DEF_PERCENT",
+                "tier": 1,
+                "value": 5.1
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "HP_PERCENT",
+                "tier": 2,
+                "value": 4.66
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 3,
+                "value": 3.5
+              }
+            ]
+          },
+          {
+            "slot": "CIRCLET",
+            "id": "ea51aaad-5d57-4523-8db7-bdb64834d1b4",
+            "set_name": "黄金剧团",
+            "piece_name": "黄金剧团的奖赏",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15032,
+              "slot": "CIRCLET",
+              "main_stat": "HP_PERCENT",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "ATK",
+                  "tier": 3
+                },
+                {
+                  "stat": "DEF_PERCENT",
+                  "tier": 4
+                },
+                {
+                  "stat": "ATK_PERCENT",
+                  "tier": 2
+                },
+                {
+                  "stat": "CRIT_DMG",
+                  "tier": 4
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 8,
+                  "slot": 0,
+                  "tier": 3
+                },
+                {
+                  "level": 12,
+                  "slot": 0,
+                  "tier": 2
+                },
+                {
+                  "level": 16,
+                  "slot": 3,
+                  "tier": 1
+                },
+                {
+                  "level": 20,
+                  "slot": 3,
+                  "tier": 1
+                }
+              ]
+            },
+            "main_value": 46.6,
+            "active_substats": {
+              "ATK": 50.58,
+              "DEF_PERCENT": 7.29,
+              "ATK_PERCENT": 4.66,
+              "CRIT_DMG": 18.65
+            },
+            "pending_substat": null,
+            "crit_value": 18.65,
+            "score": 31.4931,
+            "history": [
+              {
+                "level": 4,
+                "kind": "activate",
+                "stat": "CRIT_DMG",
+                "tier": 4,
+                "value": 7.77
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "ATK",
+                "tier": 3,
+                "value": 17.51
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "ATK",
+                "tier": 2,
+                "value": 15.56
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "CRIT_DMG",
+                "tier": 1,
+                "value": 5.44
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "CRIT_DMG",
+                "tier": 1,
+                "value": 5.44
+              }
+            ]
+          }
+        ],
+        "set_counts": {
+          "15031": 1,
+          "15032": 4
+        },
+        "set_names": {
+          "15032": "黄金剧团",
+          "15031": "逐影猎人"
+        },
+        "set_flags": [
+          "SET_15032_2",
+          "SET_15032_4"
+        ],
+        "active_set_bonuses": [
+          {
+            "set_id": 15032,
+            "name": "黄金剧团",
+            "pieces": 2,
+            "effect": "元素战技造成的伤害提升20%。"
+          },
+          {
+            "set_id": 15032,
+            "name": "黄金剧团",
+            "pieces": 4,
+            "effect": "元素战技造成的伤害提升25%；此外，处于队伍后台时，元素战技造成的伤害还将进一步提升25%，该效果将在登场后2秒移除。"
+          }
+        ],
+        "panel_stats": {
+          "ANEMO_DMG_BONUS": 0.0,
+          "ANEMO_RES": 0.0,
+          "ATK": 115.09,
+          "ATK_PERCENT": 14.57,
+          "BASE_ATK": 785.7917076,
+          "BASE_DEF": 695.5417048500001,
+          "BASE_HP": 15307.388350000001,
+          "CRIT_DMG": 163.8448,
+          "CRIT_RATE": 33.53,
+          "CRYO_DMG_BONUS": 0.0,
+          "CRYO_RES": 0.0,
+          "DEF": 83.33,
+          "DEF_PERCENT": 37.17,
+          "DENDRO_DMG_BONUS": 0.0,
+          "DENDRO_RES": 0.0,
+          "ELECTRO_DMG_BONUS": 0.0,
+          "ELECTRO_RES": 0.0,
+          "ELEMENTAL_MASTERY": 83.92,
+          "ENERGY_RECHARGE": 114.89,
+          "GEO_DMG_BONUS": 0.0,
+          "GEO_RES": 0.0,
+          "HEALING_BONUS": 0.0,
+          "HP": 4415.13,
+          "HP_PERCENT": 124.35,
+          "HYDRO_DMG_BONUS": 46.6,
+          "HYDRO_RES": 0.0,
+          "PHYSICAL_DMG_BONUS": 0.0,
+          "PYRO_DMG_BONUS": 0.0,
+          "PYRO_RES": 0.0,
+          "SHIELD_STRENGTH": 0.0
+        },
+        "final_panel": {
+          "HP": 38757.255763225,
+          "ATK": 1015.3715593973201,
+          "DEF": 1037.4045565427452,
+          "CRIT_RATE": 33.53,
+          "CRIT_DMG": 163.8448,
+          "ENERGY_RECHARGE": 114.89,
+          "ELEMENTAL_MASTERY": 83.92,
+          "HYDRO_DMG_BONUS": 46.6
+        }
+      },
+      "weapon_scores": [
+        {
+          "weapon": "Splendor of Tranquil Waters",
+          "independent_damage": 5879.5634808159975,
+          "passive": "精一：生命值+16%，生命变化后增伤按满层近似+24%"
+        },
+        {
+          "weapon": "Wolf-Fang",
+          "independent_damage": 5432.747925455997,
+          "passive": "精五：战技/爆发增伤+32%（实验近似）"
+        },
+        {
+          "weapon": "Mistsplitter Reforged",
+          "independent_damage": 4969.437799071495,
+          "passive": "精一：元素伤害加成按两层近似+24%"
+        },
+        {
+          "weapon": "Amenoma Kageuchi",
+          "independent_damage": 3973.7114465048708,
+          "passive": "精五：主要提供回能，未计增伤"
+        }
+      ]
+    },
+    {
+      "name": "神里绫华",
+      "character": "Kamisato Ayaka",
+      "weapon": {
+        "name": "Mistsplitter Reforged",
+        "weapon_type": "WEAPON_SWORD_ONE_HAND",
+        "level": 90,
+        "refinement": 1,
+        "panel_bonus": {},
+        "dmg_bonus": 24.0,
+        "crit_rate": 0.0,
+        "crit_dmg": 0.0,
+        "applies_to": [
+          "burst",
+          "charged",
+          "normal",
+          "plunge",
+          "skill"
+        ],
+        "notes": "精一：元素伤害加成按两层近似+24%"
+      },
+      "current_weapon": "Mistsplitter Reforged",
+      "current_damage": 8130.033944329397,
+      "damage": 8536.134794350633,
+      "gain_pct": 4.995069550779507,
+      "independent_damage": 8536.134794350633,
+      "target_four_piece_set": {
+        "id": 14001,
+        "name": "冰风迷途的勇士"
+      },
+      "set_names": [
+        "冰风迷途的勇士",
+        "冰风迷途的勇士",
+        "回声之林夜话",
+        "冰风迷途的勇士",
+        "冰风迷途的勇士"
+      ],
+      "loadout": {
+        "damage": 8536.134794350633,
+        "pieces": [
+          {
+            "slot": "FLOWER",
+            "id": "485053b9-1765-4c02-bc88-475f3a4fe5f4",
+            "set_name": "冰风迷途的勇士",
+            "piece_name": "历经风雪的思念",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 14001,
+              "slot": "FLOWER",
+              "main_stat": "HP",
+              "initial_count": 4,
+              "initial_rolls": [
+                {
+                  "stat": "ENERGY_RECHARGE",
+                  "tier": 4
+                },
+                {
+                  "stat": "DEF_PERCENT",
+                  "tier": 4
+                },
+                {
+                  "stat": "CRIT_RATE",
+                  "tier": 1
+                },
+                {
+                  "stat": "DEF",
+                  "tier": 3
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 4,
+                  "slot": 3,
+                  "tier": 4
+                },
+                {
+                  "level": 8,
+                  "slot": 1,
+                  "tier": 1
+                },
+                {
+                  "level": 12,
+                  "slot": 2,
+                  "tier": 3
+                },
+                {
+                  "level": 16,
+                  "slot": 2,
+                  "tier": 4
+                },
+                {
+                  "level": 20,
+                  "slot": 2,
+                  "tier": 2
+                }
+              ]
+            },
+            "main_value": 4780,
+            "active_substats": {
+              "ENERGY_RECHARGE": 6.48,
+              "DEF_PERCENT": 12.39,
+              "CRIT_RATE": 13.22,
+              "DEF": 43.98
+            },
+            "pending_substat": null,
+            "crit_value": 26.44,
+            "score": 26.44,
+            "history": [
+              {
+                "level": 4,
+                "kind": "increase",
+                "stat": "DEF",
+                "tier": 4,
+                "value": 23.15
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "DEF_PERCENT",
+                "tier": 1,
+                "value": 5.1
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 3,
+                "value": 3.5
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 4,
+                "value": 3.89
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 2,
+                "value": 3.11
+              }
+            ]
+          },
+          {
+            "slot": "PLUME",
+            "id": "2a6927aa-a875-4030-bf25-a9813eb1d743",
+            "set_name": "冰风迷途的勇士",
+            "piece_name": "摧冰而行的执望",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 14001,
+              "slot": "PLUME",
+              "main_stat": "ATK",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "ATK_PERCENT",
+                  "tier": 3
+                },
+                {
+                  "stat": "HP",
+                  "tier": 4
+                },
+                {
+                  "stat": "CRIT_DMG",
+                  "tier": 2
+                },
+                {
+                  "stat": "ENERGY_RECHARGE",
+                  "tier": 2
+                }
+              ],
+              "level": 12,
+              "enhancements": [
+                {
+                  "level": 8,
+                  "slot": 0,
+                  "tier": 4
+                },
+                {
+                  "level": 12,
+                  "slot": 2,
+                  "tier": 1
+                }
+              ]
+            },
+            "main_value": 205,
+            "active_substats": {
+              "ATK_PERCENT": 11.08,
+              "HP": 298.75,
+              "CRIT_DMG": 11.66,
+              "ENERGY_RECHARGE": 5.18
+            },
+            "pending_substat": null,
+            "crit_value": 11.66,
+            "score": 26.5626,
+            "history": [
+              {
+                "level": 4,
+                "kind": "activate",
+                "stat": "ENERGY_RECHARGE",
+                "tier": 2,
+                "value": 5.18
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "ATK_PERCENT",
+                "tier": 4,
+                "value": 5.83
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "CRIT_DMG",
+                "tier": 1,
+                "value": 5.44
+              }
+            ]
+          },
+          {
+            "slot": "SANDS",
+            "id": "2e8cfc2c-d5fc-4841-a14a-b8ba7cc04b19",
+            "set_name": "回声之林夜话",
+            "piece_name": "忠实的砂时计",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 15034,
+              "slot": "SANDS",
+              "main_stat": "ATK_PERCENT",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "CRIT_DMG",
+                  "tier": 1
+                },
+                {
+                  "stat": "DEF",
+                  "tier": 4
+                },
+                {
+                  "stat": "ATK",
+                  "tier": 2
+                },
+                {
+                  "stat": "HP",
+                  "tier": 3
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 8,
+                  "slot": 0,
+                  "tier": 2
+                },
+                {
+                  "level": 12,
+                  "slot": 2,
+                  "tier": 4
+                },
+                {
+                  "level": 16,
+                  "slot": 2,
+                  "tier": 1
+                },
+                {
+                  "level": 20,
+                  "slot": 0,
+                  "tier": 4
+                }
+              ]
+            },
+            "main_value": 46.6,
+            "active_substats": {
+              "CRIT_DMG": 19.43,
+              "DEF": 23.15,
+              "ATK": 48.63,
+              "HP": 268.88
+            },
+            "pending_substat": null,
+            "crit_value": 19.43,
+            "score": 25.7519,
+            "history": [
+              {
+                "level": 4,
+                "kind": "activate",
+                "stat": "HP",
+                "tier": 3,
+                "value": 268.88
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "CRIT_DMG",
+                "tier": 2,
+                "value": 6.22
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "ATK",
+                "tier": 4,
+                "value": 19.45
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "ATK",
+                "tier": 1,
+                "value": 13.62
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "CRIT_DMG",
+                "tier": 4,
+                "value": 7.77
+              }
+            ]
+          },
+          {
+            "slot": "GOBLET",
+            "id": "59342b54-35d1-491e-852f-9f08419039e8",
+            "set_name": "冰风迷途的勇士",
+            "piece_name": "遍结寒霜的傲骨",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 14001,
+              "slot": "GOBLET",
+              "main_stat": "ATK_PERCENT",
+              "initial_count": 4,
+              "initial_rolls": [
+                {
+                  "stat": "CRIT_DMG",
+                  "tier": 1
+                },
+                {
+                  "stat": "ELEMENTAL_MASTERY",
+                  "tier": 2
+                },
+                {
+                  "stat": "CRIT_RATE",
+                  "tier": 2
+                },
+                {
+                  "stat": "DEF",
+                  "tier": 1
+                }
+              ],
+              "level": 12,
+              "enhancements": [
+                {
+                  "level": 4,
+                  "slot": 0,
+                  "tier": 4
+                },
+                {
+                  "level": 8,
+                  "slot": 0,
+                  "tier": 4
+                },
+                {
+                  "level": 12,
+                  "slot": 2,
+                  "tier": 4
+                }
+              ]
+            },
+            "main_value": 30.8,
+            "active_substats": {
+              "CRIT_DMG": 20.98,
+              "ELEMENTAL_MASTERY": 18.65,
+              "CRIT_RATE": 7.0,
+              "DEF": 16.2
+            },
+            "pending_substat": null,
+            "crit_value": 34.98,
+            "score": 34.98,
+            "history": [
+              {
+                "level": 4,
+                "kind": "increase",
+                "stat": "CRIT_DMG",
+                "tier": 4,
+                "value": 7.77
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "CRIT_DMG",
+                "tier": 4,
+                "value": 7.77
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "CRIT_RATE",
+                "tier": 4,
+                "value": 3.89
+              }
+            ]
+          },
+          {
+            "slot": "CIRCLET",
+            "id": "2c84293b-c78f-49e2-a227-9fecafb3a2cf",
+            "set_name": "冰风迷途的勇士",
+            "piece_name": "破冰踏雪的回音",
+            "rarity": 5,
+            "state": {
+              "schema_version": 1,
+              "set_id": 14001,
+              "slot": "CIRCLET",
+              "main_stat": "ATK_PERCENT",
+              "initial_count": 3,
+              "initial_rolls": [
+                {
+                  "stat": "DEF",
+                  "tier": 1
+                },
+                {
+                  "stat": "ELEMENTAL_MASTERY",
+                  "tier": 1
+                },
+                {
+                  "stat": "ATK",
+                  "tier": 1
+                },
+                {
+                  "stat": "CRIT_RATE",
+                  "tier": 4
+                }
+              ],
+              "level": 20,
+              "enhancements": [
+                {
+                  "level": 8,
+                  "slot": 1,
+                  "tier": 1
+                },
+                {
+                  "level": 12,
+                  "slot": 2,
+                  "tier": 1
+                },
+                {
+                  "level": 16,
+                  "slot": 1,
+                  "tier": 1
+                },
+                {
+                  "level": 20,
+                  "slot": 1,
+                  "tier": 3
+                }
+              ]
+            },
+            "main_value": 46.6,
+            "active_substats": {
+              "DEF": 16.2,
+              "ELEMENTAL_MASTERY": 69.94,
+              "ATK": 27.24,
+              "CRIT_RATE": 3.89
+            },
+            "pending_substat": null,
+            "crit_value": 7.78,
+            "score": 11.3212,
+            "history": [
+              {
+                "level": 4,
+                "kind": "activate",
+                "stat": "CRIT_RATE",
+                "tier": 4,
+                "value": 3.89
+              },
+              {
+                "level": 8,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 1,
+                "value": 16.32
+              },
+              {
+                "level": 12,
+                "kind": "increase",
+                "stat": "ATK",
+                "tier": 1,
+                "value": 13.62
+              },
+              {
+                "level": 16,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 1,
+                "value": 16.32
+              },
+              {
+                "level": 20,
+                "kind": "increase",
+                "stat": "ELEMENTAL_MASTERY",
+                "tier": 3,
+                "value": 20.98
+              }
+            ]
+          }
+        ],
+        "set_counts": {
+          "14001": 4,
+          "15034": 1
+        },
+        "set_names": {
+          "14001": "冰风迷途的勇士",
+          "15034": "回声之林夜话"
+        },
+        "set_flags": [
+          "SET_14001_2",
+          "SET_14001_4"
+        ],
+        "active_set_bonuses": [
+          {
+            "set_id": 14001,
+            "name": "冰风迷途的勇士",
+            "pieces": 2,
+            "effect": "获得15%冰元素伤害加成。"
+          },
+          {
+            "set_id": 14001,
+            "name": "冰风迷途的勇士",
+            "pieces": 4,
+            "effect": "攻击处于冰元素影响下的敌人时，暴击率提高20%；若敌人处于冻结状态下，则暴击率额外提高20%。"
+          }
+        ],
+        "panel_stats": {
+          "ANEMO_DMG_BONUS": 0.0,
+          "ANEMO_RES": 0.0,
+          "ATK": 280.87,
+          "ATK_PERCENT": 135.08,
+          "BASE_ATK": 1016.3596333999999,
+          "BASE_DEF": 783.9254574000001,
+          "BASE_HP": 12858.206654000001,
+          "CRIT_DMG": 184.5724,
+          "CRIT_RATE": 29.11,
+          "CRYO_DMG_BONUS": 15.0,
+          "CRYO_RES": 0.0,
+          "DEF": 99.53,
+          "DEF_PERCENT": 12.39,
+          "DENDRO_DMG_BONUS": 0.0,
+          "DENDRO_RES": 0.0,
+          "ELECTRO_DMG_BONUS": 0.0,
+          "ELECTRO_RES": 0.0,
+          "ELEMENTAL_MASTERY": 88.59,
+          "ENERGY_RECHARGE": 111.66,
+          "GEO_DMG_BONUS": 0.0,
+          "GEO_RES": 0.0,
+          "HEALING_BONUS": 0.0,
+          "HP": 5347.63,
+          "HP_PERCENT": 0.0,
+          "HYDRO_DMG_BONUS": 0.0,
+          "HYDRO_RES": 0.0,
+          "PHYSICAL_DMG_BONUS": 0.0,
+          "PYRO_DMG_BONUS": 0.0,
+          "PYRO_RES": 0.0,
+          "SHIELD_STRENGTH": 0.0
+        },
+        "final_panel": {
+          "HP": 18205.836654000002,
+          "ATK": 2670.12822619672,
+          "DEF": 980.5838215718601,
+          "CRIT_RATE": 29.11,
+          "CRIT_DMG": 184.5724,
+          "ENERGY_RECHARGE": 111.66,
+          "ELEMENTAL_MASTERY": 88.59,
+          "HYDRO_DMG_BONUS": 0.0
+        }
+      },
+      "weapon_scores": [
+        {
+          "weapon": "Splendor of Tranquil Waters",
+          "independent_damage": 8598.254239741273,
+          "passive": "精一：生命值+16%，生命变化后增伤按满层近似+24%"
+        },
+        {
+          "weapon": "Mistsplitter Reforged",
+          "independent_damage": 8536.134794350633,
+          "passive": "精一：元素伤害加成按两层近似+24%"
+        },
+        {
+          "weapon": "Wolf-Fang",
+          "independent_damage": 8084.609774673426,
+          "passive": "精五：战技/爆发增伤+32%（实验近似）"
+        },
+        {
+          "weapon": "Amenoma Kageuchi",
+          "independent_damage": 6343.760424852426,
+          "passive": "精五：主要提供回能，未计增伤"
+        }
+      ]
+    }
+  ],
+  "assignment": {
+    "阿蕾奇诺": "Crimson Moon's Semblance",
+    "雷电将军": "Deathmatch",
+    "芙宁娜": "Splendor of Tranquil Waters",
+    "神里绫华": "Mistsplitter Reforged"
+  },
+  "unused_weapons": [
+    {
+      "name": "Engulfing Lightning",
+      "weapon_type": "WEAPON_POLE",
+      "level": 90,
+      "refinement": 1,
+      "panel_bonus": {
+        "ATK_PERCENT": 28.0
+      },
+      "dmg_bonus": 0.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst",
+        "charged",
+        "normal",
+        "plunge",
+        "skill"
+      ],
+      "notes": "精一：按充能折算攻击力，实验按约 200% 充能给 28% 攻击力"
+    },
+    {
+      "name": "\"The Catch\"",
+      "weapon_type": "WEAPON_POLE",
+      "level": 90,
+      "refinement": 5,
+      "panel_bonus": {},
+      "dmg_bonus": 32.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst"
+      ],
+      "notes": "精五：元素爆发增伤+32%，仅对爆发节点生效"
+    },
+    {
+      "name": "Amenoma Kageuchi",
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "level": 90,
+      "refinement": 5,
+      "panel_bonus": {},
+      "dmg_bonus": 0.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst",
+        "charged",
+        "normal",
+        "plunge",
+        "skill"
+      ],
+      "notes": "精五：主要提供回能，未计增伤"
+    },
+    {
+      "name": "Wolf-Fang",
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "level": 90,
+      "refinement": 5,
+      "panel_bonus": {},
+      "dmg_bonus": 32.0,
+      "crit_rate": 0.0,
+      "crit_dmg": 0.0,
+      "applies_to": [
+        "burst",
+        "skill"
+      ],
+      "notes": "精五：战技/爆发增伤+32%（实验近似）"
+    }
+  ],
+  "joint_search": {
+    "exact": false,
+    "iterations": 0,
+    "conflicts": 0,
+    "unused_count": 1480
+  },
+  "weapon_swaps": 0,
+  "warnings": [
+    "武器被动按固定精炼与近似覆盖值计入；实际毕业伤害可能不同。",
+    "部分独立武器评估达到节点上限。"
+  ],
+  "domains": [
+    {
+      "domain_id": 982,
+      "domain_name": "罪祸的终末",
+      "drop_sets": [
+        {
+          "id": 15031,
+          "name": "逐影猎人"
+        },
+        {
+          "id": 15032,
+          "name": "黄金剧团"
+        }
+      ],
+      "score_mode": "sum",
+      "score_pct_per_100_resin": 1.3653416405412575,
+      "weighted_expected_gain_pct": 0.2730683281082515,
+      "weighted_expected_gain": 16.137857729437968,
+      "best_member_expected_gain_pct": 1.0611123393758353,
+      "probability_any_member_upgrade": 0.16923183473057946,
+      "expected_resin_to_any_upgrade": 118.18107409779259,
+      "members": [
+        {
+          "name": "阿蕾奇诺",
+          "character": "Arlecchino",
+          "model": "arlecchino_normal_3__crimson_moon's_semblance",
+          "weight": 1.0,
+          "baseline_damage": 38199.68615944704,
+          "probability_per_drop": 0.0004282213901936897,
+          "expected_gain": 0.38131767749160295,
+          "expected_gain_pct": 0.0009982220165369096,
+          "expected_resin": 46704.81311303426,
+          "resin_for_50pct": 32380,
+          "resin_for_90pct": 107520,
+          "best_slot": "CIRCLET",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "SANDS": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0004282213901936897,
+              "expected_gain": 0.38131767749160295,
+              "expected_gain_pct": 0.0009982220165369096
+            }
+          },
+          "accuracy": "high"
+        },
+        {
+          "name": "雷电将军",
+          "character": "Raiden Shogun",
+          "model": "raidenshogun_burst_hit41__deathmatch",
+          "weight": 1.0,
+          "baseline_damage": 3788.4549091113918,
+          "probability_per_drop": 0.006552339873779709,
+          "expected_gain": 0.6330956077978928,
+          "expected_gain_pct": 0.016711182341784547,
+          "expected_resin": 3052.3447173479763,
+          "resin_for_50pct": 2120,
+          "resin_for_90pct": 7020,
+          "best_slot": "PLUME",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.006552339873779709,
+              "expected_gain": 0.6330956077978928,
+              "expected_gain_pct": 0.016711182341784547
+            },
+            "SANDS": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            }
+          },
+          "accuracy": "medium"
+        },
+        {
+          "name": "芙宁娜",
+          "character": "Furina",
+          "model": "furina_skill_chevaldmg__splendor_of_tranquil_waters",
+          "weight": 1.0,
+          "baseline_damage": 5879.5634808159975,
+          "probability_per_drop": 0.1596579591976298,
+          "expected_gain": 62.38877359637392,
+          "expected_gain_pct": 1.0611123393758353,
+          "expected_resin": 125.26779185022247,
+          "resin_for_50pct": 80,
+          "resin_for_90pct": 280,
+          "best_slot": "FLOWER",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.10000000000000134,
+              "expected_gain": 44.71835707574891,
+              "expected_gain_pct": 0.7605727401644222
+            },
+            "PLUME": {
+              "probability_per_drop": 0.0376833352886086,
+              "expected_gain": 10.792275697543484,
+              "expected_gain_pct": 0.18355573050204868
+            },
+            "SANDS": {
+              "probability_per_drop": 0.011058662142224748,
+              "expected_gain": 3.2874538896215766,
+              "expected_gain_pct": 0.05591323063945091
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0009159617667938534,
+              "expected_gain": 0.1961591556782845,
+              "expected_gain_pct": 0.0033362877417399787
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.010000000000001261,
+              "expected_gain": 3.394527777781663,
+              "expected_gain_pct": 0.057734350328173555
+            }
+          },
+          "accuracy": "high"
+        },
+        {
+          "name": "神里绫华",
+          "character": "Kamisato Ayaka",
+          "model": "kamisatoayaka_burst_cutting__mistsplitter_reforged",
+          "weight": 1.0,
+          "baseline_damage": 8536.134794350633,
+          "probability_per_drop": 0.00444610019689422,
+          "expected_gain": 1.1482440360884536,
+          "expected_gain_pct": 0.013451568698849295,
+          "expected_resin": 4498.324174963669,
+          "resin_for_50pct": 3120,
+          "resin_for_90pct": 10340,
+          "best_slot": "SANDS",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "SANDS": {
+              "probability_per_drop": 0.00444610019689422,
+              "expected_gain": 1.1482440360884536,
+              "expected_gain_pct": 0.013451568698849295
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            }
+          },
+          "accuracy": "high"
+        }
+      ]
+    },
+    {
+      "domain_id": 361,
+      "domain_name": "椛染之庭",
+      "drop_sets": [
+        {
+          "id": 15019,
+          "name": "追忆之注连"
+        },
+        {
+          "id": 15020,
+          "name": "绝缘之旗印"
+        }
+      ],
+      "score_mode": "sum",
+      "score_pct_per_100_resin": 0.9991542732615895,
+      "weighted_expected_gain_pct": 0.1998308546523179,
+      "weighted_expected_gain": 7.8334776496977225,
+      "best_member_expected_gain_pct": 0.7815373401521454,
+      "probability_any_member_upgrade": 0.11534813530559818,
+      "expected_resin_to_any_upgrade": 173.38815185016122,
+      "members": [
+        {
+          "name": "阿蕾奇诺",
+          "character": "Arlecchino",
+          "model": "arlecchino_normal_3__crimson_moon's_semblance",
+          "weight": 1.0,
+          "baseline_damage": 38199.68615944704,
+          "probability_per_drop": 0.0004282213901936897,
+          "expected_gain": 0.38131767749160295,
+          "expected_gain_pct": 0.0009982220165369096,
+          "expected_resin": 46704.81311303426,
+          "resin_for_50pct": 32380,
+          "resin_for_90pct": 107520,
+          "best_slot": "CIRCLET",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "SANDS": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0004282213901936897,
+              "expected_gain": 0.38131767749160295,
+              "expected_gain_pct": 0.0009982220165369096
+            }
+          },
+          "accuracy": "high"
+        },
+        {
+          "name": "雷电将军",
+          "character": "Raiden Shogun",
+          "model": "raidenshogun_burst_hit41__deathmatch",
+          "weight": 1.0,
+          "baseline_damage": 3788.4549091113918,
+          "probability_per_drop": 0.11020161575787085,
+          "expected_gain": 29.608189729532548,
+          "expected_gain_pct": 0.7815373401521454,
+          "expected_resin": 181.48554231675638,
+          "resin_for_50pct": 120,
+          "resin_for_90pct": 400,
+          "best_slot": "FLOWER",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.07471427987826824,
+              "expected_gain": 15.952781578588967,
+              "expected_gain_pct": 0.42108938766096604
+            },
+            "PLUME": {
+              "probability_per_drop": 0.006552339873779709,
+              "expected_gain": 0.6330956077978928,
+              "expected_gain_pct": 0.016711182341784547
+            },
+            "SANDS": {
+              "probability_per_drop": 0.026660000000002737,
+              "expected_gain": 12.660323457703093,
+              "expected_gain_pct": 0.33418171157995014
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0020914647249585883,
+              "expected_gain": 0.34433542120904775,
+              "expected_gain_pct": 0.009089072708267075
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.00018353128086157446,
+              "expected_gain": 0.017653664233546393,
+              "expected_gain_pct": 0.0004659858611775633
+            }
+          },
+          "accuracy": "medium"
+        },
+        {
+          "name": "芙宁娜",
+          "character": "Furina",
+          "model": "furina_skill_chevaldmg__splendor_of_tranquil_waters",
+          "weight": 1.0,
+          "baseline_damage": 5879.5634808159975,
+          "probability_per_drop": 0.0009159617667938534,
+          "expected_gain": 0.1961591556782845,
+          "expected_gain_pct": 0.0033362877417399787,
+          "expected_resin": 21834.972512014472,
+          "resin_for_50pct": 15140,
+          "resin_for_90pct": 50260,
+          "best_slot": "GOBLET",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "SANDS": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0009159617667938534,
+              "expected_gain": 0.1961591556782845,
+              "expected_gain_pct": 0.0033362877417399787
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            }
+          },
+          "accuracy": "high"
+        },
+        {
+          "name": "神里绫华",
+          "character": "Kamisato Ayaka",
+          "model": "kamisatoayaka_burst_cutting__mistsplitter_reforged",
+          "weight": 1.0,
+          "baseline_damage": 8536.134794350633,
+          "probability_per_drop": 0.00444610019689422,
+          "expected_gain": 1.1482440360884536,
+          "expected_gain_pct": 0.013451568698849295,
+          "expected_resin": 4498.324174963669,
+          "resin_for_50pct": 3120,
+          "resin_for_90pct": 10340,
+          "best_slot": "SANDS",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "SANDS": {
+              "probability_per_drop": 0.00444610019689422,
+              "expected_gain": 1.1482440360884536,
+              "expected_gain_pct": 0.013451568698849295
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            }
+          },
+          "accuracy": "high"
+        }
+      ]
+    },
+    {
+      "domain_id": 221,
+      "domain_name": "芬德尼尔之顶",
+      "drop_sets": [
+        {
+          "id": 14001,
+          "name": "冰风迷途的勇士"
+        },
+        {
+          "id": 15016,
+          "name": "沉沦之心"
+        }
+      ],
+      "score_mode": "sum",
+      "score_pct_per_100_resin": 0.42338604585660666,
+      "weighted_expected_gain_pct": 0.08467720917132134,
+      "weighted_expected_gain": 7.08168166368386,
+      "best_member_expected_gain_pct": 0.31766314458522393,
+      "probability_any_member_upgrade": 0.07519865292231598,
+      "expected_resin_to_any_upgrade": 265.96221106062916,
+      "members": [
+        {
+          "name": "阿蕾奇诺",
+          "character": "Arlecchino",
+          "model": "arlecchino_normal_3__crimson_moon's_semblance",
+          "weight": 1.0,
+          "baseline_damage": 38199.68615944704,
+          "probability_per_drop": 0.0004282213901936897,
+          "expected_gain": 0.38131767749160295,
+          "expected_gain_pct": 0.0009982220165369096,
+          "expected_resin": 46704.81311303426,
+          "resin_for_50pct": 32380,
+          "resin_for_90pct": 107520,
+          "best_slot": "CIRCLET",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "SANDS": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0004282213901936897,
+              "expected_gain": 0.38131767749160295,
+              "expected_gain_pct": 0.0009982220165369096
+            }
+          },
+          "accuracy": "high"
+        },
+        {
+          "name": "雷电将军",
+          "character": "Raiden Shogun",
+          "model": "raidenshogun_burst_hit41__deathmatch",
+          "weight": 1.0,
+          "baseline_damage": 3788.4549091113918,
+          "probability_per_drop": 0.006552339873779709,
+          "expected_gain": 0.6330956077978928,
+          "expected_gain_pct": 0.016711182341784547,
+          "expected_resin": 3052.3447173479763,
+          "resin_for_50pct": 2120,
+          "resin_for_90pct": 7020,
+          "best_slot": "PLUME",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.006552339873779709,
+              "expected_gain": 0.6330956077978928,
+              "expected_gain_pct": 0.016711182341784547
+            },
+            "SANDS": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            }
+          },
+          "accuracy": "medium"
+        },
+        {
+          "name": "芙宁娜",
+          "character": "Furina",
+          "model": "furina_skill_chevaldmg__splendor_of_tranquil_waters",
+          "weight": 1.0,
+          "baseline_damage": 5879.5634808159975,
+          "probability_per_drop": 0.0009159617667938534,
+          "expected_gain": 0.1961591556782845,
+          "expected_gain_pct": 0.0033362877417399787,
+          "expected_resin": 21834.972512014472,
+          "resin_for_50pct": 15140,
+          "resin_for_90pct": 50260,
+          "best_slot": "GOBLET",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "SANDS": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0009159617667938534,
+              "expected_gain": 0.1961591556782845,
+              "expected_gain_pct": 0.0033362877417399787
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            }
+          },
+          "accuracy": "high"
+        },
+        {
+          "name": "神里绫华",
+          "character": "Kamisato Ayaka",
+          "model": "kamisatoayaka_burst_cutting__mistsplitter_reforged",
+          "weight": 1.0,
+          "baseline_damage": 8536.134794350633,
+          "probability_per_drop": 0.06784645419085066,
+          "expected_gain": 27.11615421376766,
+          "expected_gain_pct": 0.31766314458522393,
+          "expected_resin": 294.7832755377373,
+          "resin_for_50pct": 200,
+          "resin_for_90pct": 660,
+          "best_slot": "PLUME",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0057161995288030985,
+              "expected_gain": 1.3703033852053164,
+              "expected_gain_pct": 0.016052972665241975
+            },
+            "PLUME": {
+              "probability_per_drop": 0.04575498754861104,
+              "expected_gain": 17.348699492923767,
+              "expected_gain_pct": 0.20323834980213112
+            },
+            "SANDS": {
+              "probability_per_drop": 0.00444610019689422,
+              "expected_gain": 1.1482440360884536,
+              "expected_gain_pct": 0.013451568698849295
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.004999999999989405,
+              "expected_gain": 4.254572374442792,
+              "expected_gain_pct": 0.0498419071036524
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.006929166916552896,
+              "expected_gain": 2.9943349251073337,
+              "expected_gain_pct": 0.03507834631534917
+            }
+          },
+          "accuracy": "high"
+        }
+      ]
+    },
+    {
+      "domain_id": 1151,
+      "domain_name": "褪色的剧场",
+      "drop_sets": [
+        {
+          "id": 15035,
+          "name": "谐律异想断章"
+        },
+        {
+          "id": 15036,
+          "name": "未竟的遐思"
+        }
+      ],
+      "score_mode": "sum",
+      "score_pct_per_100_resin": 0.23896009390718081,
+      "weighted_expected_gain_pct": 0.047792018781436164,
+      "weighted_expected_gain": 15.551643963339195,
+      "best_member_expected_gain_pct": 0.15766903634337084,
+      "probability_any_member_upgrade": 0.05384850397941954,
+      "expected_resin_to_any_upgrade": 371.4123610127375,
+      "members": [
+        {
+          "name": "阿蕾奇诺",
+          "character": "Arlecchino",
+          "model": "arlecchino_normal_3__crimson_moon's_semblance",
+          "weight": 1.0,
+          "baseline_damage": 38199.68615944704,
+          "probability_per_drop": 0.04247771425534511,
+          "expected_gain": 60.22907705379215,
+          "expected_gain_pct": 0.15766903634337084,
+          "expected_resin": 470.8351273275806,
+          "resin_for_50pct": 320,
+          "resin_for_90pct": 1080,
+          "best_slot": "PLUME",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.011550250871597847,
+              "expected_gain": 14.32857210595945,
+              "expected_gain_pct": 0.0375096592316267
+            },
+            "PLUME": {
+              "probability_per_drop": 0.0279332214699859,
+              "expected_gain": 42.48469021453473,
+              "expected_gain_pct": 0.11121738026119354
+            },
+            "SANDS": {
+              "probability_per_drop": 0.0021907374539455455,
+              "expected_gain": 2.589919625548333,
+              "expected_gain_pct": 0.006779950009897734
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.00037528306962213425,
+              "expected_gain": 0.44457743025803265,
+              "expected_gain_pct": 0.0011638248241159586
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0004282213901936897,
+              "expected_gain": 0.38131767749160295,
+              "expected_gain_pct": 0.0009982220165369096
+            }
+          },
+          "accuracy": "high"
+        },
+        {
+          "name": "雷电将军",
+          "character": "Raiden Shogun",
+          "model": "raidenshogun_burst_hit41__deathmatch",
+          "weight": 1.0,
+          "baseline_damage": 3788.4549091113918,
+          "probability_per_drop": 0.006552339873779709,
+          "expected_gain": 0.6330956077978928,
+          "expected_gain_pct": 0.016711182341784547,
+          "expected_resin": 3052.3447173479763,
+          "resin_for_50pct": 2120,
+          "resin_for_90pct": 7020,
+          "best_slot": "PLUME",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.006552339873779709,
+              "expected_gain": 0.6330956077978928,
+              "expected_gain_pct": 0.016711182341784547
+            },
+            "SANDS": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            }
+          },
+          "accuracy": "medium"
+        },
+        {
+          "name": "芙宁娜",
+          "character": "Furina",
+          "model": "furina_skill_chevaldmg__splendor_of_tranquil_waters",
+          "weight": 1.0,
+          "baseline_damage": 5879.5634808159975,
+          "probability_per_drop": 0.0009159617667938534,
+          "expected_gain": 0.1961591556782845,
+          "expected_gain_pct": 0.0033362877417399787,
+          "expected_resin": 21834.972512014472,
+          "resin_for_50pct": 15140,
+          "resin_for_90pct": 50260,
+          "best_slot": "GOBLET",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "SANDS": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0009159617667938534,
+              "expected_gain": 0.1961591556782845,
+              "expected_gain_pct": 0.0033362877417399787
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            }
+          },
+          "accuracy": "high"
+        },
+        {
+          "name": "神里绫华",
+          "character": "Kamisato Ayaka",
+          "model": "kamisatoayaka_burst_cutting__mistsplitter_reforged",
+          "weight": 1.0,
+          "baseline_damage": 8536.134794350633,
+          "probability_per_drop": 0.00444610019689422,
+          "expected_gain": 1.1482440360884536,
+          "expected_gain_pct": 0.013451568698849295,
+          "expected_resin": 4498.324174963669,
+          "resin_for_50pct": 3120,
+          "resin_for_90pct": 10340,
+          "best_slot": "SANDS",
+          "by_slot": {
+            "FLOWER": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "PLUME": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "SANDS": {
+              "probability_per_drop": 0.00444610019689422,
+              "expected_gain": 1.1482440360884536,
+              "expected_gain_pct": 0.013451568698849295
+            },
+            "GOBLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            },
+            "CIRCLET": {
+              "probability_per_drop": 0.0,
+              "expected_gain": 0.0,
+              "expected_gain_pct": 0.0
+            }
+          },
+          "accuracy": "high"
+        }
+      ]
+    }
+  ],
+  "recommended_domain_id": 982,
+  "plan_warnings": []
+}

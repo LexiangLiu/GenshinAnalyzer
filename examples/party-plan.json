@@ -1,0 +1,1336 @@
+{
+  "members": [
+    {
+      "character": "Neuvillette",
+      "weapon": {
+        "id": "Tome of the Eternal Flow",
+        "level": 90,
+        "ascension": 6
+      },
+      "model": "neuvillette_charged_judgment",
+      "weight": 1.0,
+      "target_four_piece_set": 15031,
+      "name": "那维莱特"
+    },
+    {
+      "character": "Arlecchino",
+      "weapon": {
+        "id": "Crimson Moon's Semblance",
+        "level": 90,
+        "ascension": 6
+      },
+      "weight": 1.0,
+      "target_four_piece_set": 15035,
+      "name": "阿蕾奇诺"
+    },
+    {
+      "character": "Mavuika",
+      "weapon": {
+        "id": "A Thousand Blazing Suns",
+        "level": 90,
+        "ascension": 6
+      },
+      "weight": 1.0,
+      "target_four_piece_set": 15038,
+      "name": "玛薇卡"
+    }
+  ],
+  "threshold_pct": 1.0,
+  "resin_per_claim": 20,
+  "score_mode": "sum",
+  "restarts": 2,
+  "max_iterations": 3,
+  "max_nodes": 1000000,
+  "pieces": [
+    {
+      "schema_version": 1,
+      "set_id": 15031,
+      "slot": "FLOWER",
+      "main_stat": "HP",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 1,
+          "tier": 1
+        },
+        {
+          "level": 8,
+          "slot": 2,
+          "tier": 1
+        },
+        {
+          "level": 12,
+          "slot": 2,
+          "tier": 2
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15031,
+      "slot": "FLOWER",
+      "main_stat": "HP",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        },
+        {
+          "stat": "ELEMENTAL_MASTERY",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 0,
+          "tier": 3
+        },
+        {
+          "level": 8,
+          "slot": 0,
+          "tier": 2
+        },
+        {
+          "level": 12,
+          "slot": 0,
+          "tier": 1
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15031,
+      "slot": "PLUME",
+      "main_stat": "ATK",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 1,
+          "tier": 4
+        },
+        {
+          "level": 8,
+          "slot": 0,
+          "tier": 1
+        },
+        {
+          "level": 12,
+          "slot": 2,
+          "tier": 4
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15031,
+      "slot": "PLUME",
+      "main_stat": "ATK",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        },
+        {
+          "stat": "ELEMENTAL_MASTERY",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 2,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 3,
+          "tier": 1
+        },
+        {
+          "level": 12,
+          "slot": 3,
+          "tier": 2
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15031,
+      "slot": "SANDS",
+      "main_stat": "HP_PERCENT",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 0,
+          "tier": 1
+        },
+        {
+          "level": 8,
+          "slot": 1,
+          "tier": 4
+        },
+        {
+          "level": 12,
+          "slot": 0,
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15031,
+      "slot": "SANDS",
+      "main_stat": "HP_PERCENT",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 2,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 2,
+          "tier": 1
+        },
+        {
+          "level": 12,
+          "slot": 0,
+          "tier": 1
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15031,
+      "slot": "GOBLET",
+      "main_stat": "HYDRO_DMG_BONUS",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 2,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 1,
+          "tier": 3
+        },
+        {
+          "level": 12,
+          "slot": 1,
+          "tier": 2
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15031,
+      "slot": "GOBLET",
+      "main_stat": "HYDRO_DMG_BONUS",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 3,
+          "tier": 3
+        },
+        {
+          "level": 8,
+          "slot": 0,
+          "tier": 3
+        },
+        {
+          "level": 12,
+          "slot": 2,
+          "tier": 4
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15031,
+      "slot": "CIRCLET",
+      "main_stat": "CRIT_RATE",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 2,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 3,
+          "tier": 1
+        },
+        {
+          "level": 12,
+          "slot": 1,
+          "tier": 4
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15031,
+      "slot": "CIRCLET",
+      "main_stat": "CRIT_RATE",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 0,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 0,
+          "tier": 3
+        },
+        {
+          "level": 12,
+          "slot": 3,
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15035,
+      "slot": "FLOWER",
+      "main_stat": "HP",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 3,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 2,
+          "tier": 3
+        },
+        {
+          "level": 12,
+          "slot": 2,
+          "tier": 2
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15035,
+      "slot": "FLOWER",
+      "main_stat": "HP",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        },
+        {
+          "stat": "ELEMENTAL_MASTERY",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 3,
+          "tier": 4
+        },
+        {
+          "level": 8,
+          "slot": 1,
+          "tier": 3
+        },
+        {
+          "level": 12,
+          "slot": 0,
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15035,
+      "slot": "PLUME",
+      "main_stat": "ATK",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 2,
+          "tier": 4
+        },
+        {
+          "level": 8,
+          "slot": 3,
+          "tier": 2
+        },
+        {
+          "level": 12,
+          "slot": 1,
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15035,
+      "slot": "PLUME",
+      "main_stat": "ATK",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        },
+        {
+          "stat": "ELEMENTAL_MASTERY",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 0,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 0,
+          "tier": 1
+        },
+        {
+          "level": 12,
+          "slot": 0,
+          "tier": 4
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15035,
+      "slot": "SANDS",
+      "main_stat": "ATK_PERCENT",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 0,
+          "tier": 1
+        },
+        {
+          "level": 8,
+          "slot": 1,
+          "tier": 4
+        },
+        {
+          "level": 12,
+          "slot": 0,
+          "tier": 2
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15035,
+      "slot": "SANDS",
+      "main_stat": "ATK_PERCENT",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 2,
+          "tier": 4
+        },
+        {
+          "level": 8,
+          "slot": 3,
+          "tier": 4
+        },
+        {
+          "level": 12,
+          "slot": 1,
+          "tier": 2
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15035,
+      "slot": "GOBLET",
+      "main_stat": "PYRO_DMG_BONUS",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 1,
+          "tier": 4
+        },
+        {
+          "level": 8,
+          "slot": 3,
+          "tier": 1
+        },
+        {
+          "level": 12,
+          "slot": 0,
+          "tier": 1
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15035,
+      "slot": "GOBLET",
+      "main_stat": "PYRO_DMG_BONUS",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 0,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 2,
+          "tier": 2
+        },
+        {
+          "level": 12,
+          "slot": 0,
+          "tier": 2
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15035,
+      "slot": "CIRCLET",
+      "main_stat": "CRIT_DMG",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 1,
+          "tier": 3
+        },
+        {
+          "level": 8,
+          "slot": 3,
+          "tier": 3
+        },
+        {
+          "level": 12,
+          "slot": 2,
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15035,
+      "slot": "CIRCLET",
+      "main_stat": "CRIT_DMG",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 2,
+          "tier": 1
+        },
+        {
+          "level": 8,
+          "slot": 3,
+          "tier": 4
+        },
+        {
+          "level": 12,
+          "slot": 3,
+          "tier": 4
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15038,
+      "slot": "FLOWER",
+      "main_stat": "HP",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 1,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 0,
+          "tier": 3
+        },
+        {
+          "level": 12,
+          "slot": 0,
+          "tier": 1
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15038,
+      "slot": "FLOWER",
+      "main_stat": "HP",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        },
+        {
+          "stat": "ELEMENTAL_MASTERY",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 0,
+          "tier": 1
+        },
+        {
+          "level": 8,
+          "slot": 1,
+          "tier": 1
+        },
+        {
+          "level": 12,
+          "slot": 0,
+          "tier": 1
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15038,
+      "slot": "PLUME",
+      "main_stat": "ATK",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 0,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 0,
+          "tier": 4
+        },
+        {
+          "level": 12,
+          "slot": 2,
+          "tier": 1
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15038,
+      "slot": "PLUME",
+      "main_stat": "ATK",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        },
+        {
+          "stat": "ELEMENTAL_MASTERY",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 1,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 1,
+          "tier": 1
+        },
+        {
+          "level": 12,
+          "slot": 3,
+          "tier": 4
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15038,
+      "slot": "SANDS",
+      "main_stat": "ATK_PERCENT",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 1,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 0,
+          "tier": 1
+        },
+        {
+          "level": 12,
+          "slot": 1,
+          "tier": 2
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15038,
+      "slot": "SANDS",
+      "main_stat": "ATK_PERCENT",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 3,
+          "tier": 1
+        },
+        {
+          "level": 8,
+          "slot": 0,
+          "tier": 4
+        },
+        {
+          "level": 12,
+          "slot": 2,
+          "tier": 1
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15038,
+      "slot": "GOBLET",
+      "main_stat": "PYRO_DMG_BONUS",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 2,
+          "tier": 1
+        },
+        {
+          "level": 8,
+          "slot": 2,
+          "tier": 4
+        },
+        {
+          "level": 12,
+          "slot": 3,
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15038,
+      "slot": "GOBLET",
+      "main_stat": "PYRO_DMG_BONUS",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 1,
+          "tier": 2
+        },
+        {
+          "level": 8,
+          "slot": 0,
+          "tier": 4
+        },
+        {
+          "level": 12,
+          "slot": 2,
+          "tier": 4
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15038,
+      "slot": "CIRCLET",
+      "main_stat": "CRIT_DMG",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF",
+          "tier": 1
+        },
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 1,
+          "tier": 1
+        },
+        {
+          "level": 8,
+          "slot": 3,
+          "tier": 4
+        },
+        {
+          "level": 12,
+          "slot": 3,
+          "tier": 4
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "set_id": 15038,
+      "slot": "CIRCLET",
+      "main_stat": "CRIT_DMG",
+      "initial_count": 4,
+      "initial_rolls": [
+        {
+          "stat": "DEF_PERCENT",
+          "tier": 1
+        },
+        {
+          "stat": "HP",
+          "tier": 1
+        },
+        {
+          "stat": "ATK",
+          "tier": 1
+        },
+        {
+          "stat": "ENERGY_RECHARGE",
+          "tier": 1
+        }
+      ],
+      "level": 12,
+      "enhancements": [
+        {
+          "level": 4,
+          "slot": 3,
+          "tier": 3
+        },
+        {
+          "level": 8,
+          "slot": 0,
+          "tier": 3
+        },
+        {
+          "level": 12,
+          "slot": 1,
+          "tier": 1
+        }
+      ]
+    }
+  ]
+}

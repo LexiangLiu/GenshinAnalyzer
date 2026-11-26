@@ -1,0 +1,251 @@
+{
+  "members": [
+    {
+      "character": "Neuvillette",
+      "weapon": {
+        "id": "Tome of the Eternal Flow",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15031,
+      "profile": "Neuvillette",
+      "name": "那维莱特",
+      "weight": 1.0,
+      "candidate_main_stats": {
+        "FLOWER": [
+          "HP"
+        ],
+        "PLUME": [
+          "ATK"
+        ],
+        "SANDS": [
+          "HP_PERCENT"
+        ],
+        "GOBLET": [
+          "HYDRO_DMG_BONUS"
+        ],
+        "CIRCLET": [
+          "CRIT_RATE"
+        ]
+      }
+    },
+    {
+      "character": "Arlecchino",
+      "weapon": {
+        "id": "Crimson Moon's Semblance",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15035,
+      "profile": "Arlecchino",
+      "name": "阿蕾奇诺",
+      "weight": 1.0,
+      "candidate_main_stats": {
+        "FLOWER": [
+          "HP"
+        ],
+        "PLUME": [
+          "ATK"
+        ],
+        "SANDS": [
+          "ATK_PERCENT"
+        ],
+        "GOBLET": [
+          "PYRO_DMG_BONUS"
+        ],
+        "CIRCLET": [
+          "CRIT_RATE"
+        ]
+      }
+    },
+    {
+      "character": "Mavuika",
+      "weapon": {
+        "id": "A Thousand Blazing Suns",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15038,
+      "profile": "Mavuika",
+      "name": "玛薇卡",
+      "weight": 1.0,
+      "candidate_main_stats": {
+        "FLOWER": [
+          "HP"
+        ],
+        "PLUME": [
+          "ATK"
+        ],
+        "SANDS": [
+          "ATK_PERCENT"
+        ],
+        "GOBLET": [
+          "PYRO_DMG_BONUS"
+        ],
+        "CIRCLET": [
+          "CRIT_RATE"
+        ]
+      }
+    },
+    {
+      "character": "Furina",
+      "weapon": {
+        "id": "Splendor of Tranquil Waters",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15032,
+      "profile": "Furina",
+      "name": "芙宁娜",
+      "weight": 1.0,
+      "candidate_main_stats": {
+        "FLOWER": [
+          "HP"
+        ],
+        "PLUME": [
+          "ATK"
+        ],
+        "SANDS": [
+          "HP_PERCENT"
+        ],
+        "GOBLET": [
+          "HYDRO_DMG_BONUS"
+        ],
+        "CIRCLET": [
+          "CRIT_RATE"
+        ]
+      }
+    },
+    {
+      "character": "Nahida",
+      "weapon": {
+        "id": "A Thousand Floating Dreams",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15026,
+      "profile": "Nahida",
+      "name": "纳西妲",
+      "weight": 1.0,
+      "candidate_main_stats": {
+        "FLOWER": [
+          "HP"
+        ],
+        "PLUME": [
+          "ATK"
+        ],
+        "SANDS": [
+          "ATK_PERCENT"
+        ],
+        "GOBLET": [
+          "DENDRO_DMG_BONUS"
+        ],
+        "CIRCLET": [
+          "CRIT_RATE"
+        ]
+      }
+    },
+    {
+      "character": "Alhaitham",
+      "weapon": {
+        "id": "Light of Foliar Incision",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15026,
+      "profile": "Alhaitham",
+      "name": "艾尔海森",
+      "weight": 1.0,
+      "candidate_main_stats": {
+        "FLOWER": [
+          "HP"
+        ],
+        "PLUME": [
+          "ATK"
+        ],
+        "SANDS": [
+          "ATK_PERCENT"
+        ],
+        "GOBLET": [
+          "DENDRO_DMG_BONUS"
+        ],
+        "CIRCLET": [
+          "CRIT_RATE"
+        ]
+      }
+    },
+    {
+      "character": "Raiden Shogun",
+      "weapon": {
+        "id": "Engulfing Lightning",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15020,
+      "profile": "Raiden Shogun",
+      "name": "雷电将军",
+      "weight": 1.0,
+      "candidate_main_stats": {
+        "FLOWER": [
+          "HP"
+        ],
+        "PLUME": [
+          "ATK"
+        ],
+        "SANDS": [
+          "ATK_PERCENT"
+        ],
+        "GOBLET": [
+          "ELECTRO_DMG_BONUS"
+        ],
+        "CIRCLET": [
+          "CRIT_RATE"
+        ]
+      }
+    },
+    {
+      "character": "Kamisato Ayaka",
+      "weapon": {
+        "id": "Mistsplitter Reforged",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 14001,
+      "profile": "Kamisato Ayaka",
+      "name": "神里绫华",
+      "weight": 1.0,
+      "candidate_main_stats": {
+        "FLOWER": [
+          "HP"
+        ],
+        "PLUME": [
+          "ATK"
+        ],
+        "SANDS": [
+          "ATK_PERCENT"
+        ],
+        "GOBLET": [
+          "CRYO_DMG_BONUS"
+        ],
+        "CIRCLET": [
+          "CRIT_RATE"
+        ]
+      }
+    }
+  ],
+  "domains": [
+    982,
+    1151,
+    1190,
+    507,
+    361,
+    221
+  ],
+  "threshold_pct": 1.0,
+  "max_nodes": 120000,
+  "restarts": 0,
+  "max_iterations": 1,
+  "normalize": true,
+  "resin_per_claim": 20,
+  "score_mode": "sum"
+}

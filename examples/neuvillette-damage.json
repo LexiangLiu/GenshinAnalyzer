@@ -1,0 +1,17 @@
+{
+  "character": "Neuvillette",
+  "level": 90,
+  "ascension": 6,
+  "constellation": 2,
+  "talents": {"auto": 10, "skill": 10, "burst": 10},
+  "bonus_stats": {
+    "hp": 25000,
+    "critRate_": 0.55,
+    "critDMG_": 0.5,
+    "hydro_dmg_": 0.466
+  },
+  "conditions": {"a1Stacks": 3, "a4Hp": 50},
+  "enemy": {"level": 90, "resistance": 0.1},
+  "mode": "average",
+  "attacks": ["charged_judgment", "skill", "burst"]
+}

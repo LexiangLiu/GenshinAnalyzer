@@ -1,30 +1,27 @@
-﻿[build-system]
-requires = ["hatchling>=1.25"]
-build-backend = "hatchling.build"
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "genshin-analyzer"
+name = "genshin-artifact-simulator"
 version = "0.1.0"
-description = "本地原神角色资料数据库。"
+description = "Offline five-star artifact simulation and inventory"
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = [
-    "httpx>=0.27,<1",
-    "sqlalchemy>=2.0,<3",
-    "typer>=0.12,<1",
-]
-
-[project.optional-dependencies]
-dev = [
-    "ipykernel>=6.29,<7",
-    "nbclient>=0.10,<1",
-    "nbconvert>=7.16,<8",
-    "nbformat>=5.10,<6",
-    "notebook>=7.2,<8",
-]
+requires-python = ">=3.10"
 
 [project.scripts]
-genshin-analyzer = "genshin_analyzer.cli:app"
+artifact-sim = "artifact_sim.__main__:main"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/genshin_analyzer"]
+[tool.setuptools]
+packages = ["artifact_sim"]
+
+[tool.setuptools.package-data]
+artifact_sim = [
+    "data.json",
+    "character_models.json",
+    "reference_data/manifest.json",
+    "reference_data/*.json.gz",
+    "go_damage/manifest.json",
+    "go_damage/bridge.mjs",
+    "go_damage/LICENSE-*.txt",
+]

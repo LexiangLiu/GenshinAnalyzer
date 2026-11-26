@@ -1,0 +1,7 @@
+{
+  "repository": "https://github.com/frzyc/genshin-optimizer",
+  "commit": "916e46d14d1031c9188a6122f045f3308b0a1f37",
+  "version": "10.40.0",
+  "license": "MIT",
+  "node_major": 24
+}

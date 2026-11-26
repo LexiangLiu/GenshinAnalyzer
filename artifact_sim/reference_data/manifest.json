@@ -1,0 +1,557 @@
+{
+  "schema_version": 1,
+  "game_version": "7.2",
+  "languages": [
+    "zh",
+    "en"
+  ],
+  "sources": {
+    "genshin_db": {
+      "version": "5.2.15",
+      "sha256": "6a71ab45b080bcc3296629610fb320f3aed2a20e6e6fcda4af8a1d20638d6c28"
+    },
+    "tcg_distribution": {
+      "commit": "db37a96e1dac3f56d0e6f015c4ff4f87c25577cd",
+      "input_sha256": {
+        "chinesesimplified-tcgactioncards.min.json.gzip": "9c33864090c6946a4b73b46909e58a1ae801487439f39a18e94025452e4723e1",
+        "english-tcgactioncards.min.json.gzip": "af074b5016b886970d52d9ac08bfa376079f37135f4a24a4336c100b6c145799",
+        "chinesesimplified-tcgcardbacks.min.json.gzip": "10f1ee4c14a6731a63e4d2a36210aab28d8aec158c090e2306653579fdfb803e",
+        "english-tcgcardbacks.min.json.gzip": "86ce4f1ad2194453df89eb41e4e120660c34fbc24d959c4729375819c48d730c",
+        "chinesesimplified-tcgcardboxes.min.json.gzip": "9bf966a4166e2027ceccef80fe8530b45fa5ad26bc6286b49ddccea7c0cec7c5",
+        "english-tcgcardboxes.min.json.gzip": "79971a005b77388eed5563332f37a39a9066c3bf4e96a69ef075a7684a0d5935",
+        "chinesesimplified-tcgcharactercards.min.json.gzip": "245e5368f60a8f2a6a8e085361e5559374abf21927eb8357aa911e458b087655",
+        "english-tcgcharactercards.min.json.gzip": "5eed207f7eec23496e4e3fa3f295cee4fab24b1ac21d96c4e8480b23ed9a10ce",
+        "chinesesimplified-tcgdetailedrules.min.json.gzip": "8c40c20c7d9168ff48ec92e766853d52123849d15801e6a428c3e8041909d4af",
+        "english-tcgdetailedrules.min.json.gzip": "395ef85d1567b79223d2a36730dac6adf55638857cbe21c46cc8089b0610b912",
+        "chinesesimplified-tcgenemycards.min.json.gzip": "b693d1507e41228f4e6297efb9823c7d2f0384127185c08b1707aad0797265f6",
+        "english-tcgenemycards.min.json.gzip": "5207f95bd0f1f745cb2d20cf5820d68f721922e3cf6b901c25d0e21c128ab624",
+        "chinesesimplified-tcgkeywords.min.json.gzip": "5706ebc55041b082f36c1da2098a9c3e78a62f8d1f8f0da11ea39e15fa41ec76",
+        "english-tcgkeywords.min.json.gzip": "115f90f04f9883591441f6d2c8f19612615dc60a5f916036647de5823eb4919a",
+        "chinesesimplified-tcglevelrewards.min.json.gzip": "37b4b54f290984c4f9266a6932e1098f4cecd062561b740c57cc7dd67836b9ec",
+        "english-tcglevelrewards.min.json.gzip": "389dbe2ffdc8c42492e9e2cf14884d951ef75f2495ed55f60668efe33ca99b05",
+        "chinesesimplified-tcgstatuseffects.min.json.gzip": "796a44e0d48ce6ff25144bb0dcb4eb3817306947ef4b8ec0afb9fc07f64d1b6a",
+        "english-tcgstatuseffects.min.json.gzip": "fe76e0f70f0ccb90f54371e8c826d15c3322ce4e7511941660fa79d9852c29c3",
+        "chinesesimplified-tcgsummons.min.json.gzip": "3793c3ee9225aa6e7e093da257a1e29ac4b842f70e79f54aed83a59b01680cc0",
+        "english-tcgsummons.min.json.gzip": "6635aa5d9159ffa84839c72de735488f759a3d6cbf97c2841160f5edc4b77e58"
+      }
+    },
+    "release_7_2": {
+      "notice": "https://ys.mihoyo.com/main/news/detail/167205",
+      "commit": "d54f6f0d423ded9d055bb740a3e5f3aa8f2667f1",
+      "input_sha256": {
+        "TextMapCHS.json": "73baefa9cf59b3aef0f1fa5cabbea8381626ee81928759447f882ae44f4c0e70",
+        "TextMapEN.json": "0ae6c026902275d7e1fbdeec829b9d29e991170e520c23770963520ff723987d",
+        "MonsterDescribeExcelConfigData.json": "f5e8cfc74286e80cb05c899f3d6d204566a647bf36b3852b730370bae4bdf041",
+        "MonsterExcelConfigData.json": "b0efcdb6bca52eca8c2b89fe2e43f8f5a65bc1596fd250e7ddc375acd92989cc",
+        "MonsterCurveExcelConfigData.json": "3014983fd6292b612c040fb4106d6bfe10aef2da0ceffcba01bd10872b832f84",
+        "MaterialExcelConfigData.json": "e1cfaeb4c18ce57695748c62e07321456209b62c16fcb00753aefdd6fa912173"
+      }
+    }
+  },
+  "categories": {
+    "achievementgroups": {
+      "counts": {
+        "zh": 75,
+        "en": 75
+      },
+      "sha256": {
+        "zh": "55a37019f9060b13cbc8093b2ff2271603524767d932b500f33e46b61eecb42a",
+        "en": "4fb01d42c5cb79fd5975ecbfef6ac7928202c4b93acdeb3e5f37b87ed29fc093"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "achievements": {
+      "counts": {
+        "zh": 1607,
+        "en": 1607
+      },
+      "sha256": {
+        "zh": "7c8fcf5534632d6960d30886c0ba1bc996dcf2435bee848d3f8ac0d36b192f02",
+        "en": "a957da3e4fd0b7455ad21e4f49d47190048dcbc02e9e98761a55d708c329d79e"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "adventureranks": {
+      "counts": {
+        "zh": 60,
+        "en": 60
+      },
+      "sha256": {
+        "zh": "c86870493777be521a5618ffb9d602ec40d24afc28a1b54e1e1ce579e000c2fd",
+        "en": "5000c9517be81488f4c65eca1d1645201956235c2fdfaa0071e1b3884dc336a0"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "animals": {
+      "counts": {
+        "zh": 225,
+        "en": 225
+      },
+      "sha256": {
+        "zh": "80f05c420c176eee8faa81fcdb1bb08b93c0a9e34ca5d6a7c0a5d42a5260bce5",
+        "en": "d37516c044b3c968abd078f01218310899776785af6694dd2b5fe09a5108c4ad"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "areas": {
+      "counts": {
+        "zh": 2,
+        "en": 2
+      },
+      "sha256": {
+        "zh": "fb5c87ee510ef2ab51d04bcbdf63a0af8d0216b05811f6851f836ca029568578",
+        "en": "757decf0d843090127edd3d6e6cd5fcc740a53845a2193aa41c6d6ec096b4214"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "artifacts": {
+      "counts": {
+        "zh": 63,
+        "en": 63
+      },
+      "sha256": {
+        "zh": "47095ba1092120b305e354feee4aa06f34b424b0f4c63c5d052b951245411525",
+        "en": "fce682ac975082b5fc478bb690faf88ebee7a8f692dcc52c8b412554299ae670"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "characters": {
+      "counts": {
+        "zh": 126,
+        "en": 126
+      },
+      "sha256": {
+        "zh": "73ce24aa3c07d500c5c508a37ad1f6a510995fbe2f014a45ce3205fe4e262597",
+        "en": "c04d0a8a871ff29005d7fac2c84ab4b0c3e9852d7422b7b8d699b4c971b04f3c"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "constellations": {
+      "counts": {
+        "zh": 129,
+        "en": 129
+      },
+      "sha256": {
+        "zh": "e6f21da460d525ef98ff07f6e454f0e1be0d53fb856f47e1d3abe86c2827b4d1",
+        "en": "679d7e7a8189c7219ca758b7c8e75b30b68950fb4d6ef22d5c2bd644b5b4fd9b"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "crafts": {
+      "counts": {
+        "zh": 297,
+        "en": 297
+      },
+      "sha256": {
+        "zh": "1621a0724e6fdda3688ecbb2573467a23b864eb2b94d774d56a24023ce72a4a4",
+        "en": "c4264e37fc5191491286d9b4f5f0d6f52ac7b53b8be2a7e5ec310e5d17b804b1"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "domains": {
+      "counts": {
+        "zh": 284,
+        "en": 284
+      },
+      "sha256": {
+        "zh": "725e1befc77f6cc185ad86a7860bcb06ef2fa7d845834a2dc0a60c9179976c85",
+        "en": "db3587f45e6aefba7282a897cbd13cb62a4aac3369794e6b92afb195c4c0c95c"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "elements": {
+      "counts": {
+        "zh": 8,
+        "en": 8
+      },
+      "sha256": {
+        "zh": "515f008dfc3f0a75b59b4f76414bf567e8e0596a8b084afb2f43ff92ad01816a",
+        "en": "515f008dfc3f0a75b59b4f76414bf567e8e0596a8b084afb2f43ff92ad01816a"
+      },
+      "source_languages": {
+        "zh": "en",
+        "en": "en"
+      }
+    },
+    "emojis": {
+      "counts": {
+        "zh": 859,
+        "en": 859
+      },
+      "sha256": {
+        "zh": "ad762b12be8e0131bef39ff7858d6e0abc526511c18329286c7626c3424407be",
+        "en": "88ccecf5ae0bb3e380cb6479ef23ccb62dc39141c5692ed72b49042c704afef0"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "enemies": {
+      "counts": {
+        "zh": 348,
+        "en": 348
+      },
+      "sha256": {
+        "zh": "7611b6370c346a0056070e1aca5c78f582daaa96a661f7e64646cb3169db2af9",
+        "en": "e1f025b31bb2fa80b813fb03b36400b954f1af18029955bd3e1ef48708b8d66e"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "foods": {
+      "counts": {
+        "zh": 409,
+        "en": 409
+      },
+      "sha256": {
+        "zh": "f39817eeecf3eb54f97243608f4b73d6fdbc2b698db75b9c6eb84f43e6635437",
+        "en": "f4bb3d8375c5e92d9aa0c9fbb54cfc20d33eb9881ad84723c7ce9431dfab432a"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "geographies": {
+      "counts": {
+        "zh": 279,
+        "en": 279
+      },
+      "sha256": {
+        "zh": "297cc7c794bc7f5be083003bcaae484bdfd25453c167f7a2283a4bc25f3aa559",
+        "en": "f888345ce8b03168bbf8fd8ebdbcac5cfebf3524a463b2eff1b60bd324b5f35b"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "materials": {
+      "counts": {
+        "zh": 927,
+        "en": 927
+      },
+      "sha256": {
+        "zh": "3527ec1f83fdbd77989fdc37abe6505c8a3bb62e364c81e642ef403136cd68f9",
+        "en": "cc37fd1b05fcb31d4016eaade82a8640ee8d1994803e8966014246497430798a"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "namecards": {
+      "counts": {
+        "zh": 298,
+        "en": 298
+      },
+      "sha256": {
+        "zh": "3840c60f5c78b7a9a0e01c15eb6ece4ff980914c4ca6fdf385d5511afb203258",
+        "en": "3899171801caad573e2f962d842204b1dd78b8204f7ef18081fa491fea38dfb9"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "outfits": {
+      "counts": {
+        "zh": 154,
+        "en": 154
+      },
+      "sha256": {
+        "zh": "81ffa415865746898e80c54de1728c1cf2cf1b3fa0c27d74990bef0a82a517a2",
+        "en": "17d807cac615e80ea7b6978a498be63a8161ecd2bf77993d5a747de8f48ccab6"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "rarity": {
+      "counts": {
+        "zh": 5,
+        "en": 5
+      },
+      "sha256": {
+        "zh": "cafe6d3c796a1f2e1ecfbe543740f9641091454f3af29c7f76301a2c815f8800",
+        "en": "cafe6d3c796a1f2e1ecfbe543740f9641091454f3af29c7f76301a2c815f8800"
+      },
+      "source_languages": {
+        "zh": "en",
+        "en": "en"
+      }
+    },
+    "talentmaterialtypes": {
+      "counts": {
+        "zh": 9,
+        "en": 9
+      },
+      "sha256": {
+        "zh": "14148a052e5b1f43ae5a8260620d1f1c693ab5e79d52c51286e642d47b8d6545",
+        "en": "14148a052e5b1f43ae5a8260620d1f1c693ab5e79d52c51286e642d47b8d6545"
+      },
+      "source_languages": {
+        "zh": "en",
+        "en": "en"
+      }
+    },
+    "talents": {
+      "counts": {
+        "zh": 129,
+        "en": 129
+      },
+      "sha256": {
+        "zh": "58344f3c8c5f2eb229f8fca9c8fb4266f8a55a23df2234e69d3661e947ce3ed7",
+        "en": "90873535768e5adca450554c944dcf210a26d753d239d76a1a7b81d97134896f"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "tcgactioncards": {
+      "counts": {
+        "zh": 969,
+        "en": 969
+      },
+      "sha256": {
+        "zh": "9ec11ac47e29b36f815b1bdea7103fd5088aa830fcb6458945abaf91fcd2da24",
+        "en": "9ec5a8feb8d33d236be0f036da734e3b0ae5c6876960734d842cbd77d70afb3f"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "tcgcardbacks": {
+      "counts": {
+        "zh": 40,
+        "en": 40
+      },
+      "sha256": {
+        "zh": "97704e2a69514d86a0a7201d3db3a2f83df36bb37d7dbcfa6a74fdc265141ac8",
+        "en": "f8650c5666e55e1d5b8a95b62e32056805f2a3c390f774de44bea32bca0bd7c7"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "tcgcardboxes": {
+      "counts": {
+        "zh": 7,
+        "en": 7
+      },
+      "sha256": {
+        "zh": "2d6c34bc8bcb39469aedd0f5deae76779000775f03da6535918f9258df5a40dd",
+        "en": "41d73ae981a84b3af117bbc5befc7147938f79e0a4ef8ce0cf2124519040c024"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "tcgcharactercards": {
+      "counts": {
+        "zh": 156,
+        "en": 156
+      },
+      "sha256": {
+        "zh": "226b8e50652e2442dc27e696067dc574d128acaa3f924ea6a4e275a32f989882",
+        "en": "c82a8a0b888edf9c0b90f236543f5e57549f0a83c39f81589661f7392548bc0b"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "tcgdetailedrules": {
+      "counts": {
+        "zh": 11,
+        "en": 11
+      },
+      "sha256": {
+        "zh": "c260e900efa945ce519ef71b75c8eb0937822c5a4cac2cc918749ab660703894",
+        "en": "d5694a2707276bee0834f56b8e9603b8f03e2b3795d223bc9335915e05b47313"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "tcgenemycards": {
+      "counts": {
+        "zh": 136,
+        "en": 136
+      },
+      "sha256": {
+        "zh": "8403c363694cc8e50efa4ef2689cd5d32ebe614af21c611939acc7c6afef1747",
+        "en": "34b45cc6e6615f5c2475e8887c60338bf170763495d84c1b7f49c07b18eb858a"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "tcgkeywords": {
+      "counts": {
+        "zh": 146,
+        "en": 146
+      },
+      "sha256": {
+        "zh": "bcede08fde05b4e17281a15e577c5bb6a6e21e4aa85abf33c08c1dc1ed5e86a9",
+        "en": "b510bf30e99c477300aa022bf07b7acaa7380624b6190d7772835a77a460a3f1"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "tcglevelrewards": {
+      "counts": {
+        "zh": 10,
+        "en": 10
+      },
+      "sha256": {
+        "zh": "36de18d1ac50d3ba5ac4411f0aebe62e207553aeff49dd57a31bdc177a91c08d",
+        "en": "6ccd409b5e2533fec7553e829b13c5958b6e9e13734feb90e12564df62efe2e1"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "tcgstatuseffects": {
+      "counts": {
+        "zh": 1067,
+        "en": 1067
+      },
+      "sha256": {
+        "zh": "418e5a8923eb8eb1259584d1e1a64d8e672ef71c93772fb6ec6287f127530e7f",
+        "en": "3b519df21bc1f97967ee247e501181749957fae3f554129ebd63d6b130d140d9"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "tcgsummons": {
+      "counts": {
+        "zh": 154,
+        "en": 154
+      },
+      "sha256": {
+        "zh": "af1978627c66c5ca280bb8cf8088c78249751fc3dbdefaeed2118ba2a2205ceb",
+        "en": "7d57086d045726392849c756b316ec154e9dad6c60c09c9c59a460ffbac33993"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "voiceovers": {
+      "counts": {
+        "zh": 109,
+        "en": 109
+      },
+      "sha256": {
+        "zh": "3abf11099b13eb1a8d44c432ca2dc1ad791cf2e361392d20e2cc6f16ab9bf8ad",
+        "en": "c9d7ddaa540f16e0f6db4544e1ca90a4b3f44fb0b56f9713e9afa29194f41d7f"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "weaponmaterialtypes": {
+      "counts": {
+        "zh": 9,
+        "en": 9
+      },
+      "sha256": {
+        "zh": "fb33e6fdb0287204eaf23679af9c8380b516b2420484a9c31003c7eb4eaca662",
+        "en": "fb33e6fdb0287204eaf23679af9c8380b516b2420484a9c31003c7eb4eaca662"
+      },
+      "source_languages": {
+        "zh": "en",
+        "en": "en"
+      }
+    },
+    "weapons": {
+      "counts": {
+        "zh": 256,
+        "en": 256
+      },
+      "sha256": {
+        "zh": "78bfa446407140b457c69497de14e8caef6c7613dd06e7f3f3416f3a50b89041",
+        "en": "ee9015f39acbe985489b35132212354d685fa984df38c4d24ab3de5bae839c66"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    },
+    "windgliders": {
+      "counts": {
+        "zh": 19,
+        "en": 19
+      },
+      "sha256": {
+        "zh": "47af561df83c919289f1e18152f4d4531584a0febc567d949b31749730ea9b1e",
+        "en": "80d95caf13d15e0fd10fe9d3e5d6ff82e0403dfb86dd2a35868d3a570aa94102"
+      },
+      "source_languages": {
+        "zh": "zh",
+        "en": "en"
+      }
+    }
+  },
+  "stats": {
+    "characters": {
+      "count": 126,
+      "sha256": "c1aa5094a2255ce9bf93c627d93b36de67eb78c1e056c888659ba76bb8b9bd23"
+    },
+    "weapons": {
+      "count": 256,
+      "sha256": "a6aed7d78b35944c766e564776cae2c79e2260c69f96ec71a914e3dea26ae662"
+    },
+    "enemies": {
+      "count": 348,
+      "sha256": "b8ddf7956fd1cacbc4e833c8937799936428d127f7ea1298522470e960051fe0"
+    }
+  }
+}

@@ -1,0 +1,1280 @@
+{
+  "meta": {
+    "generated_at": "2026-11-26T02:25:36+00:00",
+    "seed": 20261127,
+    "game_version": "7.2",
+    "catalog_models": 121,
+    "owned_characters": 36,
+    "invested_characters": 12,
+    "artifact_count": 1500,
+    "weapon_count": 54,
+    "level_counts": {
+      "20": 397,
+      "0": 369,
+      "4": 234,
+      "8": 139,
+      "12": 183,
+      "16": 178
+    },
+    "set_counts": {
+      "饰金之梦": 120,
+      "流浪大地的乐团": 115,
+      "逐影猎人": 113,
+      "回声之林夜话": 113,
+      "黄金剧团": 109,
+      "冰风迷途的勇士": 102,
+      "绝缘之旗印": 99,
+      "辰砂往生录": 92,
+      "谐律异想断章": 91,
+      "黑曜秘典": 88,
+      "深廊终曲": 22,
+      "海染砗磲": 20,
+      "沉沦之心": 19,
+      "如雷的盛怒": 17,
+      "来歆余响": 16,
+      "渡过烈火的贤人": 16,
+      "风起之日": 16,
+      "穹境示现之夜": 16,
+      "炉火融炼之心": 16,
+      "平息鸣雷的尊者": 15,
+      "未竟的遐思": 14,
+      "昔时之歌": 14,
+      "逆飞的流星": 13,
+      "深林的记忆": 13,
+      "追忆之注连": 13,
+      "纺月的夜歌": 13,
+      "翠绿之影": 13,
+      "花海甘露之光": 12,
+      "被怜爱的少女": 12,
+      "炽烈的炎之魔女": 12,
+      "晨星与月的晓歌": 11,
+      "昔日宗室之仪": 11,
+      "天之美赐": 11,
+      "华馆梦醒形骸记": 11,
+      "影中沉凝的幻灭": 11,
+      "乐园遗落之花": 11,
+      "沙上楼阁史话": 10,
+      "血红之证": 10,
+      "苍白之火": 10,
+      "水仙之梦": 10,
+      "悠古的磐岩": 10,
+      "长夜之誓": 10,
+      "角斗士的终幕礼": 9,
+      "烬城勇者绘卷": 8,
+      "千岩牢固": 8,
+      "染血的骑士道": 5
+    },
+    "optimized_characters": 4
+  },
+  "roster": [
+    {
+      "character": "Neuvillette",
+      "name_zh": "那维莱特",
+      "element": "ELEMENT_HYDRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_CATALYST",
+      "weapon": "Tome of the Eternal Flow",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Arlecchino",
+      "name_zh": "阿蕾奇诺",
+      "element": "ELEMENT_PYRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_POLE",
+      "weapon": "Crimson Moon's Semblance",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Mavuika",
+      "name_zh": "玛薇卡",
+      "element": "ELEMENT_PYRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_CLAYMORE",
+      "weapon": "A Thousand Blazing Suns",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Furina",
+      "name_zh": "芙宁娜",
+      "element": "ELEMENT_HYDRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "weapon": "Splendor of Tranquil Waters",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Nahida",
+      "name_zh": "纳西妲",
+      "element": "ELEMENT_DENDRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_CATALYST",
+      "weapon": "A Thousand Floating Dreams",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Alhaitham",
+      "name_zh": "艾尔海森",
+      "element": "ELEMENT_DENDRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "weapon": "Light of Foliar Incision",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Raiden Shogun",
+      "name_zh": "雷电将军",
+      "element": "ELEMENT_ELECTRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_POLE",
+      "weapon": "Engulfing Lightning",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Kamisato Ayaka",
+      "name_zh": "神里绫华",
+      "element": "ELEMENT_CRYO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "weapon": "Mistsplitter Reforged",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Ganyu",
+      "name_zh": "甘雨",
+      "element": "ELEMENT_CRYO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_BOW",
+      "weapon": "Amos' Bow",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Xiao",
+      "name_zh": "魈",
+      "element": "ELEMENT_ANEMO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_POLE",
+      "weapon": "Primordial Jade Winged-Spear",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Yelan",
+      "name_zh": "夜兰",
+      "element": "ELEMENT_HYDRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_BOW",
+      "weapon": "Aqua Simulacra",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Navia",
+      "name_zh": "娜维娅",
+      "element": "ELEMENT_GEO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_CLAYMORE",
+      "weapon": "Verdict",
+      "weapon_refinement": 1,
+      "level": 90,
+      "constellation": 0,
+      "talents": {
+        "auto": 10,
+        "skill": 10,
+        "burst": 10
+      },
+      "invested": true
+    },
+    {
+      "character": "Kamisato Ayato",
+      "name_zh": "神里绫人",
+      "element": "ELEMENT_HYDRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "weapon": "Prized Isshin Blade",
+      "weapon_refinement": 3,
+      "level": 60,
+      "constellation": 1,
+      "talents": {
+        "auto": 1,
+        "skill": 8,
+        "burst": 1
+      },
+      "invested": false
+    },
+    {
+      "character": "Eula",
+      "name_zh": "优菈",
+      "element": "ELEMENT_CRYO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_CLAYMORE",
+      "weapon": "Snow-Tombed Starsilver",
+      "weapon_refinement": 3,
+      "level": 50,
+      "constellation": 2,
+      "talents": {
+        "auto": 3,
+        "skill": 7,
+        "burst": 7
+      },
+      "invested": false
+    },
+    {
+      "character": "Ineffa",
+      "name_zh": "伊涅芙",
+      "element": "ELEMENT_ELECTRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_POLE",
+      "weapon": "Blackcliff Pole",
+      "weapon_refinement": 1,
+      "level": 70,
+      "constellation": 1,
+      "talents": {
+        "auto": 8,
+        "skill": 1,
+        "burst": 7
+      },
+      "invested": false
+    },
+    {
+      "character": "Kuki Shinobu",
+      "name_zh": "久岐忍",
+      "element": "ELEMENT_ELECTRO",
+      "rarity": 4,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "weapon": "Heretic's Molten Blade",
+      "weapon_refinement": 4,
+      "level": 50,
+      "constellation": 1,
+      "talents": {
+        "auto": 6,
+        "skill": 3,
+        "burst": 8
+      },
+      "invested": false
+    },
+    {
+      "character": "Dehya",
+      "name_zh": "迪希雅",
+      "element": "ELEMENT_PYRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_CLAYMORE",
+      "weapon": "Master Key",
+      "weapon_refinement": 2,
+      "level": 60,
+      "constellation": 2,
+      "talents": {
+        "auto": 8,
+        "skill": 5,
+        "burst": 7
+      },
+      "invested": false
+    },
+    {
+      "character": "Illuga",
+      "name_zh": "叶洛亚",
+      "element": "ELEMENT_GEO",
+      "rarity": 4,
+      "weapon_type": "WEAPON_POLE",
+      "weapon": "\"The Catch\"",
+      "weapon_refinement": 5,
+      "level": 60,
+      "constellation": 1,
+      "talents": {
+        "auto": 5,
+        "skill": 4,
+        "burst": 4
+      },
+      "invested": false
+    },
+    {
+      "character": "Diluc",
+      "name_zh": "迪卢克",
+      "element": "ELEMENT_PYRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_CLAYMORE",
+      "weapon": "Makhaira Aquamarine",
+      "weapon_refinement": 2,
+      "level": 20,
+      "constellation": 0,
+      "talents": {
+        "auto": 3,
+        "skill": 2,
+        "burst": 8
+      },
+      "invested": false
+    },
+    {
+      "character": "Jahoda",
+      "name_zh": "雅珂达",
+      "element": "ELEMENT_ANEMO",
+      "rarity": 4,
+      "weapon_type": "WEAPON_BOW",
+      "weapon": "Prototype Crescent",
+      "weapon_refinement": 2,
+      "level": 80,
+      "constellation": 6,
+      "talents": {
+        "auto": 5,
+        "skill": 5,
+        "burst": 2
+      },
+      "invested": false
+    },
+    {
+      "character": "Chasca",
+      "name_zh": "恰斯卡",
+      "element": "ELEMENT_ANEMO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_BOW",
+      "weapon": "The Stringless",
+      "weapon_refinement": 3,
+      "level": 70,
+      "constellation": 2,
+      "talents": {
+        "auto": 6,
+        "skill": 8,
+        "burst": 5
+      },
+      "invested": false
+    },
+    {
+      "character": "Kaedehara Kazuha",
+      "name_zh": "枫原万叶",
+      "element": "ELEMENT_ANEMO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "weapon": "Wolf-Fang",
+      "weapon_refinement": 5,
+      "level": 60,
+      "constellation": 0,
+      "talents": {
+        "auto": 3,
+        "skill": 2,
+        "burst": 4
+      },
+      "invested": false
+    },
+    {
+      "character": "Klee",
+      "name_zh": "可莉",
+      "element": "ELEMENT_PYRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_CATALYST",
+      "weapon": "Royal Grimoire",
+      "weapon_refinement": 2,
+      "level": 40,
+      "constellation": 0,
+      "talents": {
+        "auto": 1,
+        "skill": 3,
+        "burst": 3
+      },
+      "invested": false
+    },
+    {
+      "character": "Xiangling",
+      "name_zh": "香菱",
+      "element": "ELEMENT_PYRO",
+      "rarity": 4,
+      "weapon_type": "WEAPON_POLE",
+      "weapon": "Blackcliff Pole",
+      "weapon_refinement": 2,
+      "level": 70,
+      "constellation": 6,
+      "talents": {
+        "auto": 2,
+        "skill": 8,
+        "burst": 8
+      },
+      "invested": false
+    },
+    {
+      "character": "Zhongli",
+      "name_zh": "钟离",
+      "element": "ELEMENT_GEO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_POLE",
+      "weapon": "Frostbreath",
+      "weapon_refinement": 2,
+      "level": 80,
+      "constellation": 1,
+      "talents": {
+        "auto": 6,
+        "skill": 3,
+        "burst": 1
+      },
+      "invested": false
+    },
+    {
+      "character": "Mitya",
+      "name_zh": "米提亚",
+      "element": "ELEMENT_ELECTRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_CATALYST",
+      "weapon": "Ballad of the Boundless Blue",
+      "weapon_refinement": 4,
+      "level": 20,
+      "constellation": 1,
+      "talents": {
+        "auto": 1,
+        "skill": 7,
+        "burst": 5
+      },
+      "invested": false
+    },
+    {
+      "character": "Xingqiu",
+      "name_zh": "行秋",
+      "element": "ELEMENT_HYDRO",
+      "rarity": 4,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "weapon": "Sword of Narzissenkreuz",
+      "weapon_refinement": 4,
+      "level": 60,
+      "constellation": 6,
+      "talents": {
+        "auto": 4,
+        "skill": 5,
+        "burst": 2
+      },
+      "invested": false
+    },
+    {
+      "character": "Nilou",
+      "name_zh": "妮露",
+      "element": "ELEMENT_HYDRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "weapon": "The Dockhand's Assistant",
+      "weapon_refinement": 4,
+      "level": 20,
+      "constellation": 1,
+      "talents": {
+        "auto": 1,
+        "skill": 4,
+        "burst": 4
+      },
+      "invested": false
+    },
+    {
+      "character": "Sandrone",
+      "name_zh": "桑多涅",
+      "element": "ELEMENT_CRYO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_CLAYMORE",
+      "weapon": "Serpent Spine",
+      "weapon_refinement": 1,
+      "level": 50,
+      "constellation": 2,
+      "talents": {
+        "auto": 5,
+        "skill": 1,
+        "burst": 2
+      },
+      "invested": false
+    },
+    {
+      "character": "Barbara",
+      "name_zh": "芭芭拉",
+      "element": "ELEMENT_HYDRO",
+      "rarity": 4,
+      "weapon_type": "WEAPON_CATALYST",
+      "weapon": "Blackcliff Agate",
+      "weapon_refinement": 5,
+      "level": 60,
+      "constellation": 6,
+      "talents": {
+        "auto": 8,
+        "skill": 7,
+        "burst": 4
+      },
+      "invested": false
+    },
+    {
+      "character": "Chevreuse",
+      "name_zh": "夏沃蕾",
+      "element": "ELEMENT_PYRO",
+      "rarity": 4,
+      "weapon_type": "WEAPON_POLE",
+      "weapon": "Deathmatch",
+      "weapon_refinement": 2,
+      "level": 20,
+      "constellation": 0,
+      "talents": {
+        "auto": 2,
+        "skill": 1,
+        "burst": 2
+      },
+      "invested": false
+    },
+    {
+      "character": "Keqing",
+      "name_zh": "刻晴",
+      "element": "ELEMENT_ELECTRO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "weapon": "Silver Light",
+      "weapon_refinement": 2,
+      "level": 70,
+      "constellation": 0,
+      "talents": {
+        "auto": 8,
+        "skill": 7,
+        "burst": 8
+      },
+      "invested": false
+    },
+    {
+      "character": "Bennett",
+      "name_zh": "班尼特",
+      "element": "ELEMENT_PYRO",
+      "rarity": 4,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND",
+      "weapon": "Moonweaver's Dawn",
+      "weapon_refinement": 2,
+      "level": 60,
+      "constellation": 2,
+      "talents": {
+        "auto": 8,
+        "skill": 1,
+        "burst": 2
+      },
+      "invested": false
+    },
+    {
+      "character": "Dori",
+      "name_zh": "多莉",
+      "element": "ELEMENT_ELECTRO",
+      "rarity": 4,
+      "weapon_type": "WEAPON_CLAYMORE",
+      "weapon": "Forest Regalia",
+      "weapon_refinement": 1,
+      "level": 70,
+      "constellation": 2,
+      "talents": {
+        "auto": 2,
+        "skill": 3,
+        "burst": 4
+      },
+      "invested": false
+    },
+    {
+      "character": "Xianyun",
+      "name_zh": "闲云",
+      "element": "ELEMENT_ANEMO",
+      "rarity": 5,
+      "weapon_type": "WEAPON_CATALYST",
+      "weapon": "Royal Grimoire",
+      "weapon_refinement": 5,
+      "level": 40,
+      "constellation": 2,
+      "talents": {
+        "auto": 5,
+        "skill": 4,
+        "burst": 7
+      },
+      "invested": false
+    },
+    {
+      "character": "Iansan",
+      "name_zh": "伊安珊",
+      "element": "ELEMENT_ELECTRO",
+      "rarity": 4,
+      "weapon_type": "WEAPON_POLE",
+      "weapon": "Prospector's Drill",
+      "weapon_refinement": 4,
+      "level": 40,
+      "constellation": 5,
+      "talents": {
+        "auto": 8,
+        "skill": 2,
+        "burst": 4
+      },
+      "invested": false
+    }
+  ],
+  "weapons": [
+    {
+      "name": "Tome of the Eternal Flow",
+      "owner": "Neuvillette",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_CATALYST"
+    },
+    {
+      "name": "Crimson Moon's Semblance",
+      "owner": "Arlecchino",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "A Thousand Blazing Suns",
+      "owner": "Mavuika",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_CLAYMORE"
+    },
+    {
+      "name": "Splendor of Tranquil Waters",
+      "owner": "Furina",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "A Thousand Floating Dreams",
+      "owner": "Nahida",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_CATALYST"
+    },
+    {
+      "name": "Light of Foliar Incision",
+      "owner": "Alhaitham",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "Engulfing Lightning",
+      "owner": "Raiden Shogun",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Mistsplitter Reforged",
+      "owner": "Kamisato Ayaka",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "Amos' Bow",
+      "owner": "Ganyu",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_BOW"
+    },
+    {
+      "name": "Primordial Jade Winged-Spear",
+      "owner": "Xiao",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Aqua Simulacra",
+      "owner": "Yelan",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_BOW"
+    },
+    {
+      "name": "Verdict",
+      "owner": "Navia",
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_CLAYMORE"
+    },
+    {
+      "name": "Prized Isshin Blade",
+      "owner": "Kamisato Ayato",
+      "level": 60,
+      "refinement": 3,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "Snow-Tombed Starsilver",
+      "owner": "Eula",
+      "level": 50,
+      "refinement": 3,
+      "weapon_type": "WEAPON_CLAYMORE"
+    },
+    {
+      "name": "Blackcliff Pole",
+      "owner": "Ineffa",
+      "level": 70,
+      "refinement": 1,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Heretic's Molten Blade",
+      "owner": "Kuki Shinobu",
+      "level": 50,
+      "refinement": 4,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "Master Key",
+      "owner": "Dehya",
+      "level": 60,
+      "refinement": 2,
+      "weapon_type": "WEAPON_CLAYMORE"
+    },
+    {
+      "name": "\"The Catch\"",
+      "owner": "Illuga",
+      "level": 60,
+      "refinement": 5,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Makhaira Aquamarine",
+      "owner": "Diluc",
+      "level": 20,
+      "refinement": 2,
+      "weapon_type": "WEAPON_CLAYMORE"
+    },
+    {
+      "name": "Prototype Crescent",
+      "owner": "Jahoda",
+      "level": 80,
+      "refinement": 2,
+      "weapon_type": "WEAPON_BOW"
+    },
+    {
+      "name": "The Stringless",
+      "owner": "Chasca",
+      "level": 70,
+      "refinement": 3,
+      "weapon_type": "WEAPON_BOW"
+    },
+    {
+      "name": "Wolf-Fang",
+      "owner": "Kaedehara Kazuha",
+      "level": 60,
+      "refinement": 5,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "Royal Grimoire",
+      "owner": "Klee",
+      "level": 40,
+      "refinement": 2,
+      "weapon_type": "WEAPON_CATALYST"
+    },
+    {
+      "name": "Blackcliff Pole",
+      "owner": "Xiangling",
+      "level": 70,
+      "refinement": 2,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Frostbreath",
+      "owner": "Zhongli",
+      "level": 80,
+      "refinement": 2,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Ballad of the Boundless Blue",
+      "owner": "Mitya",
+      "level": 20,
+      "refinement": 4,
+      "weapon_type": "WEAPON_CATALYST"
+    },
+    {
+      "name": "Sword of Narzissenkreuz",
+      "owner": "Xingqiu",
+      "level": 60,
+      "refinement": 4,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "The Dockhand's Assistant",
+      "owner": "Nilou",
+      "level": 20,
+      "refinement": 4,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "Serpent Spine",
+      "owner": "Sandrone",
+      "level": 50,
+      "refinement": 1,
+      "weapon_type": "WEAPON_CLAYMORE"
+    },
+    {
+      "name": "Blackcliff Agate",
+      "owner": "Barbara",
+      "level": 60,
+      "refinement": 5,
+      "weapon_type": "WEAPON_CATALYST"
+    },
+    {
+      "name": "Deathmatch",
+      "owner": "Chevreuse",
+      "level": 20,
+      "refinement": 2,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Silver Light",
+      "owner": "Keqing",
+      "level": 70,
+      "refinement": 2,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "Moonweaver's Dawn",
+      "owner": "Bennett",
+      "level": 60,
+      "refinement": 2,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "Forest Regalia",
+      "owner": "Dori",
+      "level": 70,
+      "refinement": 1,
+      "weapon_type": "WEAPON_CLAYMORE"
+    },
+    {
+      "name": "Royal Grimoire",
+      "owner": "Xianyun",
+      "level": 40,
+      "refinement": 5,
+      "weapon_type": "WEAPON_CATALYST"
+    },
+    {
+      "name": "Prospector's Drill",
+      "owner": "Iansan",
+      "level": 40,
+      "refinement": 4,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Tamayuratei no Ohanashi",
+      "owner": null,
+      "level": 1,
+      "refinement": 1,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Fractured Halo",
+      "owner": null,
+      "level": 1,
+      "refinement": 1,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Sacrificial Greatsword",
+      "owner": null,
+      "level": 90,
+      "refinement": 2,
+      "weapon_type": "WEAPON_CLAYMORE"
+    },
+    {
+      "name": "Kitain Cross Spear",
+      "owner": null,
+      "level": 1,
+      "refinement": 5,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "The Stringless",
+      "owner": null,
+      "level": 90,
+      "refinement": 4,
+      "weapon_type": "WEAPON_BOW"
+    },
+    {
+      "name": "Dialogues of the Desert Sages",
+      "owner": null,
+      "level": 1,
+      "refinement": 3,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Kagotsurube Isshin",
+      "owner": null,
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "Winter's Heavy Heart",
+      "owner": null,
+      "level": 90,
+      "refinement": 4,
+      "weapon_type": "WEAPON_CATALYST"
+    },
+    {
+      "name": "Sacrificial Greatsword",
+      "owner": null,
+      "level": 20,
+      "refinement": 2,
+      "weapon_type": "WEAPON_CLAYMORE"
+    },
+    {
+      "name": "The Dockhand's Assistant",
+      "owner": null,
+      "level": 70,
+      "refinement": 2,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "End of the Line",
+      "owner": null,
+      "level": 1,
+      "refinement": 1,
+      "weapon_type": "WEAPON_BOW"
+    },
+    {
+      "name": "Rainbow Serpent's Rain Bow",
+      "owner": null,
+      "level": 70,
+      "refinement": 1,
+      "weapon_type": "WEAPON_BOW"
+    },
+    {
+      "name": "Amos' Bow",
+      "owner": null,
+      "level": 70,
+      "refinement": 1,
+      "weapon_type": "WEAPON_BOW"
+    },
+    {
+      "name": "Royal Longsword",
+      "owner": null,
+      "level": 20,
+      "refinement": 1,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "Prototype Amber",
+      "owner": null,
+      "level": 20,
+      "refinement": 5,
+      "weapon_type": "WEAPON_CATALYST"
+    },
+    {
+      "name": "Silver Light",
+      "owner": null,
+      "level": 90,
+      "refinement": 5,
+      "weapon_type": "WEAPON_SWORD_ONE_HAND"
+    },
+    {
+      "name": "Bloodsoaked Ruins",
+      "owner": null,
+      "level": 70,
+      "refinement": 1,
+      "weapon_type": "WEAPON_POLE"
+    },
+    {
+      "name": "Polar Star",
+      "owner": null,
+      "level": 90,
+      "refinement": 1,
+      "weapon_type": "WEAPON_BOW"
+    }
+  ],
+  "invested": [
+    {
+      "character": "Neuvillette",
+      "name": "那维莱特",
+      "weapon": "Tome of the Eternal Flow",
+      "target_four_piece_set": 15031,
+      "optimized": true
+    },
+    {
+      "character": "Arlecchino",
+      "name": "阿蕾奇诺",
+      "weapon": "Crimson Moon's Semblance",
+      "target_four_piece_set": 15035,
+      "optimized": true
+    },
+    {
+      "character": "Mavuika",
+      "name": "玛薇卡",
+      "weapon": "A Thousand Blazing Suns",
+      "target_four_piece_set": 15038,
+      "optimized": true
+    },
+    {
+      "character": "Furina",
+      "name": "芙宁娜",
+      "weapon": "Splendor of Tranquil Waters",
+      "target_four_piece_set": 15032,
+      "optimized": true
+    },
+    {
+      "character": "Nahida",
+      "name": "纳西妲",
+      "weapon": "A Thousand Floating Dreams",
+      "target_four_piece_set": 15026,
+      "optimized": false
+    },
+    {
+      "character": "Alhaitham",
+      "name": "艾尔海森",
+      "weapon": "Light of Foliar Incision",
+      "target_four_piece_set": 15026,
+      "optimized": false
+    },
+    {
+      "character": "Raiden Shogun",
+      "name": "雷电将军",
+      "weapon": "Engulfing Lightning",
+      "target_four_piece_set": 15020,
+      "optimized": false
+    },
+    {
+      "character": "Kamisato Ayaka",
+      "name": "神里绫华",
+      "weapon": "Mistsplitter Reforged",
+      "target_four_piece_set": 14001,
+      "optimized": false
+    },
+    {
+      "character": "Ganyu",
+      "name": "甘雨",
+      "weapon": "Amos' Bow",
+      "target_four_piece_set": 15003,
+      "optimized": false
+    },
+    {
+      "character": "Xiao",
+      "name": "魈",
+      "weapon": "Primordial Jade Winged-Spear",
+      "target_four_piece_set": 15023,
+      "optimized": false
+    },
+    {
+      "character": "Yelan",
+      "name": "夜兰",
+      "weapon": "Aqua Simulacra",
+      "target_four_piece_set": 15020,
+      "optimized": false
+    },
+    {
+      "character": "Navia",
+      "name": "娜维娅",
+      "weapon": "Verdict",
+      "target_four_piece_set": 15034,
+      "optimized": false
+    }
+  ],
+  "current_profiles": {
+    "Neuvillette": [
+      "73179ee5-ffda-410d-aa5f-f5ea75cd0197",
+      "3fda2942-75f2-4a80-82e9-8968f3a66832",
+      "4dd0a971-93f4-4915-82bb-5b4cf4a82c6a",
+      "13b980c7-8c67-4873-9377-b6a2e89210fb",
+      "08c4d0e5-4dfa-4c08-863b-660d2f1022e8"
+    ],
+    "Arlecchino": [
+      "e7b3e77a-ee50-4927-b397-93f843c3f079",
+      "8a79bb92-cfee-4e19-81a3-433b75eb8858",
+      "051c9903-cbd6-44d6-a07d-49eba47165ab",
+      "fc905779-859a-417b-9423-91c06056267d",
+      "29d30f2d-1a34-4eaa-9d97-0f93d9cc10de"
+    ],
+    "Mavuika": [
+      "eb71f6be-1c81-4b5a-b365-364d202593fe",
+      "ee266c2f-8dfb-454b-942b-88b9d84fc707",
+      "2303804a-f9a5-4b73-9ca7-0748552f180d",
+      "81e5c142-816d-4507-98c8-e86413392e54",
+      "6a51e0a0-e8c0-4684-8b2c-5fe2127d18b7"
+    ],
+    "Furina": [
+      "5d12c67d-3b00-4249-85f6-07432ba51c5a",
+      "d69bd8a6-aca1-4824-a5b6-c0110d68f1f7",
+      "aa4f50c3-a6b5-4f7b-a7da-13ba23dc87e3",
+      "a7e77cd8-56d5-45c2-90da-7224d17861c5",
+      "fe862d6a-f042-466f-90a8-4c94ea967eb8"
+    ],
+    "Nahida": [
+      "8bb01438-d14b-46f5-a104-d8bda85ad5c4",
+      "66c29668-ae01-4e54-ad68-184cae8137da",
+      "c018e1bf-c411-4653-a6d3-588e5c5a9d0f",
+      "667a9b0a-3dce-466c-b0fc-d0faa3e1fc8c",
+      "b0b91a32-c57f-4892-ae60-589bb26405a9"
+    ],
+    "Alhaitham": [
+      "a0f910a1-0b18-427b-82c5-9837faa75fa3",
+      "21044728-b607-47c6-8961-75fc4f935db7",
+      "57cf2a7f-12f5-42cb-835f-09b83006fa15",
+      "fb4677f8-666f-45f5-b1df-5c5f6363f717",
+      "c04ff0ad-23c7-4aab-924e-6aa1c9796775"
+    ],
+    "Raiden Shogun": [
+      "cea485cf-1e00-4c08-b25b-07e413839279",
+      "2028a488-68d2-464d-b4f5-69082bb6eb3c",
+      "cbc69b49-0e52-4114-b935-c45496687617",
+      "5904f51c-826a-4f1a-8995-8b9e9669cec9",
+      "9c328d52-e8a3-4a69-b98e-2e4943b6a390"
+    ],
+    "Kamisato Ayaka": [
+      "485053b9-1765-4c02-bc88-475f3a4fe5f4",
+      "2a6927aa-a875-4030-bf25-a9813eb1d743",
+      "2e8c46eb-f14c-428c-902f-66bdca3ce13c",
+      "a2cdf069-cb1d-4362-9a29-660d55b291ef",
+      "2c84293b-c78f-49e2-a227-9fecafb3a2cf"
+    ],
+    "Ganyu": [
+      "fd89551f-bb52-44c5-ac0b-19ade5001e21",
+      "c81ab313-992a-492d-9af5-affd060f1fe7",
+      "088d8a4b-d28d-4ba4-a89b-6361175a856b",
+      "90bc3325-bc97-432d-9085-99978fec0085",
+      "a66f0b8f-565d-44af-bd22-aef0c629662b"
+    ],
+    "Xiao": [
+      "3c6bc182-9017-426d-b32c-4988be96aa43",
+      "9bf8d062-6f21-45bb-af3e-273468323825",
+      "63a94864-8b1a-4301-b36d-0b78ab208794",
+      "1adcfe29-2bf4-46a6-b301-8f4d692387b7",
+      "3746a61c-fb21-406b-91bf-9b83237e6bc7"
+    ],
+    "Yelan": [
+      "30bf9317-db5a-4b74-b095-f19d03f908b5",
+      "86c6923f-86ae-433a-85a5-d760ba3203c4",
+      "65a6a54f-205a-4221-a941-f4822a9e57b6",
+      "e9906ceb-14af-4d8f-9983-ef10c65f242f",
+      "1163292e-9d60-4783-8fa3-58b8ff0ade83"
+    ],
+    "Navia": [
+      "90ed4401-0dad-411c-b448-8b87c648f72c",
+      "09c14eca-d2ba-4f9c-91c4-183f9324e5b9",
+      "c5f63874-faf6-4da4-893f-00149608bb45",
+      "85ce3bd4-4156-427d-b988-e1d274e11b08",
+      "a4381ae3-7955-45c1-ab15-eddf22567116"
+    ]
+  },
+  "current_build_meta": {
+    "attempts": [
+      {
+        "fraction": 0.6,
+        "feasible": true,
+        "subset_size": 900
+      }
+    ],
+    "subset_size": 900,
+    "strategy": "sequential-greedy"
+  },
+  "domains": [
+    {
+      "id": 982,
+      "name": "罪祸的终末",
+      "sets": [
+        "逐影猎人",
+        "黄金剧团"
+      ]
+    },
+    {
+      "id": 1151,
+      "name": "褪色的剧场",
+      "sets": [
+        "谐律异想断章",
+        "未竟的遐思"
+      ]
+    },
+    {
+      "id": 1190,
+      "name": "虹灵的净土",
+      "sets": [
+        "烬城勇者绘卷",
+        "黑曜秘典"
+      ]
+    }
+  ],
+  "files": {
+    "database": "account.sqlite3",
+    "report": "report.json",
+    "summary": "summary.json",
+    "party_request": "party-request.json",
+    "party_request_core8": "party-request-core8.json",
+    "party_request_full12": "party-request-full12.json"
+  }
+}

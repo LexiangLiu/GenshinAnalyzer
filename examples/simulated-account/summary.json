@@ -1,0 +1,280 @@
+{
+  "recommended_domain_id": 982,
+  "search": {
+    "exact": false,
+    "iterations": 1,
+    "conflicts": 2,
+    "unused_count": 1480
+  },
+  "members": [
+    {
+      "name": "那维莱特",
+      "character": "Neuvillette",
+      "target_set": {
+        "id": 15031,
+        "name": "逐影猎人"
+      },
+      "current_damage": 14601.389444503566,
+      "optimal_damage": 15085.957818969238,
+      "gain_pct": 3.318645641960326,
+      "normalized_damage": 1.0,
+      "set_names": [
+        "逐影猎人",
+        "逐影猎人",
+        "逐影猎人",
+        "逐影猎人",
+        "渡过烈火的贤人"
+      ]
+    },
+    {
+      "name": "阿蕾奇诺",
+      "character": "Arlecchino",
+      "target_set": {
+        "id": 15035,
+        "name": "谐律异想断章"
+      },
+      "current_damage": 29121.251444239973,
+      "optimal_damage": 31098.03470595837,
+      "gain_pct": 6.788112336118004,
+      "normalized_damage": 1.0,
+      "set_names": [
+        "谐律异想断章",
+        "谐律异想断章",
+        "谐律异想断章",
+        "谐律异想断章",
+        "饰金之梦"
+      ]
+    },
+    {
+      "name": "玛薇卡",
+      "character": "Mavuika",
+      "target_set": {
+        "id": 15038,
+        "name": "黑曜秘典"
+      },
+      "current_damage": 69225.16961635204,
+      "optimal_damage": 74667.15377500413,
+      "gain_pct": 7.8612796311106665,
+      "normalized_damage": 0.9975206763799905,
+      "set_names": [
+        "黑曜秘典",
+        "黑曜秘典",
+        "黑曜秘典",
+        "沙上楼阁史话",
+        "黑曜秘典"
+      ]
+    },
+    {
+      "name": "芙宁娜",
+      "character": "Furina",
+      "target_set": {
+        "id": 15032,
+        "name": "黄金剧团"
+      },
+      "current_damage": 4658.545385493906,
+      "optimal_damage": 5077.742709678491,
+      "gain_pct": 8.998459594059346,
+      "normalized_damage": 0.9995515118631005,
+      "set_names": [
+        "黑曜秘典",
+        "黄金剧团",
+        "黄金剧团",
+        "黄金剧团",
+        "黄金剧团"
+      ]
+    }
+  ],
+  "domains": [
+    {
+      "domain_id": 982,
+      "domain_name": "罪祸的终末",
+      "score_pct_per_100_resin": 0.5144027199218181,
+      "weighted_expected_gain_pct": 0.10288054398436362,
+      "best_member_expected_gain_pct": 0.3190067661048876,
+      "probability_any_member_upgrade": 0.08098114959830693,
+      "expected_resin_to_any_upgrade": 246.97105560005707,
+      "members": [
+        {
+          "name": "那维莱特",
+          "probability_per_drop": 0.027577767267069876,
+          "expected_gain_pct": 0.08749069675667727,
+          "expected_resin": 725.2218718910449,
+          "best_slot": "FLOWER"
+        },
+        {
+          "name": "阿蕾奇诺",
+          "probability_per_drop": 0.00036920912084089736,
+          "expected_gain_pct": 0.0008613040377822856,
+          "expected_resin": 54169.842701742375,
+          "best_slot": "CIRCLET"
+        },
+        {
+          "name": "玛薇卡",
+          "probability_per_drop": 0.0012662471724964825,
+          "expected_gain_pct": 0.004163409038107347,
+          "expected_resin": 15794.70456827856,
+          "best_slot": "GOBLET"
+        },
+        {
+          "name": "芙宁娜",
+          "probability_per_drop": 0.053370166105285735,
+          "expected_gain_pct": 0.3190067661048876,
+          "expected_resin": 374.74119830440657,
+          "best_slot": "PLUME"
+        }
+      ]
+    },
+    {
+      "domain_id": 1190,
+      "domain_name": "虹灵的净土",
+      "score_pct_per_100_resin": 0.2609989563559947,
+      "weighted_expected_gain_pct": 0.052199791271198934,
+      "best_member_expected_gain_pct": 0.20159561165426096,
+      "probability_any_member_upgrade": 0.052271679154969886,
+      "expected_resin_to_any_upgrade": 382.616367473216,
+      "members": [
+        {
+          "name": "那维莱特",
+          "probability_per_drop": 0.0016977624475745024,
+          "expected_gain_pct": 0.004828837666861175,
+          "expected_resin": 11780.211082282374,
+          "best_slot": "CIRCLET"
+        },
+        {
+          "name": "阿蕾奇诺",
+          "probability_per_drop": 0.00036920912084089736,
+          "expected_gain_pct": 0.0008613040377822856,
+          "expected_resin": 54169.842701742375,
+          "best_slot": "CIRCLET"
+        },
+        {
+          "name": "玛薇卡",
+          "probability_per_drop": 0.04962306882176752,
+          "expected_gain_pct": 0.20159561165426096,
+          "expected_resin": 403.0383544362104,
+          "best_slot": "SANDS"
+        },
+        {
+          "name": "芙宁娜",
+          "probability_per_drop": 0.0007220523877735535,
+          "expected_gain_pct": 0.0015134117258913209,
+          "expected_resin": 27698.82121942695,
+          "best_slot": "FLOWER"
+        }
+      ]
+    },
+    {
+      "domain_id": 1151,
+      "domain_name": "褪色的剧场",
+      "score_pct_per_100_resin": 0.2103745774688211,
+      "weighted_expected_gain_pct": 0.042074915493764214,
+      "best_member_expected_gain_pct": 0.157794003544197,
+      "probability_any_member_upgrade": 0.045937627499139655,
+      "expected_resin_to_any_upgrade": 435.37294128597676,
+      "members": [
+        {
+          "name": "那维莱特",
+          "probability_per_drop": 0.0016977624475745024,
+          "expected_gain_pct": 0.004828837666861175,
+          "expected_resin": 11780.211082282374,
+          "best_slot": "CIRCLET"
+        },
+        {
+          "name": "阿蕾奇诺",
+          "probability_per_drop": 0.04241200529771345,
+          "expected_gain_pct": 0.157794003544197,
+          "expected_resin": 471.56459261024986,
+          "best_slot": "PLUME"
+        },
+        {
+          "name": "玛薇卡",
+          "probability_per_drop": 0.0012662471724964825,
+          "expected_gain_pct": 0.004163409038107347,
+          "expected_resin": 15794.70456827856,
+          "best_slot": "GOBLET"
+        },
+        {
+          "name": "芙宁娜",
+          "probability_per_drop": 0.0007220523877735535,
+          "expected_gain_pct": 0.0015134117258913209,
+          "expected_resin": 27698.82121942695,
+          "best_slot": "FLOWER"
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    "库存存在角色争用；联合配装使用启发式搜索，不保证全局最优。",
+    "部分配装搜索达到节点上限，结果可能不是该步骤的最优解。",
+    "联合配装包含未满级圣遗物；升级已有圣遗物是另一类提升。"
+  ],
+  "account_domain_demand": [
+    {
+      "domain_id": 361,
+      "domain_name": "椛染之庭",
+      "count": 2,
+      "characters": [
+        "雷电将军",
+        "夜兰"
+      ]
+    },
+    {
+      "domain_id": 507,
+      "domain_name": "缘觉塔",
+      "count": 2,
+      "characters": [
+        "纳西妲",
+        "艾尔海森"
+      ]
+    },
+    {
+      "domain_id": 982,
+      "domain_name": "罪祸的终末",
+      "count": 2,
+      "characters": [
+        "那维莱特",
+        "芙宁娜"
+      ]
+    },
+    {
+      "domain_id": 1142,
+      "domain_name": "临瀑之城",
+      "count": 1,
+      "characters": [
+        "娜维娅"
+      ]
+    },
+    {
+      "domain_id": 516,
+      "domain_name": "岩中幽谷",
+      "count": 1,
+      "characters": [
+        "魈"
+      ]
+    },
+    {
+      "domain_id": 221,
+      "domain_name": "芬德尼尔之顶",
+      "count": 1,
+      "characters": [
+        "神里绫华"
+      ]
+    },
+    {
+      "domain_id": 1190,
+      "domain_name": "虹灵的净土",
+      "count": 1,
+      "characters": [
+        "玛薇卡"
+      ]
+    },
+    {
+      "domain_id": 1151,
+      "domain_name": "褪色的剧场",
+      "count": 1,
+      "characters": [
+        "阿蕾奇诺"
+      ]
+    }
+  ]
+}

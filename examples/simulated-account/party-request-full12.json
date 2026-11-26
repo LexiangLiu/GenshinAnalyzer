@@ -1,0 +1,165 @@
+{
+  "members": [
+    {
+      "character": "Neuvillette",
+      "weapon": {
+        "id": "Tome of the Eternal Flow",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15031,
+      "profile": "Neuvillette",
+      "name": "那维莱特",
+      "weight": 1.0
+    },
+    {
+      "character": "Arlecchino",
+      "weapon": {
+        "id": "Crimson Moon's Semblance",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15035,
+      "profile": "Arlecchino",
+      "name": "阿蕾奇诺",
+      "weight": 1.0
+    },
+    {
+      "character": "Mavuika",
+      "weapon": {
+        "id": "A Thousand Blazing Suns",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15038,
+      "profile": "Mavuika",
+      "name": "玛薇卡",
+      "weight": 1.0
+    },
+    {
+      "character": "Furina",
+      "weapon": {
+        "id": "Splendor of Tranquil Waters",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15032,
+      "profile": "Furina",
+      "name": "芙宁娜",
+      "weight": 1.0
+    },
+    {
+      "character": "Nahida",
+      "weapon": {
+        "id": "A Thousand Floating Dreams",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15026,
+      "profile": "Nahida",
+      "name": "纳西妲",
+      "weight": 1.0
+    },
+    {
+      "character": "Alhaitham",
+      "weapon": {
+        "id": "Light of Foliar Incision",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15026,
+      "profile": "Alhaitham",
+      "name": "艾尔海森",
+      "weight": 1.0
+    },
+    {
+      "character": "Raiden Shogun",
+      "weapon": {
+        "id": "Engulfing Lightning",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15020,
+      "profile": "Raiden Shogun",
+      "name": "雷电将军",
+      "weight": 1.0
+    },
+    {
+      "character": "Kamisato Ayaka",
+      "weapon": {
+        "id": "Mistsplitter Reforged",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 14001,
+      "profile": "Kamisato Ayaka",
+      "name": "神里绫华",
+      "weight": 1.0
+    },
+    {
+      "character": "Ganyu",
+      "weapon": {
+        "id": "Amos' Bow",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15003,
+      "profile": "Ganyu",
+      "name": "甘雨",
+      "weight": 1.0
+    },
+    {
+      "character": "Xiao",
+      "weapon": {
+        "id": "Primordial Jade Winged-Spear",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15023,
+      "profile": "Xiao",
+      "name": "魈",
+      "weight": 1.0
+    },
+    {
+      "character": "Yelan",
+      "weapon": {
+        "id": "Aqua Simulacra",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15020,
+      "profile": "Yelan",
+      "name": "夜兰",
+      "weight": 1.0
+    },
+    {
+      "character": "Navia",
+      "weapon": {
+        "id": "Verdict",
+        "level": 90,
+        "ascension": 6
+      },
+      "target_four_piece_set": 15034,
+      "profile": "Navia",
+      "name": "娜维娅",
+      "weight": 1.0
+    }
+  ],
+  "domains": [
+    982,
+    1151,
+    1190,
+    507,
+    361,
+    221,
+    516,
+    1142
+  ],
+  "threshold_pct": 1.0,
+  "max_nodes": 300000,
+  "restarts": 2,
+  "max_iterations": 2,
+  "normalize": true,
+  "resin_per_claim": 20,
+  "score_mode": "sum"
+}

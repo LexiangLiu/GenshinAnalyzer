@@ -1,0 +1,21 @@
+{
+  "repository": "https://github.com/frzyc/genshin-optimizer",
+  "commit": "916e46d14d1031c9188a6122f045f3308b0a1f37",
+  "version": "10.40.0",
+  "license": "MIT",
+  "node_major": 24,
+  "build_dependencies": {
+    "esbuild": "0.19.2",
+    "fflate": "0.8.3"
+  },
+  "internal_libraries": [
+    "libs/common/util",
+    "libs/game-opt/engine",
+    "libs/game-opt/formula",
+    "libs/gi/consts",
+    "libs/gi/formula",
+    "libs/gi/stats",
+    "libs/pando/engine"
+  ],
+  "sha256": "793e70bd9d47e517ba61c7f69098712af18981103f1bac9a9356b8797fefbf66"
+}
