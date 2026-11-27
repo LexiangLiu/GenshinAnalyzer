@@ -515,7 +515,9 @@ class ProjectionIntegrationTests(unittest.TestCase):
         manekin_fields = {field["label"]: field["value"] for field in manekin_detail["fields"]}
         self.assertEqual(manekin_fields["逻辑身份"], "奇偶（Manekin / Manekina 共用）")
         self.assertEqual(manekin_fields["当前元素"], manekin["current_element_name"])
-        self.assertTrue(manekin_fields["能力摘要（倍率未接入）"])
+        self.assertTrue(manekin_fields["能力摘要"])
+        self.assertIn("普攻 Lv10", manekin_fields["技能倍率与参数（当前天赋等级）"])
+        self.assertIn("583.2%", manekin_fields["技能倍率与参数（当前天赋等级）"])
         self.assertIn("未校准", manekin_fields["战斗模型状态"])
         self.assertTrue(any("不参与配装评分" in note for note in manekin_detail["notes"]))
         character = generated["account"]["optimizable_roster"][0]["character"]

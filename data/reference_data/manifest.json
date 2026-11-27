@@ -553,5 +553,63 @@
       "count": 348,
       "sha256": "b8ddf7956fd1cacbc4e833c8937799936428d127f7ea1298522470e960051fe0"
     }
+  },
+  "supplements": {
+    "manekin_combat": {
+      "file": "manekin.combat.json.gz",
+      "sha256": "d62c9a3e3b3e318e20a164d078858d9df32d8ff0785fe7230c86b4c115d434f5",
+      "content_sha256": "242582de944194f8f4dd37242e30b1f8a3fe17baccfbd09bbde73417bc7b839e",
+      "schema_version": 1,
+      "game_version": "7.2",
+      "source": {
+        "repository": "MeChen618/AstaPS-Resource",
+        "commit": "f2800e32599f32cde76ae0b4b93ea30b75651e59",
+        "game_version": "7.2",
+        "url": "https://github.com/MeChen618/AstaPS-Resource/tree/f2800e32599f32cde76ae0b4b93ea30b75651e59",
+        "license": "MIT",
+        "input_sha256": {
+          "AvatarSkillDepotExcelConfigData.json": "7e91c34c75387a6926c13710caa1d6829271453224743b2f28cbbc0ebb35acdd",
+          "AvatarSkillExcelConfigData.json": "5258ed90da6372ea9da572748252775deb4089e908bb0a96c9067eced28eb6ec",
+          "ProudSkillExcelConfigData.json": "c0083146091ee6968bcf06c5143196eaec4130b0cf105ec0c49bcdc56ae766bc"
+        }
+      },
+      "crosscheck": {
+        "repository": "dvaJi/genshin-data",
+        "commit": "4c8484ff9c6270db90ff581d7a584b06d035829d",
+        "url": "https://github.com/dvaJi/genshin-data/tree/4c8484ff9c6270db90ff581d7a584b06d035829d",
+        "files_sha256": {
+          "manekin.json": "e5c8810b3f07e3ca3ead45b94b7394d2ca367a0f6b50b0387d57932d4283b9ae",
+          "manekina.json": "89d2cd203d1e6ef160a09bb1a3d75859b3c5fbf90f8416af30b28811b3ee7d61"
+        },
+        "result": "all 15 ranks for normal attack, skill, and burst match to displayed precision for both appearances",
+        "mechanics_result": "No Entry's 0.5s entry interval and all three passive trigger descriptions match both appearance records"
+      },
+      "element_mapping": {
+        "repository": "mixuanda/genshin-elemental-reaction-sim",
+        "commit": "4a70bdfdd60eecc69a9e3e23ae540c77fd17dfbd",
+        "revision": "b061b403c8afc7bca633cf4f201edc4a3baa75fe",
+        "raw_release_commit": "9587d1afbd9ab0419cdd00dc05ecd114b9e3fe99",
+        "file": "packages/game-data/sources/manekin-raw-casts/definitions.json",
+        "file_sha256": "a9c18750f8eaaf25ed9131bdba98083a6b073190222347670bb0fd01dbf63854",
+        "evidence_status": "source-provisional",
+        "result": "all 14 named appearance-element templates map to the matching pinned raw skill depot IDs"
+      },
+      "calibration": {
+        "upstream": "Genshin Optimizer",
+        "version": "10.40.0",
+        "commit": "916e46d14d1031c9188a6122f045f3308b0a1f37",
+        "status": "unavailable",
+        "reason": "The pinned bundle has no Manekin or Manekina damage formula nodes.",
+        "elements": {
+          "anemo": "uncalibrated",
+          "geo": "uncalibrated",
+          "electro": "uncalibrated",
+          "dendro": "uncalibrated",
+          "hydro": "uncalibrated",
+          "pyro": "uncalibrated",
+          "cryo": "uncalibrated"
+        }
+      }
+    }
   }
 }

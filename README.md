@@ -25,7 +25,13 @@ Python 3.10 或更新版本。运行只需要 Python 标准库。以下命令从
 
 离线图鉴按同时存在的天赋与命座资料记录提供旅行者·风、岩、雷、草、水、火、冰七种形态；`旅行者`、元素形态的中文/英文名及资料键均可查询。模拟账号只生成一个旅行者身份，空/荧外观由随机种子选择，元素形态也可按种子随机或在页面及 `--traveler-element anemo` 中指定。旅行者的武器、等级、天赋和当前形态命座保留在账号详情中；所有元素形态共用一个背包配装身份，多角色优化拒绝重复选择。七个形态均有由固定 Genshin Optimizer 伤害桥校准的伤害模型，只有当前形态进入候选。
 
-奇偶（Manekin / Manekina）作为一个逻辑角色，只随机生成一种性别外观并只占一个账号/配装身份；同一队伍不能同时选择男女外观。其 Adaptive 元素随当前旅行者形态变化。图鉴与模拟详情列出普攻、战技、爆发及被动能力摘要、无命座、等级/天赋模拟值和无需突破材料/摩拉等状态。技能名称及效果摘要依据游戏内技能说明；结构化角色外观与版本信息来自 [genshin-db 5.2.15](https://github.com/theBowja/genshin-db/tree/73d57660053377e55beb12e8f627aabd7ef4cc0d) 快照（Manekin ID 10000117、Manekina ID 10000118）。当前离线快照不含奇偶天赋倍率及完整战技参数，因此详情明确标记“倍率未接入/未校准”；奇偶不进入伤害公式目录或配装评分，绝不以估算公式代替缺失数据。千星奇域模式下的换装和自由切换只作能力摘要记录，不模拟该模式。
+奇偶（Manekin / Manekina）作为一个逻辑角色，只随机生成一种性别外观并只占一个账号/配装身份；同一队伍不能同时选择男女外观。其 Adaptive 元素随当前旅行者形态变化。图鉴与模拟详情列出普攻、战技、爆发及被动能力、无命座、等级/天赋模拟值和无需突破材料/摩拉等状态。角色基础记录来自 [genshin-db 5.2.15](https://github.com/theBowja/genshin-db/tree/73d57660053377e55beb12e8f627aabd7ef4cc0d)（Manekin ID 10000117、Manekina ID 10000118）；离线战斗参数从 [AstaPS Resource 7.2](https://github.com/MeChen618/AstaPS-Resource/tree/f2800e32599f32cde76ae0b4b93ea30b75651e59) 的原始 `AvatarSkillDepot`、`AvatarSkill` 和 `ProudSkill` 表提取，并与 [genshin-data](https://github.com/dvaJi/genshin-data/tree/4c8484ff9c6270db90ff581d7a584b06d035829d) 男女角色快照的 15 级普攻、战技和爆发倍率逐项交叉核对。元素与 depot ID 的对应关系另以 [固定版 raw-casts 映射](https://github.com/mixuanda/genshin-elemental-reaction-sim/tree/4a70bdfdd60eecc69a9e3e23ae540c77fd17dfbd/packages/game-data/sources/manekin-raw-casts) 标记；该映射自身标注为 provisional，构建时逐一核对其 14 个外观/元素 depot ID 与主快照原始表。快照保存三类技能的等级 1–15 参数、元素技能双充能/冷却/附魔时长、爆发冷却/能量/领域参数（领域进入伤害每 0.5 秒至多触发一次）以及三个被动的触发解锁与数值；男女角色及风、岩、雷、草、水、火、冰七元素形态均可追溯到各自 depot/skill ID。来源提交、文件 SHA-256、逐项交叉核对状态和模型状态记录在 `data/reference_data/manifest.json`。可以用固定来源的原始表和交叉核对 JSON 重建补充快照：
+
+```powershell
+python tools\build_manekin_combat_reference.py --source-dir <AstaPS ExcelBinOutput 目录> --crosscheck-dir <genshin-data 英文 characters 目录> --element-mapping-file <固定版 definitions.json>
+```
+
+倍率数据已补齐，但当前固定 Genshin Optimizer 10.40.0（commit `916e46d14d1031c9188a6122f045f3308b0a1f37`）没有 Manekin/Manekina 公式节点，因此七种形态都明确标记为未校准，不加入伤害公式目录或配装评分；不会用通用公式冒充上游校准结果。当前元素形态的实际天赋等级倍率会显示在角色详情。千星奇域模式下的换装和自由切换只作能力摘要记录，不模拟该模式。
 
 ```powershell
 python -m tools.acceptance_ui

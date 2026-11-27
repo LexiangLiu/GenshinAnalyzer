@@ -60,6 +60,52 @@ def _integer(value: object, label: str, minimum: int, maximum: int) -> int:
     return value
 
 
+def _manekin_rank_summary(
+    combat_data: Mapping[str, Any],
+    current_element: object,
+    talents: Mapping[str, Any],
+) -> str:
+    element = str(current_element or "").removeprefix("ELEMENT_").casefold()
+    form = traveler_form_for_element(element)
+    if form is None or form["element"] not in combat_data["elements"]:
+        raise ValueError("奇偶战斗参数需要有效的旅行者元素形态")
+    skills = combat_data["elements"][form["element"]]["skills"]
+
+    def rank(skill_key: str, talent_key: str) -> Mapping[str, Any]:
+        level = talents.get(talent_key)
+        if type(level) is not int:
+            raise ValueError(f"奇偶缺少 {talent_key} 天赋等级")
+        for entry in skills[skill_key]["ranks"]:
+            if entry["level"] == level:
+                return entry["parameters"]
+        raise ValueError(f"奇偶 {talent_key} 天赋等级超出离线参数范围：{level}")
+
+    def percent(value: float) -> str:
+        return f"{value * 100:.1f}%"
+
+    normal = rank("normal_attack", "auto")
+    skill = rank("elemental_skill", "skill")
+    burst = rank("elemental_burst", "burst")
+    burst_meta = skills["elemental_burst"]
+    return (
+        f'普攻 Lv{talents["auto"]}：1/2/3/4段 '
+        f'{percent(normal["normal_hit_1"])}/{percent(normal["normal_hit_2"])}/'
+        f'{percent(normal["normal_hit_3"])}×2/{percent(normal["normal_hit_4"])}；'
+        f'重击 {percent(normal["charged_hit_1"])}+{percent(normal["charged_hit_2"])}；'
+        f'下落 {percent(normal["plunge_damage"])}（低/高坠 '
+        f'{percent(normal["low_plunge_damage"])}/{percent(normal["high_plunge_damage"])}）。'
+        f'战技 Lv{talents["skill"]}：{percent(skill["skill_damage"])}，'
+        f'附魔 {skill["infusion_duration_seconds"]:g} 秒，冷却 '
+        f'{skills["elemental_skill"]["cooldown_seconds"]:g} 秒，'
+        f'{skills["elemental_skill"]["max_charges"]} 次使用。'
+        f'爆发 Lv{talents["burst"]}：领域召唤 '
+        f'{percent(burst["restricted_area_summon_damage"])}，进入伤害 '
+        f'{percent(burst["restricted_area_trespass_damage"])}；持续 '
+        f'{burst["restricted_area_duration_seconds"]:g} 秒，冷却 '
+        f'{burst_meta["cooldown_seconds"]:g} 秒，能量 {burst_meta["energy_cost"]}。'
+    )
+
+
 def validate_generation(payload: object) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("请求内容必须是 JSON 对象")
@@ -1103,8 +1149,10 @@ class AcceptanceService:
                     profile_query = character.get("appearance") if character.get("identity") == "manekin" else character["character"]
                     character_profile = get_character_profile(profile_query or character["character"], language="zh")
                     talents = character.get("talents") or {}
+                    current_element = character.get("current_element")
                     ability_details = []
                     constellation_details = []
+                    combat_summary = None
                     if character.get("identity") == "traveler":
                         talent_record = next(iter(character_profile["talents"]), {})
                         constellation_record = next(iter(character_profile["constellations"]), {})
@@ -1125,11 +1173,15 @@ class AcceptanceService:
                             f'{ability["name"]}：{ability["summary"]}'
                             for ability in character_profile["abilities"]
                         ]
+                        combat_summary = _manekin_rank_summary(
+                            character_profile["combat_data"],
+                            current_element,
+                            talents,
+                        )
                     appearance = (
                         get_game_record("characters", character["appearance"], language="zh")
                         if character.get("identity") == "traveler" else None
                     )
-                    current_element = character.get("current_element")
                     fields = [
                         ("角色 ID", character.get("character_id", record.get("id"))),
                         ("英文名", character["character"]),
@@ -1174,13 +1226,14 @@ class AcceptanceService:
                             ("当前元素", character.get("current_element_name") or current_element),
                             ("旅行者当前形态", character.get("traveler_form_name")),
                             ("命座", "无"),
-                            ("能力摘要（倍率未接入）", ability_details),
+                            ("能力摘要", ability_details),
+                            ("技能倍率与参数（当前天赋等级）", combat_summary),
                             ("战斗模型状态", character_profile["battle_model_status"]),
                             ("突破材料 / 摩拉", "无需材料；0 摩拉"),
                         ])
                         notes.extend([
                             "奇偶只占一个角色与配装身份；男、女外观不可同时出现在同一队伍。",
-                            "能力描述据游戏技能说明整理；当前离线数据无完整技能参数与倍率，未校准且不参与配装评分。",
+                            "技能倍率来自版本 7.2 离线表并经独立角色数据交叉核对；固定版伤害引擎没有奇偶公式，仍未校准且不参与配装评分。",
                         ])
                     item = _detail_item(
                         kind,

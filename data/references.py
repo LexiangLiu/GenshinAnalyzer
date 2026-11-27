@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
 import json
 from copy import deepcopy
 from functools import lru_cache
@@ -42,14 +43,30 @@ _MANEKIN_ABILITIES = {
     ),
 }
 _MANEKIN_UNCALIBRATED = {
-    "zh": "战斗能力已记录，但天赋倍率与完整技能参数不在当前离线资料中；未校准，不参与配装评分或伤害模型。",
-    "en": "Combat abilities are documented, but talent multipliers and complete skill parameters are absent from the offline data; uncalibrated and excluded from loadout scoring and damage models.",
+    "zh": "离线资料已包含七元素形态的天赋倍率与技能参数；固定版 Genshin Optimizer 没有奇偶公式节点，因此尚未校准，不参与配装评分。",
+    "en": "Offline talent multipliers and skill parameters are available for all seven elements. The pinned Genshin Optimizer bundle has no Manekin formula node, so the character remains uncalibrated and excluded from loadout scoring.",
 }
 
 
 @lru_cache(maxsize=1)
 def _manifest() -> dict:
     return json.loads((_ROOT / "manifest.json").read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=1)
+def _manekin_combat() -> dict:
+    metadata = _manifest().get("supplements", {}).get("manekin_combat")
+    if not metadata:
+        raise RuntimeError("离线图鉴缺少奇偶战斗参数补充数据")
+    path = _ROOT / metadata["file"]
+    packed = path.read_bytes()
+    if hashlib.sha256(packed).hexdigest() != metadata["sha256"]:
+        raise RuntimeError("奇偶战斗参数快照与清单校验值不符")
+    with gzip.open(path, "rt", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    if set(payload.get("elements", {})) != set(_TRAVELER_ELEMENTS):
+        raise RuntimeError("奇偶战斗参数快照的元素形态不完整")
+    return payload
 
 
 def game_data_info() -> dict:
@@ -191,7 +208,9 @@ def party_exclusive_identity(query: object) -> str | None:
 
 def _manekin_record(appearance_key: str | None, language: str) -> dict:
     appearances = _rows("characters", language)
-    source = deepcopy(appearances["manekin"])
+    source = deepcopy(appearances[appearance_key or "manekin"])
+    source.pop("gender", None)
+    source.pop("bodyType", None)
     source["key"] = "manekin"
     source["identity"] = "manekin"
     source["name"] = "奇偶" if language == "zh" else "Manekin / Manekina"
@@ -213,10 +232,12 @@ def _manekin_record(appearance_key: str | None, language: str) -> dict:
     source["battle_support"] = "uncalibrated"
     source["battle_model_status"] = _MANEKIN_UNCALIBRATED[language]
     source["battle_exclusion_reason"] = source["battle_model_status"]
+    source["talent_multipliers_available"] = True
+    source["combat_parameter_elements"] = list(_manekin_combat()["elements"])
     source["ability_source"] = (
-        "游戏内角色与技能描述；倍率和完整技能参数未包含于当前离线 genshin-db 数据。"
+        "7.2 原始角色技能表；普通攻击、战技、爆发与被动参数经固定版本 genshin-data 角色表交叉核对。"
         if language == "zh" else
-        "In-game character and skill descriptions; multipliers and complete skill parameters are absent from the current offline genshin-db data."
+        "Version 7.2 raw character skill tables; normal attack, skill, burst, and passive parameters cross-checked against a pinned genshin-data character snapshot."
     )
     source["activity_role"] = (
         "提瓦特战斗角色；千星奇域内可切换外观"
@@ -429,8 +450,10 @@ def get_character_profile(query: str | int, *, language: str = "zh") -> dict:
                 {"category": category, "name": name, "summary": summary}
                 for category, name, summary in _MANEKIN_ABILITIES[language]
             ],
+            "combat_data": deepcopy(_manekin_combat()),
             "battle_model_status": _MANEKIN_UNCALIBRATED[language],
-            "talent_multipliers_available": False,
+            "talent_multipliers_available": True,
+            "damage_models_calibrated": False,
             "constellations_available": False,
             "ability_source": character["ability_source"],
         })
@@ -446,8 +469,6 @@ def get_game_stats(
         raise ValueError(f"该类别没有等级属性数据：{category}")
     if type(level) is not int or level < 1:
         raise ValueError("等级必须为正整数")
-    if category == "characters" and is_manekin_identity(query):
-        raise ValueError("当前离线图鉴没有奇偶的角色面板成长数据")
     record = get_game_record(category, query, language=language)
     levels = _read(f"{category}.stats.json.gz")[str(record["id"])]
     available = levels.get(str(level))
