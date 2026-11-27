@@ -58,6 +58,29 @@ def _members():
 
 
 class PartyOptimizerTests(unittest.TestCase):
+    def test_cli_and_optimizer_reject_multiple_traveler_forms_or_appearances(self):
+        for members in (
+            [{"character": "Aether"}, {"character": "Lumine"}],
+            [
+                {"character": "Traveler (Anemo)"},
+                {"character": "travelergeo"},
+            ],
+        ):
+            with self.subTest(members=members), self.assertRaisesRegex(
+                ValueError, "一个队伍只能包含一个旅行者身份",
+            ):
+                _party_members({"members": members})
+
+        model_members = [
+            PartyMember(
+                model=get_damage_model(form),
+                character={"id": form},
+            )
+            for form in ("Traveler (Anemo)", "Traveler (Geo)")
+        ]
+        with self.assertRaisesRegex(ValueError, "一个队伍只能包含一个旅行者身份"):
+            optimize_party([], model_members)
+
     def test_cli_member_request_applies_fixed_four_piece_set(self):
         members = _party_members({
             "members": [{

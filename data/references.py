@@ -12,6 +12,29 @@ from typing import Mapping
 
 _ROOT = Path(__file__).with_name("reference_data")
 
+_TRAVELER_ELEMENTS = {
+    "anemo": ("风", "Anemo"),
+    "geo": ("岩", "Geo"),
+    "electro": ("雷", "Electro"),
+    "dendro": ("草", "Dendro"),
+    "hydro": ("水", "Hydro"),
+    "pyro": ("火", "Pyro"),
+    "cryo": ("冰", "Cryo"),
+}
+_TRAVELER_APPEARANCES = {"aether": 10000005, "lumine": 10000007}
+_MANEKIN_EXCLUSION_REASONS = {
+    "manekin": (
+        "千星奇域探索人偶；离线资料暂无可建模的战斗技能，因此不加入账号战斗角色、配装候选或伤害公式目录。",
+        "Miliastra Wonderland exploration doll; no modelable combat kit is present in the offline data, "
+        "so it is excluded from account combat rosters, loadout candidates, and the damage catalog.",
+    ),
+    "manekina": (
+        "千星奇域探索人偶；离线资料暂无可建模的战斗技能，因此不加入账号战斗角色、配装候选或伤害公式目录。",
+        "Miliastra Wonderland exploration doll; no modelable combat kit is present in the offline data, "
+        "so it is excluded from account combat rosters, loadout candidates, and the damage catalog.",
+    ),
+}
+
 
 @lru_cache(maxsize=1)
 def _manifest() -> dict:
@@ -38,6 +61,141 @@ def _rows(category: str, language: str) -> dict:
     return _read(f"{category}.{source_language}.json.gz")
 
 
+def _name_token(value: object) -> str:
+    return "".join(character for character in str(value).casefold() if character.isalnum())
+
+
+@lru_cache(maxsize=2)
+def _traveler_forms(language: str) -> tuple[dict, ...]:
+    talents = _rows("talents", language)
+    constellations = _rows("constellations", language)
+    zh_talents = _rows("talents", "zh")
+    en_talents = _rows("talents", "en")
+    forms = []
+    for key in sorted(set(talents) & set(constellations)):
+        if not key.startswith("traveler"):
+            continue
+        element = key.removeprefix("traveler")
+        localized = _TRAVELER_ELEMENTS.get(element)
+        if localized is None:
+            continue
+        zh_element, en_element = localized
+        name = f"旅行者·{zh_element}"
+        name_en = f"Traveler ({en_element})"
+        aliases = {
+            key,
+            name,
+            name_en,
+            f"Traveler {en_element}",
+            f"旅行者 ({zh_element}元素)",
+            f"旅行者（{zh_element}元素）",
+            zh_talents[key].get("name", ""),
+            en_talents[key].get("name", ""),
+        }
+        forms.append({
+            "key": key,
+            "element": element,
+            "elementType": f"ELEMENT_{element.upper()}",
+            "element_name": zh_element if language == "zh" else en_element,
+            "name": name if language == "zh" else name_en,
+            "name_zh": name,
+            "name_en": name_en,
+            "version": talents[key].get("version"),
+            "aliases": tuple(alias for alias in aliases if alias),
+        })
+    return tuple(forms)
+
+
+def traveler_forms(*, language: str = "zh") -> list[dict]:
+    """Return only Traveler element forms with both talent and constellation records."""
+    return [dict(form) for form in _traveler_forms(language)]
+
+
+def traveler_form(query: object, *, language: str = "en") -> dict | None:
+    """Resolve a Traveler element name or reference key to its offline form metadata."""
+    token = _name_token(query)
+    if not token:
+        return None
+    for form in _traveler_forms(language):
+        if token in {_name_token(alias) for alias in form["aliases"]}:
+            return dict(form)
+    return None
+
+
+def traveler_form_for_element(element: object) -> dict | None:
+    """Resolve a bare element option used by account generation to its Traveler form."""
+    token = _name_token(element)
+    if not token:
+        return None
+    for form in _traveler_forms("en"):
+        if token in {
+            _name_token(form["element"]),
+            _name_token(_TRAVELER_ELEMENTS[form["element"]][0]),
+            _name_token(_TRAVELER_ELEMENTS[form["element"]][1]),
+        }:
+            return dict(form)
+    return None
+
+
+def is_traveler_identity(query: object) -> bool:
+    """Whether a query denotes Traveler, including either appearance or any element form."""
+    token = _name_token(query)
+    if token in {"traveler", "aether", "lumine", "10000005", "10000007", "空", "荧"}:
+        return True
+    return traveler_form(query) is not None or traveler_form(query, language="zh") is not None
+
+
+def _traveler_record(key: str | None, language: str) -> dict:
+    appearances = _rows("characters", language)
+    source = deepcopy(appearances["aether"])
+    source.pop("gender", None)
+    source.pop("bodyType", None)
+    forms = _traveler_forms(language)
+    source["key"] = key or "traveler"
+    source["id"] = _TRAVELER_APPEARANCES["aether"]
+    source["appearance_ids"] = list(_TRAVELER_APPEARANCES.values())
+    source["traveler_identity"] = "traveler"
+    source["element_forms"] = [form["key"] for form in forms]
+    if key is None:
+        source["name"] = "旅行者" if language == "zh" else "Traveler"
+        source["name_en"] = "Traveler"
+        source["elementType"] = "ELEMENT_NONE"
+        source["elementText"] = "无" if language == "zh" else "None"
+    else:
+        selected = next(form for form in forms if form["key"] == key)
+        source["name"] = selected["name"]
+        source["name_en"] = selected["name_en"]
+        source["elementType"] = selected["elementType"]
+        source["elementText"] = selected["element_name"]
+        source["traveler_form"] = key
+        source["version"] = selected["version"]
+    return source
+
+
+def _special_character_record(category: str, query: str | int, language: str) -> dict | None:
+    if category != "characters":
+        return None
+    token = _name_token(query)
+    if token in {"traveler", _name_token("旅行者")}:
+        return _traveler_record(None, language)
+    form = traveler_form(query, language=language)
+    return _traveler_record(form["key"], language) if form else None
+
+
+def _annotate_character(record: dict, language: str) -> dict:
+    key = str(record.get("key", "")).casefold()
+    if key in _TRAVELER_APPEARANCES:
+        record["traveler_identity"] = "traveler"
+    reason = _MANEKIN_EXCLUSION_REASONS.get(str(record.get("key", "")).casefold())
+    if reason is not None:
+        record["battle_support"] = "excluded"
+        record["battle_exclusion_reason"] = reason[0] if language == "zh" else reason[1]
+        record["activity_role"] = (
+            "千星奇域探索人偶" if language == "zh" else "Miliastra Wonderland exploration doll"
+        )
+    return record
+
+
 def _query_key(category: str, query: str | int, language: str) -> str:
     rows = _rows(category, language)
     token = str(query).strip().casefold()
@@ -62,8 +220,13 @@ def _query_key(category: str, query: str | int, language: str) -> str:
 
 def get_game_record(category: str, query: str | int, *, language: str = "zh") -> dict:
     """Read one record by upstream key, game ID, or exact name in either language."""
+    special = _special_character_record(category, query, language)
+    if special is not None:
+        return special
     key = _query_key(category, query, language)
-    return {"key": key, **deepcopy(_rows(category, language)[key])}
+    return _annotate_character(
+        {"key": key, **deepcopy(_rows(category, language)[key])}, language,
+    )
 
 
 def list_game_records(
@@ -88,10 +251,39 @@ def list_game_records(
             key, name, row.get("id", ""), alternate.get(key, {}).get("name", ""),
         )):
             continue
-        matching.append({
+        summary = {
             "key": key, "id": row.get("id"), "name": name, "version": row.get("version"),
             **{field: row[field] for field in ("rarity", "weaponType", "elementType", "category", "regionName") if field in row},
-        })
+        }
+        if category == "characters" and key in _TRAVELER_APPEARANCES:
+            summary["identity"] = "traveler"
+        reason = _MANEKIN_EXCLUSION_REASONS.get(key)
+        if category == "characters" and reason is not None:
+            summary["battle_support"] = "excluded"
+            summary["battle_exclusion_reason"] = reason[0] if language == "zh" else reason[1]
+            summary["activity_role"] = (
+                "千星奇域探索人偶" if language == "zh" else "Miliastra Wonderland exploration doll"
+            )
+        matching.append(summary)
+    if category == "characters":
+        synthetic = [_traveler_record(None, language)]
+        synthetic.extend(_traveler_record(form["key"], language) for form in _traveler_forms(language))
+        for row in synthetic:
+            name = row["name"]
+            if version is not None and row.get("version") != version:
+                continue
+            if filters and any(field not in row or row[field] != value for field, value in filters.items()):
+                continue
+            if token and not any(token in str(value).casefold() for value in (
+                row["key"], name, row.get("name_en", ""), row.get("elementType", ""),
+            )):
+                continue
+            matching.append({
+                "key": row["key"], "id": row.get("id"), "name": name,
+                "version": row.get("version"),
+                "identity": "traveler",
+                **{field: row[field] for field in ("rarity", "weaponType", "elementType", "category", "regionName") if field in row},
+            })
     end = None if limit is None else offset + limit
     return matching[offset:end]
 
@@ -104,12 +296,20 @@ def get_character_profile(query: str | int, *, language: str = "zh") -> dict:
     collections = {}
     for folder in folders:
         records = _rows(folder, language)
-        if key in ("aether", "lumine"):
+        if key == "traveler":
             keys = [entry for entry in records if entry.startswith("traveler")]
+        elif key in ("aether", "lumine"):
+            keys = [entry for entry in records if entry.startswith("traveler")]
+        elif key.startswith("traveler"):
+            keys = [key] if key in records else []
         else:
             keys = [key] if key in records else []
         collections[folder] = [{"key": entry, **deepcopy(records[entry])} for entry in keys]
-    return {"character": character, **collections}
+    profile = {"character": _annotate_character(character, language), **collections}
+    if is_traveler_identity(query):
+        profile["identity"] = "traveler"
+        profile["active_form"] = key if key.startswith("traveler") else None
+    return profile
 
 
 def get_game_stats(

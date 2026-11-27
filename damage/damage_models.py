@@ -456,7 +456,14 @@ def available_models() -> dict:
 
 def get_damage_model(character: str | int, model: str | None = None, **options) -> DamageModel:
     """Resolve a hand-written or catalog model for one character."""
-    canonical = character_profile(str(character))
+    from data.references import is_traveler_identity, traveler_form
+    if is_traveler_identity(character):
+        form = traveler_form(character)
+        if form is None:
+            raise ValueError("旅行者必须指定当前元素形态，空与荧不能作为不同配装角色")
+        canonical = str(form["name_en"])
+    else:
+        canonical = character_profile(str(character))
     key = model or _DEFAULT_MODELS.get(canonical.casefold())
     if key is None:
         from .character_models import default_catalog_key

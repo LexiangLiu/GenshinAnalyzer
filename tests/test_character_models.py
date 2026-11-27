@@ -7,6 +7,7 @@ from artifact_sim.character_models import (
 from artifact_sim.damage_models import get_damage_model
 from artifact_sim.game_data import SETS
 from core.equipment import set_effects
+from data.references import traveler_forms
 
 
 class CharacterModelCatalogTests(unittest.TestCase):
@@ -132,6 +133,26 @@ class CharacterModelCatalogTests(unittest.TestCase):
         spec = catalog_spec("nahida_karma_dmg")
         self.assertEqual(spec["go_key"], "Nahida")
         self.assertIn("ELEMENTAL_MASTERY", spec["coefficients"])
+
+    def test_all_offline_traveler_forms_have_validated_element_specific_models(self):
+        forms = traveler_forms()
+        model_keys = {spec["key"] for spec in catalog_models()}
+        self.assertFalse(any("manekin" in spec["character"].casefold() for spec in catalog_models()))
+        for form in forms:
+            with self.subTest(form=form["key"]):
+                matches = [
+                    spec for spec in catalog_models()
+                    if spec["go_key"].casefold() == form["name_en"].replace(" ", "").replace("(", "").replace(")", "").casefold()
+                ]
+                self.assertEqual(len(matches), 1)
+                spec, = matches
+                self.assertIn(spec["key"], model_keys)
+                self.assertIn(spec["accuracy"], ("high", "medium"))
+                self.assertLessEqual(spec["calibration"]["max_relative_error"], 0.1)
+                self.assertEqual(get_damage_model(form["name_zh"]).key, spec["key"])
+                self.assertEqual(get_damage_model(form["key"]).character, form["name_en"])
+        with self.assertRaisesRegex(ValueError, "必須指定當前元素形態|必须指定当前元素形态"):
+            get_damage_model("Aether")
 
 
 if __name__ == "__main__":

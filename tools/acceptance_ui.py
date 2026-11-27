@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from html import escape
 import json
 from math import isclose
 import os
@@ -17,7 +18,15 @@ from pathlib import Path
 from typing import Any, Mapping
 from urllib.parse import parse_qs, urlsplit
 
-from data.references import get_game_record, list_game_records
+from data.references import (
+    get_character_profile,
+    get_game_record,
+    is_traveler_identity,
+    list_game_records,
+    traveler_form,
+    traveler_form_for_element,
+    traveler_forms,
+)
 from damage import damage_engine_info, list_damage_formulas
 from damage.character_models import catalog_spec
 from damage.damage_models import (
@@ -50,25 +59,37 @@ def _integer(value: object, label: str, minimum: int, maximum: int) -> int:
     return value
 
 
-def validate_generation(payload: object) -> dict[str, int]:
+def validate_generation(payload: object) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("请求内容必须是 JSON 对象")
+    traveler_element = payload.get("traveler_element")
+    if traveler_element in ("", None):
+        traveler_element = None
+    else:
+        form = (
+            traveler_form(traveler_element)
+            if isinstance(traveler_element, str) else None
+        ) or traveler_form_for_element(traveler_element)
+        if form is None:
+            raise ValueError("旅行者元素形态无效")
+        traveler_element = form["element"]
     return {
         "characters": _integer(
             payload.get("characters", min(8, available_character_count())),
             "角色数量",
-            1,
+            2 if traveler_forms(language="en") else 1,
             available_character_count(),
         ),
         "artifacts": validate_artifact_count(payload.get("artifacts", 180)),
         "seed": _integer(payload.get("seed", 42), "随机种子", -MAX_SAFE_INTEGER, MAX_SAFE_INTEGER),
+        "traveler_element": traveler_element,
     }
 
 
 def optimizer_roster_size(character_count: int, artifact_count: int) -> int:
     artifacts_per_preset_roster = len(MAIN_ROSTER) * len(SLOTS)
     return min(
-        character_count,
+        max(1, character_count - int(bool(traveler_forms(language="en")))),
         len(MAIN_ROSTER),
         max(1, artifact_count // artifacts_per_preset_roster),
     )
@@ -89,6 +110,8 @@ def build_selected_request(
         raise ValueError("角色选择无效")
     if len(set(selected_characters)) != len(selected_characters):
         raise ValueError("不能重复选择同一角色")
+    if sum(is_traveler_identity(name) for name in selected_characters) > 1:
+        raise ValueError("一个队伍只能包含一个旅行者身份；空、荧及不同元素形态互斥")
     if mode == "single" and len(selected_characters) != 1:
         raise ValueError("单角色模式只能选择一个角色")
     if mode == "multi" and len(selected_characters) < 2:
@@ -1068,34 +1091,66 @@ class AcceptanceService:
             if kind == "characters":
                 for character in account.get("roster", []):
                     record = get_game_record("characters", character["character"], language="zh")
+                    character_profile = get_character_profile(character["character"], language="zh")
                     talents = character.get("talents") or {}
+                    ability_details = []
+                    constellation_details = []
+                    if character.get("identity") == "traveler":
+                        talent_record = next(iter(character_profile["talents"]), {})
+                        constellation_record = next(iter(character_profile["constellations"]), {})
+                        for key in ("combat1", "combat2", "combat3", "passive1", "passive2", "passive3"):
+                            ability = talent_record.get(key)
+                            if isinstance(ability, dict) and ability.get("name"):
+                                ability_details.append(
+                                    f'{ability["name"]}：{ability.get("description", "")}'.rstrip("："),
+                                )
+                        for index in range(1, 7):
+                            constellation = constellation_record.get(f"c{index}")
+                            if isinstance(constellation, dict) and constellation.get("name"):
+                                constellation_details.append(
+                                    f'{constellation["name"]}：{constellation.get("description", "")}'.rstrip("："),
+                                )
+                    appearance = (
+                        get_game_record("characters", character["appearance"], language="zh")
+                        if character.get("identity") == "traveler" else None
+                    )
+                    fields = [
+                        ("角色 ID", character.get("character_id", record.get("id"))),
+                        ("英文名", character["character"]),
+                        ("稀有度", character.get("rarity", record.get("rarity"))),
+                        ("元素", record.get("elementText") or character.get("element")),
+                        ("武器类型", record.get("weaponText") or character.get("weapon_type")),
+                        ("等级", character.get("level")),
+                        ("命座等级", character.get("constellation")),
+                        ("天赋等级", talents),
+                        ("装备武器", character.get("weapon")),
+                        ("武器精炼", character.get("weapon_refinement")),
+                        ("突破成长属性", record.get("substatText")),
+                        ("所属地区", record.get("regionName") or record.get("region")),
+                        ("所属组织", record.get("affiliation")),
+                        ("生日", record.get("birthday")),
+                        ("命之座名称", record.get("constellation")),
+                        ("角色简介", record.get("description")),
+                    ]
+                    notes = ["模拟账号未保存角色突破阶段，因此不推算当前等级面板属性。"]
+                    if character.get("identity") == "traveler":
+                        fields.extend([
+                            ("逻辑身份", "旅行者（空与荧共用）"),
+                            ("当前元素形态", record["name"]),
+                            ("外观", appearance.get("name") if appearance else None),
+                            ("外观记录 ID", appearance.get("id") if appearance else None),
+                            ("当前形态天赋图鉴", ability_details),
+                            ("当前形态命座图鉴", constellation_details),
+                        ])
+                        notes.append("旅行者只占一个账号身份；切换元素形态不会产生另一套配装。")
                     item = _detail_item(
                         kind,
-                        record["id"],
+                        character.get("character_id", record.get("id", 0)),
                         character.get("name_zh") or record.get("name") or character["character"],
                         f'{character["character"]} · {character.get("level", "—")}级 · '
                         f'{character.get("weapon") or "未记录武器"}',
-                        [
-                            ("角色 ID", record["id"]),
-                            ("英文名", character["character"]),
-                            ("稀有度", character.get("rarity", record.get("rarity"))),
-                            ("元素", record.get("elementText") or character.get("element")),
-                            ("武器类型", record.get("weaponText") or character.get("weapon_type")),
-                            ("等级", character.get("level")),
-                            ("命座等级", character.get("constellation")),
-                            ("天赋等级", talents),
-                            ("装备武器", character.get("weapon")),
-                            ("武器精炼", character.get("weapon_refinement")),
-                            ("突破成长属性", record.get("substatText")),
-                            ("所属地区", record.get("regionName") or record.get("region")),
-                            ("所属组织", record.get("affiliation")),
-                            ("生日", record.get("birthday")),
-                            ("命之座名称", record.get("constellation")),
-                            ("角色简介", record.get("description")),
-                        ],
-                        notes=[
-                            "模拟账号未保存角色突破阶段，因此不推算当前等级面板属性。"
-                        ],
+                        fields,
+                        notes=notes,
                     )
                     entries.append((
                         item,
@@ -1219,6 +1274,8 @@ class AcceptanceService:
             "--output",
             str(account_dir),
         ]
+        if config["traveler_element"] is not None:
+            command.extend(["--traveler-element", config["traveler_element"]])
         _run(command)
         account = _read_json(account_dir / "account.json")
         party_request = _read_json(account_dir / "party-request.json")
@@ -1234,6 +1291,8 @@ class AcceptanceService:
                 "weapon_type": item.get("weapon_type"),
                 "weapon": item.get("weapon"),
                 "invested": item.get("invested", False),
+                "identity": item.get("identity"),
+                "form_key": item.get("form_key"),
             }
             for item in account.get("roster", [])
         ]
@@ -1421,6 +1480,12 @@ class AcceptanceRequestHandler(BaseHTTPRequestHandler):
     def _page_content() -> bytes:
         page = PAGE.read_text(encoding="utf-8")
         page = page.replace("__CHARACTER_LIMIT__", str(available_character_count()))
+        form_options = "\n".join(
+            f'<option value="{escape(form["element"], quote=True)}">'
+            f'{escape(form["name_zh"])}</option>'
+            for form in traveler_forms(language="zh")
+        )
+        page = page.replace("__TRAVELER_ELEMENT_OPTIONS__", form_options)
         return page.replace("__ARTIFACT_LIMIT__", str(MAX_ARTIFACT_INVENTORY)).encode("utf-8")
 
     def _send_json(self, status: int, body: dict[str, Any]) -> None:

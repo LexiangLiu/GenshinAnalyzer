@@ -63,9 +63,9 @@ class InventoryTests(unittest.TestCase):
         preview = self.inv.equip("10000038", [second], preview=True)
         self.assertEqual(preview["before"]["static_set_stats"], {})
         self.assertEqual(preview["after"]["static_set_stats"], {"ATK_PERCENT": 18.0})
-        self.assertEqual(self.inv.get(second)["equipped"], "Lumine")
+        self.assertEqual(self.inv.get(second)["equipped"], "Traveler")
         self.assertEqual(self.inv.equip("Albedo", [second]), preview)
-        self.assertEqual(self.inv.get(first)["equipped"], "Lumine")
+        self.assertEqual(self.inv.get(first)["equipped"], "Traveler")
         self.assertEqual(self.inv.get(second)["equipped"], "Albedo")
         self.assertEqual(self.inv.panel("阿贝多")["equipped"]["FLOWER"]["id"], second)
         self.assertEqual(self.inv.unequip("Albedo", ["FLOWER"]), [second])
@@ -73,6 +73,14 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual(self.inv.get(first)["equipped"], "测试配装")
         self.inv.profile("测试配装", delete=True)
         self.assertIsNone(self.inv.get(first)["equipped"])
+
+    def test_traveler_element_forms_share_one_inventory_profile(self):
+        artifact_id, = self.inv.add([self.piece()])
+        self.assertEqual(self.inv.equip("Traveler (Anemo)", [artifact_id])["profile"], "Traveler")
+        self.assertEqual(self.inv.profile("Traveler (Geo)"), "Traveler")
+        self.assertEqual(self.inv.equip("Aether", [artifact_id])["profile"], "Traveler")
+        self.assertEqual(self.inv.profiles(), ["Traveler"])
+        self.assertEqual(self.inv.get(artifact_id)["equipped"], "Traveler")
 
     def test_panel_applies_static_bonuses_and_leaves_conditionals_as_text(self):
         pieces = [self.piece(slot, 15025) for slot in ("FLOWER", "PLUME", "SANDS", "GOBLET")]
@@ -141,7 +149,7 @@ class InventoryTests(unittest.TestCase):
         self.inv.restore(backup)
         item = self.inv.get("old-1")
         self.assertTrue(item["locked"])
-        self.assertEqual(item["equipped"], "Lumine")
+        self.assertEqual(item["equipped"], "Traveler")
         self.assertEqual(item["history"][0]["stat"], "ENERGY_RECHARGE")
         self.assertEqual(item["history"][1]["stat"], "ATK_PERCENT")
         self.assertIsNotNone(self.inv.get("old-2")["pending_substat"])

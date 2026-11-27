@@ -37,6 +37,7 @@ from damage.character_models import (  # noqa: E402
     build_expression, model_from_spec, resolve_set_effects,
 )
 from data.game_data import SETS  # noqa: E402
+from data.references import traveler_forms  # noqa: E402
 
 
 BRIDGE = ROOT / "damage" / "go_damage" / "bridge.mjs"
@@ -742,20 +743,44 @@ def main() -> None:
 
     zh = _load_gzip("characters.zh.json.gz")
     en = _load_gzip("characters.en.json.gz")
+    talents_en = _load_gzip("talents.en.json.gz")
     targets = []
     only = {name.casefold() for name in args.only}
+    only_tokens = {_go_key(name).casefold() for name in args.only}
     for key, row in zh.items():
         if key in ("aether", "lumine", "manekin", "manekina"):
             continue
         name_en = en.get(key, {}).get("name", row.get("name", key))
-        if only and not (key.casefold() in only or str(row.get("name", "")).casefold() in only
-                         or name_en.casefold() in only):
+        if only and not (
+            key.casefold() in only
+            or str(row.get("name", "")).casefold() in only
+            or name_en.casefold() in only
+            or _go_key(key).casefold() in only_tokens
+        ):
             continue
         targets.append({
             "key": key,
             "name": row.get("name", key),
             "name_en": name_en,
             "element": str(row.get("elementType", "ELEMENT_NONE")).removeprefix("ELEMENT_"),
+            "weapon_type": str(row.get("weaponType", "")).removeprefix("WEAPON_"),
+            "region": row.get("region"),
+        })
+    for form in traveler_forms(language="zh"):
+        key = form["key"]
+        row = zh["aether"]
+        name = form["name_zh"]
+        name_en = talents_en[key]["name"]
+        if only and "traveler" not in only and not any(
+            candidate.casefold() in only or _go_key(candidate).casefold() in only_tokens
+            for candidate in (key, name, name_en, form["name_en"], form["element"])
+        ):
+            continue
+        targets.append({
+            "key": key,
+            "name": name,
+            "name_en": name_en,
+            "element": form["elementType"],
             "weapon_type": str(row.get("weaponType", "")).removeprefix("WEAPON_"),
             "region": row.get("region"),
         })

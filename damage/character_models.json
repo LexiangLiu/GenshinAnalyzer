@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-26T13:06:33+00:00",
+  "generated_at": "2026-11-27T13:51:06+00:00",
   "upstream": "Genshin Optimizer 10.40.0 bridge (916e46d1)",
   "scenario": {
     "level": 90,
@@ -10365,6 +10365,774 @@
         "accuracy": "medium",
         "notes": [],
         "expression": "(0.7848 * ATK + 0.0957050351055 * ELEMENTAL_MASTERY) * (1 + (DENDRO_DMG_BONUS + 35 * SET_15003_4 + 3) / 100) * (1 + min(100, CRIT_RATE) * (CRIT_DMG) / 10000)"
+      }
+    },
+    {
+      "key": "traveleranemo_skill_storm_max",
+      "character": "Traveler (Anemo)",
+      "character_zh": "旅行者·风",
+      "go_key": "TravelerAnemo",
+      "weapon_type": "SWORD_ONE_HAND",
+      "label": "旅行者·风 skill_storm_max（自动校准）",
+      "element": "ANEMO",
+      "attack": "skill_storm_max",
+      "category": "skill",
+      "target_four_piece_set": 15032,
+      "coefficients": {
+        "ATK": 1.728
+      },
+      "constant": 21.4272,
+      "dmg_bonus": 0.0,
+      "crit_rate_bonus": 0.0,
+      "crit_dmg_bonus": 0.0,
+      "crit_enabled": true,
+      "set_effects": {
+        "15032": {
+          "2": {
+            "dmg": 20.0
+          },
+          "4": {
+            "dmg": 25.0
+          }
+        }
+      },
+      "panel_bonus_stats": {},
+      "weapon": null,
+      "talent_scaling": {
+        "slot": "skill",
+        "baseline_level": 10,
+        "multipliers": {
+          "1": 0.555555555556,
+          "2": 0.597222222222,
+          "3": 0.638888888889,
+          "4": 0.694444444444,
+          "5": 0.736111111111,
+          "6": 0.777777777778,
+          "7": 0.833333333333,
+          "8": 0.888888888889,
+          "9": 0.944444444444,
+          "10": 1.0
+        },
+        "source": "Genshin Optimizer 10.40.0 bridge；固定其余条件与面板，仅改变对应天赋等级"
+      },
+      "assumptions": {
+        "character_level": 90,
+        "ascension": 6,
+        "constellation": 0,
+        "talents": {
+          "auto": 10,
+          "skill": 10,
+          "burst": 10
+        },
+        "conditions": {
+          "anemoC6Hit": true,
+          "bonusCanned": true,
+          "bonusSkirk1": true,
+          "bonusSkirk2": true,
+          "bonusSkirk3": true
+        },
+        "attack": "skill_storm_max",
+        "category": "skill",
+        "element": "ANEMO",
+        "enemy": {
+          "level": 90,
+          "resistance": 0,
+          "defense": "standard same-level"
+        },
+        "weapon": null,
+        "weapon_refinement": null,
+        "weapon_passive": "未纳入；由调用方提供武器白值与副属性",
+        "scope": "单段伤害、无元素反应、无队伍增益",
+        "crit_mode": "average"
+      },
+      "sources": [
+        "https://www.genshindamagecalculator.com/guides/damage-formula/",
+        "https://github.com/frzyc/GenshinOptimizer"
+      ],
+      "accuracy": "high",
+      "calibration": {
+        "optimizer": "Genshin Optimizer 10.40.0 bridge",
+        "baseline_panel": {
+          "hp": 10924.914859,
+          "atk": 275.77251808,
+          "def": 682.521525,
+          "critRate_": 0.05,
+          "critDMG_": 0.5,
+          "eleMas": 15.0
+        },
+        "baseline_noncrit_damage": 476.53491124224,
+        "baseline_average_damage": 488.44828402329597,
+        "probe_damage": {
+          "hp": 476.53491124224,
+          "atk": 2204.5349112422396,
+          "def": 476.53491124224,
+          "em": 476.53491124224,
+          "er": 476.53491124224,
+          "element_dmg": 714.80236686336
+        },
+        "validation_samples": 12,
+        "max_relative_error": 0.012175709693803442,
+        "median_relative_error": 0.0064845754710099335,
+        "accuracy": "high",
+        "notes": [],
+        "expression": "(1.728 * ATK + 21.4272) * (1 + (ANEMO_DMG_BONUS + 20 * SET_15032_2 + 25 * SET_15032_4) / 100) * (1 + min(100, CRIT_RATE) * (CRIT_DMG) / 10000)"
+      }
+    },
+    {
+      "key": "travelercryo_skill",
+      "character": "Traveler (Cryo)",
+      "character_zh": "旅行者·冰",
+      "go_key": "TravelerCryo",
+      "weapon_type": "SWORD_ONE_HAND",
+      "label": "旅行者·冰 skill（自动校准）",
+      "element": "CRYO",
+      "attack": "skill",
+      "category": "skill",
+      "target_four_piece_set": 15032,
+      "coefficients": {
+        "ATK": 0.82512
+      },
+      "constant": 10.231488,
+      "dmg_bonus": 4.26325641456e-14,
+      "crit_rate_bonus": 0.0,
+      "crit_dmg_bonus": 0.0,
+      "crit_enabled": true,
+      "set_effects": {
+        "15032": {
+          "2": {
+            "dmg": 20.0
+          },
+          "4": {
+            "dmg": 25.0
+          }
+        }
+      },
+      "panel_bonus_stats": {},
+      "weapon": null,
+      "talent_scaling": {
+        "slot": "skill",
+        "baseline_level": 10,
+        "multipliers": {
+          "1": 0.555555555556,
+          "2": 0.597222222222,
+          "3": 0.638888888889,
+          "4": 0.694444444444,
+          "5": 0.736111111111,
+          "6": 0.777777777778,
+          "7": 0.833333333333,
+          "8": 0.888888888889,
+          "9": 0.944444444444,
+          "10": 1.0
+        },
+        "source": "Genshin Optimizer 10.40.0 bridge；固定其余条件与面板，仅改变对应天赋等级"
+      },
+      "assumptions": {
+        "character_level": 90,
+        "ascension": 6,
+        "constellation": 0,
+        "talents": {
+          "auto": 10,
+          "skill": 10,
+          "burst": 10
+        },
+        "conditions": {
+          "a1ScStar": true,
+          "bonusCanned": true,
+          "bonusSkirk1": true,
+          "bonusSkirk2": true,
+          "bonusSkirk3": true
+        },
+        "attack": "skill",
+        "category": "skill",
+        "element": "CRYO",
+        "enemy": {
+          "level": 90,
+          "resistance": 0,
+          "defense": "standard same-level"
+        },
+        "weapon": null,
+        "weapon_refinement": null,
+        "weapon_passive": "未纳入；由调用方提供武器白值与副属性",
+        "scope": "单段伤害、无元素反应、无队伍增益",
+        "crit_mode": "average"
+      },
+      "sources": [
+        "https://www.genshindamagecalculator.com/guides/damage-formula/",
+        "https://github.com/frzyc/GenshinOptimizer"
+      ],
+      "accuracy": "high",
+      "calibration": {
+        "optimizer": "Genshin Optimizer 10.40.0 bridge",
+        "baseline_panel": {
+          "hp": 10924.914859,
+          "atk": 275.77251808,
+          "def": 682.521525,
+          "critRate_": 0.05,
+          "critDMG_": 0.5,
+          "eleMas": 37.0618014464
+        },
+        "baseline_noncrit_damage": 227.5454201181696,
+        "baseline_average_damage": 233.23405562112382,
+        "probe_damage": {
+          "hp": 227.5454201181696,
+          "atk": 1052.6654201181693,
+          "def": 227.5454201181696,
+          "em": 227.5454201181696,
+          "er": 227.5454201181696,
+          "element_dmg": 341.3181301772544
+        },
+        "validation_samples": 12,
+        "max_relative_error": 0.012717522707286941,
+        "median_relative_error": 0.00685295249136388,
+        "accuracy": "high",
+        "notes": [],
+        "expression": "(0.82512 * ATK + 10.231488) * (1 + (CRYO_DMG_BONUS + 20 * SET_15032_2 + 25 * SET_15032_4 + 4.26325641456e-14) / 100) * (1 + min(100, CRIT_RATE) * (CRIT_DMG) / 10000)"
+      }
+    },
+    {
+      "key": "travelerdendro_burst_explosion",
+      "character": "Traveler (Dendro)",
+      "character_zh": "旅行者·草",
+      "go_key": "TravelerDendro",
+      "weapon_type": "SWORD_ONE_HAND",
+      "label": "旅行者·草 burst_explosion（自动校准）",
+      "element": "DENDRO",
+      "attack": "burst_explosion",
+      "category": "burst",
+      "target_four_piece_set": 15026,
+      "coefficients": {
+        "ATK": 3.6072,
+        "ELEMENTAL_MASTERY": 0.980065642579
+      },
+      "constant": 44.72928,
+      "dmg_bonus": 1.5,
+      "crit_rate_bonus": 0.0,
+      "crit_dmg_bonus": 0.0,
+      "crit_enabled": true,
+      "set_effects": {
+        "15026": {
+          "4": {
+            "em": 150.0
+          }
+        }
+      },
+      "panel_bonus_stats": {},
+      "weapon": null,
+      "talent_scaling": {
+        "slot": "burst",
+        "baseline_level": 10,
+        "multipliers": {
+          "1": 0.555555555556,
+          "2": 0.597222222222,
+          "3": 0.638888888889,
+          "4": 0.694444444444,
+          "5": 0.736111111111,
+          "6": 0.777777777778,
+          "7": 0.833333333333,
+          "8": 0.888888888889,
+          "9": 0.944444444444,
+          "10": 1.0
+        },
+        "source": "Genshin Optimizer 10.40.0 bridge；固定其余条件与面板，仅改变对应天赋等级"
+      },
+      "assumptions": {
+        "character_level": 90,
+        "ascension": 6,
+        "constellation": 0,
+        "talents": {
+          "auto": 10,
+          "skill": 10,
+          "burst": 10
+        },
+        "conditions": {
+          "bonusCanned": true,
+          "bonusSkirk1": true,
+          "bonusSkirk2": true,
+          "bonusSkirk3": true
+        },
+        "attack": "burst_explosion",
+        "category": "burst",
+        "element": "DENDRO",
+        "enemy": {
+          "level": 90,
+          "resistance": 0,
+          "defense": "standard same-level"
+        },
+        "weapon": null,
+        "weapon_refinement": null,
+        "weapon_passive": "未纳入；由调用方提供武器白值与副属性",
+        "scope": "单段伤害、无元素反应、无队伍增益",
+        "crit_mode": "average"
+      },
+      "sources": [
+        "https://www.genshindamagecalculator.com/guides/damage-formula/",
+        "https://github.com/frzyc/GenshinOptimizer"
+      ],
+      "accuracy": "medium",
+      "calibration": {
+        "optimizer": "Genshin Optimizer 10.40.0 bridge",
+        "baseline_panel": {
+          "hp": 10924.914859,
+          "atk": 275.77251808,
+          "def": 682.521525,
+          "critRate_": 0.05,
+          "critDMG_": 0.5,
+          "eleMas": 15.0
+        },
+        "baseline_noncrit_damage": 1009.6881266264486,
+        "baseline_average_damage": 1034.9303297921097,
+        "probe_damage": {
+          "hp": 1009.6881266264486,
+          "atk": 4670.996126626448,
+          "def": 1009.6881266264486,
+          "em": 1208.641452070084,
+          "er": 1009.6881266264486,
+          "element_dmg": 1507.0714402355368
+        },
+        "validation_samples": 12,
+        "max_relative_error": 0.03563518928436736,
+        "median_relative_error": 0.009674939667769084,
+        "accuracy": "medium",
+        "notes": [],
+        "expression": "(3.6072 * ATK + 0.980065642579 * ELEMENTAL_MASTERY + 44.72928 + 147.009846387 * SET_15026_4) * (1 + (DENDRO_DMG_BONUS + 1.5) / 100) * (1 + min(100, CRIT_RATE) * (CRIT_DMG) / 10000)"
+      }
+    },
+    {
+      "key": "travelerelectro_burst_press",
+      "character": "Traveler (Electro)",
+      "character_zh": "旅行者·雷",
+      "go_key": "TravelerElectro",
+      "weapon_type": "SWORD_ONE_HAND",
+      "label": "旅行者·雷 burst_press（自动校准）",
+      "element": "ELECTRO",
+      "attack": "burst_press",
+      "category": "burst",
+      "target_four_piece_set": 15020,
+      "coefficients": {
+        "ATK": 1.0296
+      },
+      "constant": 12.76704,
+      "dmg_bonus": 0.0,
+      "crit_rate_bonus": 0.0,
+      "crit_dmg_bonus": 0.0,
+      "crit_enabled": true,
+      "set_effects": {
+        "15020": {
+          "4": {
+            "er_burst_dmg": 0.25
+          }
+        }
+      },
+      "panel_bonus_stats": {},
+      "weapon": null,
+      "talent_scaling": {
+        "slot": "burst",
+        "baseline_level": 10,
+        "multipliers": {
+          "1": 0.555555555556,
+          "2": 0.597222222222,
+          "3": 0.638888888889,
+          "4": 0.694444444444,
+          "5": 0.736111111111,
+          "6": 0.777777777778,
+          "7": 0.833333333333,
+          "8": 0.888888888889,
+          "9": 0.944444444444,
+          "10": 1.0
+        },
+        "source": "Genshin Optimizer 10.40.0 bridge；固定其余条件与面板，仅改变对应天赋等级"
+      },
+      "assumptions": {
+        "character_level": 90,
+        "ascension": 6,
+        "constellation": 0,
+        "talents": {
+          "auto": 10,
+          "skill": 10,
+          "burst": 10
+        },
+        "conditions": {
+          "bonusCanned": true,
+          "bonusSkirk1": true,
+          "bonusSkirk2": true,
+          "bonusSkirk3": true,
+          "electroC2Thunder": true,
+          "electroSkillAmulet": true
+        },
+        "attack": "burst_press",
+        "category": "burst",
+        "element": "ELECTRO",
+        "enemy": {
+          "level": 90,
+          "resistance": 0,
+          "defense": "standard same-level"
+        },
+        "weapon": null,
+        "weapon_refinement": null,
+        "weapon_passive": "未纳入；由调用方提供武器白值与副属性",
+        "scope": "单段伤害、无元素反应、无队伍增益",
+        "crit_mode": "average"
+      },
+      "sources": [
+        "https://www.genshindamagecalculator.com/guides/damage-formula/",
+        "https://github.com/frzyc/GenshinOptimizer"
+      ],
+      "accuracy": "high",
+      "calibration": {
+        "optimizer": "Genshin Optimizer 10.40.0 bridge",
+        "baseline_panel": {
+          "hp": 10924.914859,
+          "atk": 275.77251808,
+          "def": 682.521525,
+          "critRate_": 0.05,
+          "critDMG_": 0.5,
+          "eleMas": 15.0
+        },
+        "baseline_noncrit_damage": 283.935384615168,
+        "baseline_average_damage": 291.0337692305472,
+        "probe_damage": {
+          "hp": 283.935384615168,
+          "atk": 1313.535384615168,
+          "def": 283.935384615168,
+          "em": 283.935384615168,
+          "er": 283.935384615168,
+          "element_dmg": 425.903076922752
+        },
+        "validation_samples": 12,
+        "max_relative_error": 0.013076419919645857,
+        "median_relative_error": 0.008838325528595687,
+        "accuracy": "high",
+        "notes": [],
+        "expression": "(1.0296 * ATK + 12.76704) * (1 + (ELECTRO_DMG_BONUS + min(75, 0.25 * ENERGY_RECHARGE) * SET_15020_4) / 100) * (1 + min(100, CRIT_RATE) * (CRIT_DMG) / 10000)"
+      }
+    },
+    {
+      "key": "travelergeo_skill",
+      "character": "Traveler (Geo)",
+      "character_zh": "旅行者·岩",
+      "go_key": "TravelerGeo",
+      "weapon_type": "SWORD_ONE_HAND",
+      "label": "旅行者·岩 skill（自动校准）",
+      "element": "GEO",
+      "attack": "skill",
+      "category": "skill",
+      "target_four_piece_set": 15032,
+      "coefficients": {
+        "ATK": 2.232
+      },
+      "constant": 27.6768,
+      "dmg_bonus": 0.0,
+      "crit_rate_bonus": 0.0,
+      "crit_dmg_bonus": 0.0,
+      "crit_enabled": true,
+      "set_effects": {
+        "15032": {
+          "2": {
+            "dmg": 20.0
+          },
+          "4": {
+            "dmg": 25.0
+          }
+        }
+      },
+      "panel_bonus_stats": {},
+      "weapon": null,
+      "talent_scaling": {
+        "slot": "skill",
+        "baseline_level": 10,
+        "multipliers": {
+          "1": 0.555555555556,
+          "2": 0.597222222222,
+          "3": 0.638888888889,
+          "4": 0.694444444444,
+          "5": 0.736111111111,
+          "6": 0.777777777778,
+          "7": 0.833333333333,
+          "8": 0.888888888889,
+          "9": 0.944444444444,
+          "10": 1.0
+        },
+        "source": "Genshin Optimizer 10.40.0 bridge；固定其余条件与面板，仅改变对应天赋等级"
+      },
+      "assumptions": {
+        "character_level": 90,
+        "ascension": 6,
+        "constellation": 0,
+        "talents": {
+          "auto": 10,
+          "skill": 10,
+          "burst": 10
+        },
+        "conditions": {
+          "bonusCanned": true,
+          "bonusSkirk1": true,
+          "bonusSkirk2": true,
+          "bonusSkirk3": true,
+          "geoC1BurstArea": true
+        },
+        "attack": "skill",
+        "category": "skill",
+        "element": "GEO",
+        "enemy": {
+          "level": 90,
+          "resistance": 0,
+          "defense": "standard same-level"
+        },
+        "weapon": null,
+        "weapon_refinement": null,
+        "weapon_passive": "未纳入；由调用方提供武器白值与副属性",
+        "scope": "单段伤害、无元素反应、无队伍增益",
+        "crit_mode": "average"
+      },
+      "sources": [
+        "https://www.genshindamagecalculator.com/guides/damage-formula/",
+        "https://github.com/frzyc/GenshinOptimizer"
+      ],
+      "accuracy": "high",
+      "calibration": {
+        "optimizer": "Genshin Optimizer 10.40.0 bridge",
+        "baseline_panel": {
+          "hp": 10924.914859,
+          "atk": 275.77251808,
+          "def": 682.521525,
+          "critRate_": 0.05,
+          "critDMG_": 0.5,
+          "eleMas": 15.0
+        },
+        "baseline_noncrit_damage": 615.52426035456,
+        "baseline_average_damage": 630.912366863424,
+        "probe_damage": {
+          "hp": 615.52426035456,
+          "atk": 2847.52426035456,
+          "def": 615.52426035456,
+          "em": 615.52426035456,
+          "er": 615.52426035456,
+          "element_dmg": 923.2863905318401
+        },
+        "validation_samples": 12,
+        "max_relative_error": 0.011705208781275239,
+        "median_relative_error": 0.008489709593473279,
+        "accuracy": "high",
+        "notes": [],
+        "expression": "(2.232 * ATK + 27.6768) * (1 + (GEO_DMG_BONUS + 20 * SET_15032_2 + 25 * SET_15032_4) / 100) * (1 + min(100, CRIT_RATE) * (CRIT_DMG) / 10000)"
+      }
+    },
+    {
+      "key": "travelerhydro_skill_surge",
+      "character": "Traveler (Hydro)",
+      "character_zh": "旅行者·水",
+      "go_key": "TravelerHydro",
+      "weapon_type": "SWORD_ONE_HAND",
+      "label": "旅行者·水 skill_surge（自动校准）",
+      "element": "HYDRO",
+      "attack": "skill_surge",
+      "category": "skill",
+      "target_four_piece_set": 15032,
+      "coefficients": {
+        "ATK": 1.70352
+      },
+      "constant": 21.123648,
+      "dmg_bonus": 0.0,
+      "crit_rate_bonus": 0.0,
+      "crit_dmg_bonus": 0.0,
+      "crit_enabled": true,
+      "set_effects": {
+        "15032": {
+          "2": {
+            "dmg": 20.0
+          },
+          "4": {
+            "dmg": 25.0
+          }
+        }
+      },
+      "panel_bonus_stats": {},
+      "weapon": null,
+      "talent_scaling": {
+        "slot": "skill",
+        "baseline_level": 10,
+        "multipliers": {
+          "1": 0.555555555556,
+          "2": 0.597222222222,
+          "3": 0.638888888889,
+          "4": 0.694444444444,
+          "5": 0.736111111111,
+          "6": 0.777777777778,
+          "7": 0.833333333333,
+          "8": 0.888888888889,
+          "9": 0.944444444444,
+          "10": 1.0
+        },
+        "source": "Genshin Optimizer 10.40.0 bridge；固定其余条件与面板，仅改变对应天赋等级"
+      },
+      "assumptions": {
+        "character_level": 90,
+        "ascension": 6,
+        "constellation": 0,
+        "talents": {
+          "auto": 10,
+          "skill": 10,
+          "burst": 10
+        },
+        "conditions": {
+          "bonusCanned": true,
+          "bonusSkirk1": true,
+          "bonusSkirk2": true,
+          "bonusSkirk3": true,
+          "suffusion": true
+        },
+        "attack": "skill_surge",
+        "category": "skill",
+        "element": "HYDRO",
+        "enemy": {
+          "level": 90,
+          "resistance": 0,
+          "defense": "standard same-level"
+        },
+        "weapon": null,
+        "weapon_refinement": null,
+        "weapon_passive": "未纳入；由调用方提供武器白值与副属性",
+        "scope": "单段伤害、无元素反应、无队伍增益",
+        "crit_mode": "average"
+      },
+      "sources": [
+        "https://www.genshindamagecalculator.com/guides/damage-formula/",
+        "https://github.com/frzyc/GenshinOptimizer"
+      ],
+      "accuracy": "high",
+      "calibration": {
+        "optimizer": "Genshin Optimizer 10.40.0 bridge",
+        "baseline_panel": {
+          "hp": 10924.914859,
+          "atk": 275.77251808,
+          "def": 682.521525,
+          "critRate_": 0.05,
+          "critDMG_": 0.5,
+          "eleMas": 15.0
+        },
+        "baseline_noncrit_damage": 469.7839999996416,
+        "baseline_average_damage": 481.5285999996326,
+        "probe_damage": {
+          "hp": 469.7839999996416,
+          "atk": 2173.3039999996413,
+          "def": 469.7839999996416,
+          "em": 469.7839999996416,
+          "er": 469.7839999996416,
+          "element_dmg": 704.6759999994624
+        },
+        "validation_samples": 12,
+        "max_relative_error": 0.013671707083077324,
+        "median_relative_error": 0.007672295928789647,
+        "accuracy": "high",
+        "notes": [],
+        "expression": "(1.70352 * ATK + 21.123648) * (1 + (HYDRO_DMG_BONUS + 20 * SET_15032_2 + 25 * SET_15032_4) / 100) * (1 + min(100, CRIT_RATE) * (CRIT_DMG) / 10000)"
+      }
+    },
+    {
+      "key": "travelerpyro_burst",
+      "character": "Traveler (Pyro)",
+      "character_zh": "旅行者·火",
+      "go_key": "TravelerPyro",
+      "weapon_type": "SWORD_ONE_HAND",
+      "label": "旅行者·火 burst（自动校准）",
+      "element": "PYRO",
+      "attack": "burst",
+      "category": "burst",
+      "target_four_piece_set": 15020,
+      "coefficients": {
+        "ATK": 3.8448
+      },
+      "constant": 47.67552,
+      "dmg_bonus": 0.0,
+      "crit_rate_bonus": 0.0,
+      "crit_dmg_bonus": 0.0,
+      "crit_enabled": true,
+      "set_effects": {
+        "15020": {
+          "4": {
+            "er_burst_dmg": 0.25
+          }
+        }
+      },
+      "panel_bonus_stats": {},
+      "weapon": null,
+      "talent_scaling": {
+        "slot": "burst",
+        "baseline_level": 10,
+        "multipliers": {
+          "1": 0.555555555556,
+          "2": 0.597222222222,
+          "3": 0.638888888889,
+          "4": 0.694444444444,
+          "5": 0.736111111111,
+          "6": 0.777777777778,
+          "7": 0.833333333333,
+          "8": 0.888888888889,
+          "9": 0.944444444444,
+          "10": 1.0
+        },
+        "source": "Genshin Optimizer 10.40.0 bridge；固定其余条件与面板，仅改变对应天赋等级"
+      },
+      "assumptions": {
+        "character_level": 90,
+        "ascension": 6,
+        "constellation": 0,
+        "talents": {
+          "auto": 10,
+          "skill": 10,
+          "burst": 10
+        },
+        "conditions": {
+          "bonusCanned": true,
+          "bonusSkirk1": true,
+          "bonusSkirk2": true,
+          "bonusSkirk3": true
+        },
+        "attack": "burst",
+        "category": "burst",
+        "element": "PYRO",
+        "enemy": {
+          "level": 90,
+          "resistance": 0,
+          "defense": "standard same-level"
+        },
+        "weapon": null,
+        "weapon_refinement": null,
+        "weapon_passive": "未纳入；由调用方提供武器白值与副属性",
+        "scope": "单段伤害、无元素反应、无队伍增益",
+        "crit_mode": "average"
+      },
+      "sources": [
+        "https://www.genshindamagecalculator.com/guides/damage-formula/",
+        "https://github.com/frzyc/GenshinOptimizer"
+      ],
+      "accuracy": "high",
+      "calibration": {
+        "optimizer": "Genshin Optimizer 10.40.0 bridge",
+        "baseline_panel": {
+          "hp": 10924.914859,
+          "atk": 275.77251808,
+          "def": 682.521525,
+          "critRate_": 0.05,
+          "critDMG_": 0.5,
+          "eleMas": 15.0
+        },
+        "baseline_noncrit_damage": 1060.290177513984,
+        "baseline_average_damage": 1086.7974319518335,
+        "probe_damage": {
+          "hp": 1060.290177513984,
+          "atk": 4905.090177513984,
+          "def": 1060.290177513984,
+          "em": 1060.290177513984,
+          "er": 1060.290177513984,
+          "element_dmg": 1590.435266270976
+        },
+        "validation_samples": 12,
+        "max_relative_error": 0.012717522707286986,
+        "median_relative_error": 0.006852952491364268,
+        "accuracy": "high",
+        "notes": [],
+        "expression": "(3.8448 * ATK + 47.67552) * (1 + (PYRO_DMG_BONUS + min(75, 0.25 * ENERGY_RECHARGE) * SET_15020_4) / 100) * (1 + min(100, CRIT_RATE) * (CRIT_DMG) / 10000)"
       }
     },
     {

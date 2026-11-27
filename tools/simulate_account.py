@@ -49,6 +49,7 @@ from artifact_sim import (  # noqa: E402
 )
 from damage.character_models import catalog_metadata  # noqa: E402
 from data.game_data import DATA, DOMAINS, SETS  # noqa: E402
+from data.references import traveler_form, traveler_form_for_element, traveler_forms  # noqa: E402
 
 
 REFERENCE = ROOT / "data" / "reference_data"
@@ -89,7 +90,7 @@ def _load_gzip(name: str) -> dict:
 def available_character_count() -> int:
     characters = _load_gzip("characters.en.json.gz")
     excluded = {"aether", "lumine", "manekin", "manekina"}
-    return sum(key not in excluded for key in characters)
+    return sum(key not in excluded for key in characters) + bool(traveler_forms(language="en"))
 
 
 def validate_artifact_count(count: object) -> int:
@@ -116,17 +117,25 @@ def _sample_artifact_level(rng: random.Random) -> int:
     return rng.choices(levels, weights=weights)[0]
 
 
-def _build_roster(seed: int, owned_count: int, invested_count: int) -> tuple[list[dict], dict[int, int]]:
+def _build_roster(
+    seed: int,
+    owned_count: int,
+    invested_count: int,
+    traveler_element: str | None = None,
+) -> tuple[list[dict], dict[int, int]]:
     rng = random.Random(seed)
     characters = _load_gzip("characters.en.json.gz")
     characters_zh = _load_gzip("characters.zh.json.gz")
     weapons = _load_gzip("weapons.en.json.gz")
+    forms = traveler_forms(language="en")
+    includes_traveler = bool(forms)
     names = {
         key: record["name"] for key, record in characters.items()
         if key not in ("aether", "lumine", "manekin", "manekina")
     }
-    if owned_count < 1 or owned_count > len(names):
-        raise ValueError(f"角色数量必须介于 1 和当前图鉴角色数 {len(names)} 之间")
+    minimum_count = max(2 if includes_traveler else 1, invested_count + int(includes_traveler))
+    if owned_count < minimum_count or owned_count > len(names) + int(includes_traveler):
+        raise ValueError(f"角色数量必须介于 {minimum_count} 和当前图鉴角色数 {len(names) + int(includes_traveler)} 之间")
     by_name = {record["name"]: record for record in characters.values()}
     zh_by_key = {
         key: characters_zh[key]["name"] for key in characters if key in characters_zh
@@ -142,8 +151,9 @@ def _build_roster(seed: int, owned_count: int, invested_count: int) -> tuple[lis
         if name not in owned and by_name[name]["name"] in names.values()
     ]
     rng.shuffle(remaining)
+    non_traveler_count = owned_count - int(includes_traveler)
     for name in remaining:
-        if len(owned) >= owned_count:
+        if len(owned) >= non_traveler_count:
             break
         owned.append(name)
 
@@ -180,6 +190,39 @@ def _build_roster(seed: int, owned_count: int, invested_count: int) -> tuple[lis
             "constellation": constellation,
             "talents": {"auto": talents[0], "skill": talents[1], "burst": talents[2]},
             "invested": is_invested,
+        })
+    if includes_traveler:
+        selected_form = (
+            (traveler_form(traveler_element) or traveler_form_for_element(traveler_element))
+            if traveler_element is not None else rng.choice(forms)
+        )
+        if selected_form is None:
+            raise ValueError(f"旅行者元素形态无效：{traveler_element}")
+        appearance_key = rng.choice(("aether", "lumine"))
+        appearance = characters[appearance_key]
+        base = characters["aether"]
+        weapon_type = base.get("weaponType", "")
+        candidates = _weapon_pool(weapons, weapon_type, 4) or _weapon_pool(weapons, weapon_type, 3)
+        if not candidates:
+            raise ValueError("旅行者没有可用武器")
+        roster.append({
+            "character": selected_form["name_en"],
+            "name_zh": selected_form["name_zh"],
+            "element": selected_form["elementType"],
+            "rarity": base.get("rarity"),
+            "weapon_type": weapon_type,
+            "weapon": rng.choice(candidates),
+            "weapon_refinement": rng.randint(1, 5),
+            "level": 90,
+            "constellation": 0,
+            "talents": {"auto": 10, "skill": 10, "burst": 10},
+            "invested": False,
+            "identity": "traveler",
+            "form_key": selected_form["key"],
+            "appearance": appearance_key,
+            "appearance_name": appearance["name"],
+            "appearance_id": appearance["id"],
+            "character_id": appearance["id"],
         })
     return roster, {record["name"]: record["id"] for record in by_name.values()}
 
@@ -229,6 +272,7 @@ def _generate_artifacts(
     count: int,
     target_sets: list[int],
     extra_sets: list[int],
+    target_set_users: dict[int, int] | None = None,
 ) -> list:
     validate_artifact_count(count)
     set_weights = {}
@@ -236,10 +280,27 @@ def _generate_artifacts(
         set_weights[set_id] = 0.7 / max(1, len(target_sets))
     for set_id in extra_sets:
         set_weights[set_id] = 0.3 / max(1, len(extra_sets))
-    artifacts = []
-    for _ in range(count):
+    reserved = []
+    for set_id in target_sets:
+        minimum = 5 * max(1, (target_set_users or {}).get(set_id, 1))
+        if minimum > count:
+            raise ValueError(f"目标套装 {set_id} 的可用圣遗物数少于所需的 {minimum} 件")
+        reserved.extend((set_id, slot) for slot in SLOTS)
+        reserved.extend(
+            (set_id, rng.choices(SLOTS, weights=[DATA["slot_weights"][item] for item in SLOTS])[0])
+            for _ in range(minimum - len(SLOTS))
+        )
+    if len(reserved) > count:
+        raise ValueError("圣遗物数量不足以为所有配装候选保留目标套装")
+    choices = list(reserved)
+    while len(choices) < count:
         set_id = rng.choices(list(set_weights), weights=[set_weights[key] for key in set_weights])[0]
         slot = rng.choices(SLOTS, weights=[DATA["slot_weights"][item] for item in SLOTS])[0]
+        choices.append((set_id, slot))
+    rng.shuffle(choices)
+
+    artifacts = []
+    for set_id, slot in choices:
         main_weights = DATA["main_stat_weights"][slot]
         main = rng.choices(list(main_weights), weights=[main_weights[key] for key in main_weights])[0]
         artifact = sim.create(set_id, slot=slot, main_stat=main)
@@ -275,6 +336,32 @@ def _members(roster: list[dict], invested_count: int) -> list[PartyMember]:
             name=row["name_zh"],
         ))
     return result
+
+
+def _traveler_member(roster: list[dict]) -> PartyMember | None:
+    row = next((item for item in roster if item.get("identity") == "traveler"), None)
+    if row is None:
+        return None
+    model = get_damage_model(
+        row["character"],
+        weapon=row["weapon"],
+        level=90,
+        ascension=6,
+        constellation=0,
+        talents=row["talents"],
+        weapon_level=90,
+        weapon_ascension=6,
+        refinement=row["weapon_refinement"],
+        crit_mode="average",
+    )
+    return PartyMember(
+        model=model,
+        character={"id": row["character"], "level": 90, "ascension": 6},
+        weapon={"id": row["weapon"], "level": 90, "ascension": 6},
+        weight=1.0,
+        target_four_piece_set=model.target_four_piece_set,
+        name=row["name_zh"],
+    )
 
 
 def _identity(piece: LoadoutPiece) -> str:
@@ -477,6 +564,11 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=20261126)
     parser.add_argument("--characters", type=int, default=36,
                         help=f"角色库规模（最多 {available_character_count()}，取决于离线图鉴）")
+    parser.add_argument(
+        "--traveler-element",
+        choices=[form["element"] for form in traveler_forms(language="en")],
+        help="指定旅行者当前元素形态（留空则按随机种子选择）",
+    )
     parser.add_argument("--invested", type=int, default=min(12, len(MAIN_ROSTER)),
                         help="使用预设目标套装的角色数（受 MAIN_ROSTER 可用角色数限制）")
     parser.add_argument(
@@ -499,8 +591,12 @@ def main() -> None:
 
     if args.invested < 1 or args.invested > len(MAIN_ROSTER):
         parser.error(f"--invested 必须介于 1 和预设目标阵容人数 {len(MAIN_ROSTER)} 之间")
-    if args.characters < 1 or args.characters > available_character_count():
-        parser.error(f"--characters 必须介于 1 和当前图鉴角色数 {available_character_count()} 之间")
+    minimum_characters = 2 if traveler_forms(language="en") else 1
+    if args.characters < minimum_characters or args.characters > available_character_count():
+        parser.error(
+            f"--characters 必须介于 {minimum_characters} 和当前图鉴角色数 "
+            f"{available_character_count()} 之间",
+        )
     try:
         validate_artifact_count(args.artifacts)
     except ValueError as exc:
@@ -508,17 +604,29 @@ def main() -> None:
 
     output = args.output
     output.mkdir(parents=True, exist_ok=True)
-    roster, _ = _build_roster(args.seed, max(args.characters, args.invested), args.invested)
+    roster, _ = _build_roster(
+        args.seed,
+        max(args.characters, args.invested + int(bool(traveler_forms(language="en")))),
+        args.invested,
+        args.traveler_element,
+    )
     invested_rows = [row for row in roster if row["invested"]][:args.invested]
     if len(invested_rows) < args.invested:
         raise ValueError("主阵容数量不足")
     members = _members(roster, args.invested)
-    target_sets, extra_sets = _artifact_set_pool(members)
+    traveler_member = _traveler_member(roster)
+    candidate_members = members + ([traveler_member] if traveler_member is not None else [])
+    target_sets, extra_sets = _artifact_set_pool(candidate_members)
+    target_set_users = Counter(
+        member.resolved_set() for member in candidate_members if member.resolved_set() is not None
+    )
     print(f"[account] roster={len(roster)} invested={len(members)} artifacts={args.artifacts}")
 
     sim = Simulator(args.seed)
     rng = random.Random(args.seed + 2)
-    artifacts = _generate_artifacts(sim, rng, args.artifacts, target_sets, extra_sets)
+    artifacts = _generate_artifacts(
+        sim, rng, args.artifacts, target_sets, extra_sets, target_set_users,
+    )
     db_path = output / "account.sqlite3"
     if db_path.exists():
         db_path.unlink()
@@ -604,8 +712,7 @@ def main() -> None:
             "summary": "summary.json",
         },
     }
-    request = {
-        "members": [
+    request_members = [
             {
                 "character": member.model.character,
                 "weapon": {"id": member.weapon["id"], "level": 90, "ascension": 6},
@@ -616,7 +723,24 @@ def main() -> None:
                 "candidate_main_stats": candidate_stats[index],
             }
             for index, member in enumerate(members)
-        ],
+        ]
+    if traveler_member is not None:
+        traveler_row = next(item for item in roster if item.get("identity") == "traveler")
+        request_members.append({
+            "character": traveler_row["character"],
+            "weapon": {"id": traveler_row["weapon"], "level": 90, "ascension": 6,
+                       "refinement": traveler_row["weapon_refinement"]},
+            "level": 90,
+            "ascension": 6,
+            "constellation": 0,
+            "talents": traveler_row["talents"],
+            "target_four_piece_set": traveler_member.target_four_piece_set,
+            "name": traveler_member.label,
+            "weight": 1.0,
+            "candidate_main_stats": compact_main_stats(traveler_member.model),
+        })
+    request = {
+        "members": request_members,
         "domains": domains,
         "threshold_pct": args.threshold,
         "max_nodes": args.max_nodes,

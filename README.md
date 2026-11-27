@@ -23,6 +23,8 @@ Python 3.10 或更新版本。运行只需要 Python 标准库。以下命令从
 
 仓库自带一个标准浏览器访问的本地 Web 应用（不是桌面 GUI 或桌面打包应用），用于串联账号生成、单角色/多角色配装优化和秘境树脂规划。页面由 `tools/acceptance_ui.html` 提供 HTML/CSS/JavaScript，本地标准库 HTTP 服务负责调用现有 Python 能力；直接调用 `tools/simulate_account.py`、`artifact_sim party optimize` 和 `artifact_sim party plan`，不引入另一套领域逻辑。
 
+离线图鉴按同时存在的天赋与命座资料记录提供旅行者·风、岩、雷、草、水、火、冰七种形态；`旅行者`、元素形态的中文/英文名及资料键均可查询。模拟账号只生成一个旅行者身份，空/荧外观由随机种子选择，元素形态也可按种子随机或在页面及 `--traveler-element anemo` 中指定。旅行者的武器、等级、天赋和当前形态命座保留在账号详情中；所有元素形态共用一个背包配装身份，多角色优化拒绝重复选择。七个形态均有由固定 Genshin Optimizer 伤害桥校准的伤害模型，只有当前形态进入候选。奇偶·男性/女性保留千星奇域资料与活动定位，但离线图鉴没有可建模战斗技能，因此不进入拟真战斗账号、配装候选或伤害公式目录；`get_character_profile` 会给出排除原因。
+
 ```powershell
 python -m tools.acceptance_ui
 ```
@@ -73,7 +75,7 @@ Python 入口为 `calculate_damage`、`list_damage_formulas` 和 `damage_engine_
 
 ### 角色伤害模型目录
 
-`character_models.json` 包含 121 个由本机 Genshin Optimizer 10.40.0 桥接标定的单段伤害模型，加上手写的那维莱特重击模型，共 122 个角色。旅行者（空/荧）和训练人偶没有上游单角色伤害公式，未纳入目录。每个目录模型在 90 级、C0、天赋 10/10/10、无武器、90 级无抗性木桩下标定；生成器另外逐级查询对应伤害天赋 1–10 级的倍率比例，供优化请求动态传入实际等级：
+`character_models.json` 包含 128 个由本机 Genshin Optimizer 10.40.0 桥接标定的单段伤害模型（含旅行者七种元素形态），另有手写的那维莱特重击模型。旅行者模型分别使用上游 `TravelerAnemo`、`TravelerGeo`、`TravelerElectro`、`TravelerDendro`、`TravelerHydro`、`TravelerPyro`、`TravelerCryo` 公式，并按一个逻辑角色互斥。七个模型均通过 12 组面板扰动校验；草元素模型精度为 medium（最大相对误差约 3.56%），其余为 high。奇偶和训练人偶没有目录模型。每个目录模型在 90 级、C0、天赋 10/10/10、无武器、90 级无抗性木桩下标定；生成器另外逐级查询对应伤害天赋 1–10 级的倍率比例，供优化请求动态传入实际等级：
 
 - 伤害节点：优先使用策划表或主流攻略指定的主伤害段；未指定时选择非下坠节点中基准伤害最高的一段；
 - 面板系数：对生命、攻击、防御、元素精通、元素充能效率做有限差分；

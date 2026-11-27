@@ -7,7 +7,16 @@ import unittest
 from pathlib import Path
 
 import artifact_sim.references as references
-from artifact_sim import catalog, game_data_info, get_character_profile, get_game_record, get_game_stats, list_game_records
+from artifact_sim import (
+    catalog, game_data_info, get_character_profile, get_game_record, get_game_stats,
+    list_game_records,
+)
+from data.references import (
+    is_traveler_identity,
+    traveler_form,
+    traveler_form_for_element,
+    traveler_forms,
+)
 
 
 class ReferenceDataTests(unittest.TestCase):
@@ -82,6 +91,58 @@ class ReferenceDataTests(unittest.TestCase):
         self.assertEqual(get_game_record("elements", "pyro")["name"], "Pyro")
         self.assertEqual(len(get_character_profile("空")["talents"]), 7)
         self.assertEqual(get_character_profile("奇偶·男性")["talents"], [])
+
+    def test_traveler_profiles_resolve_identity_and_each_available_element(self):
+        forms = traveler_forms()
+        self.assertEqual(
+            {form["element"] for form in forms},
+            {"anemo", "geo", "electro", "dendro", "hydro", "pyro", "cryo"},
+        )
+        self.assertEqual(len(get_character_profile("Traveler")["talents"]), len(forms))
+        self.assertEqual(len(get_character_profile("Aether")["talents"]), len(forms))
+        self.assertEqual(len(get_character_profile("Lumine")["constellations"]), len(forms))
+        self.assertIsNone(traveler_form("Anemo"))
+        self.assertFalse(is_traveler_identity("风"))
+        self.assertEqual(traveler_form_for_element("风")["key"], "traveleranemo")
+        for form in forms:
+            with self.subTest(form=form["key"]):
+                by_key = get_game_record("characters", form["key"])
+                by_zh_name = get_game_record("characters", form["name_zh"])
+                by_en_name = get_game_record("characters", form["name_en"], language="en")
+                profile = get_character_profile(form["name_en"], language="en")
+                self.assertEqual(by_key["key"], form["key"])
+                self.assertEqual(by_zh_name["key"], form["key"])
+                self.assertEqual(by_en_name["key"], form["key"])
+                self.assertEqual(by_key["elementType"], form["elementType"])
+                self.assertEqual(profile["active_form"], form["key"])
+                self.assertEqual([row["key"] for row in profile["talents"]], [form["key"]])
+                self.assertEqual([row["key"] for row in profile["constellations"]], [form["key"]])
+
+        traveler_rows = list_game_records("characters", search="Traveler")
+        self.assertEqual(
+            {row["key"] for row in traveler_rows if row["key"].startswith("traveler")},
+            {"traveler", *(form["key"] for form in forms)},
+        )
+        traveler_stats = get_game_stats("characters", "traveleranemo", 90)
+        aether_stats = get_game_stats("characters", "Aether", 90)
+        lumine_stats = get_game_stats("characters", "Lumine", 90)
+        for stat in ("hp", "attack", "defense", "specialized"):
+            self.assertEqual(traveler_stats[stat], aether_stats[stat])
+            self.assertEqual(aether_stats[stat], lumine_stats[stat])
+
+    def test_manekin_records_explain_combat_exclusion_without_losing_details(self):
+        for name in ("Manekin", "Manekina"):
+            with self.subTest(name=name):
+                profile = get_character_profile(name, language="en")
+                character = profile["character"]
+                self.assertEqual(character["battle_support"], "excluded")
+                self.assertIn("Miliastra Wonderland", character["activity_role"])
+                self.assertIn("no modelable combat kit", character["battle_exclusion_reason"])
+                self.assertEqual(profile["talents"], [])
+                self.assertEqual(profile["constellations"], [])
+        indexed = list_game_records("characters", language="en", search="Manekin")
+        self.assertEqual(len(indexed), 2)
+        self.assertTrue(all(row["battle_support"] == "excluded" for row in indexed))
 
     def test_offline_cli(self):
         result = subprocess.check_output(

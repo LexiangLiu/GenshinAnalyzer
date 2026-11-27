@@ -248,8 +248,8 @@
             <form id="generation-form">
               <div class="field-grid">
                 <label class="field">角色数量
-                  <input id="character-count" type="number" min="1" max="__CHARACTER_LIMIT__" value="8" required>
-                  <span class="field-hint">上限根据当前离线角色图鉴动态计算；全量生成不会扩张预设优化队伍。</span>
+                  <input id="character-count" type="number" min="2" max="__CHARACTER_LIMIT__" value="8" required>
+                  <span class="field-hint">数量包含一个旅行者身份；上限根据离线图鉴动态计算。</span>
                 </label>
                 <label class="field">圣遗物件数
                   <input id="artifact-count" type="number" min="20" max="__ARTIFACT_LIMIT__" step="10" value="180" required>
@@ -258,6 +258,13 @@
                 <label class="field full">随机种子
                   <input id="generation-seed" type="number" value="42" step="1" required>
                   <span class="field-hint">相同配置与种子可复现账号生成过程。</span>
+                </label>
+                <label class="field full">旅行者元素
+                  <select id="traveler-element">
+                    <option value="">随机（由种子决定）</option>
+                    __TRAVELER_ELEMENT_OPTIONS__
+                  </select>
+                  <span class="field-hint">每个账号只生成一个旅行者；空与荧是外观选择，不会增加角色或配装数量。</span>
                 </label>
               </div>
               <div class="button-row"><button id="generate-button" class="button" type="submit">生成账号与库存</button></div>
@@ -1218,7 +1225,8 @@
         const data = await post("/api/generate", {
           characters: Number(byId("character-count").value),
           artifacts: Number(byId("artifact-count").value),
-          seed: Number(byId("generation-seed").value)
+          seed: Number(byId("generation-seed").value),
+          traveler_element: byId("traveler-element").value
         });
         renderAccount(data);
         setStatus("generation-status", `已完成：${data.account.character_count} 位角色、${data.account.weapon_count} 把武器、${data.account.artifact_count} 件圣遗物。`);

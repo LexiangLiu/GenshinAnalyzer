@@ -375,6 +375,12 @@ def _party_members(config: dict) -> list[dict]:
     rows = config.get("members")
     if not isinstance(rows, list) or not rows:
         raise ValueError("members 必须是非空数组")
+    from data.references import is_traveler_identity
+    if sum(
+        1 for row in rows
+        if isinstance(row, dict) and is_traveler_identity(row.get("character"))
+    ) > 1:
+        raise ValueError("一个队伍只能包含一个旅行者身份；空、荧及不同元素形态互斥")
     members = []
     for row in rows:
         if not isinstance(row, dict) or "character" not in row:
