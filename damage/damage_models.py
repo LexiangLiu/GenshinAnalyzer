@@ -456,7 +456,9 @@ def available_models() -> dict:
 
 def get_damage_model(character: str | int, model: str | None = None, **options) -> DamageModel:
     """Resolve a hand-written or catalog model for one character."""
-    from data.references import is_traveler_identity, traveler_form
+    from data.references import is_manekin_identity, is_traveler_identity, traveler_form
+    if is_manekin_identity(character):
+        raise ValueError("奇偶的技能倍率尚未校准，不参与伤害模型和配装评分")
     if is_traveler_identity(character):
         form = traveler_form(character)
         if form is None:

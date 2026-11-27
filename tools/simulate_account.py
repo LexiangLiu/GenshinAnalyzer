@@ -49,7 +49,12 @@ from artifact_sim import (  # noqa: E402
 )
 from damage.character_models import catalog_metadata  # noqa: E402
 from data.game_data import DATA, DOMAINS, SETS  # noqa: E402
-from data.references import traveler_form, traveler_form_for_element, traveler_forms  # noqa: E402
+from data.references import (  # noqa: E402
+    get_game_record,
+    traveler_form,
+    traveler_form_for_element,
+    traveler_forms,
+)
 
 
 REFERENCE = ROOT / "data" / "reference_data"
@@ -90,7 +95,11 @@ def _load_gzip(name: str) -> dict:
 def available_character_count() -> int:
     characters = _load_gzip("characters.en.json.gz")
     excluded = {"aether", "lumine", "manekin", "manekina"}
-    return sum(key not in excluded for key in characters) + bool(traveler_forms(language="en"))
+    return (
+        sum(key not in excluded for key in characters)
+        + bool(traveler_forms(language="en"))
+        + int(all(key in characters for key in ("manekin", "manekina")))
+    )
 
 
 def validate_artifact_count(count: object) -> int:
@@ -129,13 +138,15 @@ def _build_roster(
     weapons = _load_gzip("weapons.en.json.gz")
     forms = traveler_forms(language="en")
     includes_traveler = bool(forms)
+    includes_manekin = all(key in characters for key in ("manekin", "manekina"))
+    special_count = int(includes_traveler) + int(includes_manekin)
     names = {
         key: record["name"] for key, record in characters.items()
         if key not in ("aether", "lumine", "manekin", "manekina")
     }
-    minimum_count = max(2 if includes_traveler else 1, invested_count + int(includes_traveler))
-    if owned_count < minimum_count or owned_count > len(names) + int(includes_traveler):
-        raise ValueError(f"角色数量必须介于 {minimum_count} 和当前图鉴角色数 {len(names) + int(includes_traveler)} 之间")
+    minimum_count = max(special_count + 1, invested_count + special_count)
+    if owned_count < minimum_count or owned_count > len(names) + special_count:
+        raise ValueError(f"角色数量必须介于 {minimum_count} 和当前图鉴角色数 {len(names) + special_count} 之间")
     by_name = {record["name"]: record for record in characters.values()}
     zh_by_key = {
         key: characters_zh[key]["name"] for key in characters if key in characters_zh
@@ -151,9 +162,9 @@ def _build_roster(
         if name not in owned and by_name[name]["name"] in names.values()
     ]
     rng.shuffle(remaining)
-    non_traveler_count = owned_count - int(includes_traveler)
+    non_special_count = owned_count - special_count
     for name in remaining:
-        if len(owned) >= non_traveler_count:
+        if len(owned) >= non_special_count:
             break
         owned.append(name)
 
@@ -191,6 +202,7 @@ def _build_roster(
             "talents": {"auto": talents[0], "skill": talents[1], "burst": talents[2]},
             "invested": is_invested,
         })
+    selected_form = None
     if includes_traveler:
         selected_form = (
             (traveler_form(traveler_element) or traveler_form_for_element(traveler_element))
@@ -223,6 +235,49 @@ def _build_roster(
             "appearance_name": appearance["name"],
             "appearance_id": appearance["id"],
             "character_id": appearance["id"],
+        })
+    if includes_manekin:
+        appearance_key = rng.choice(("manekin", "manekina"))
+        appearance = characters[appearance_key]
+        base = characters["manekin"]
+        weapon_type = base.get("weaponType", "")
+        candidates = _weapon_pool(weapons, weapon_type, 4) or _weapon_pool(weapons, weapon_type, 3)
+        if not candidates:
+            raise ValueError("奇偶没有可用武器")
+        level = rng.choice((90, 95))
+        current_element = selected_form["elementType"] if selected_form else None
+        current_element_name = (
+            get_game_record("characters", selected_form["key"], language="zh")["elementText"]
+            if selected_form else None
+        )
+        roster.append({
+            "character": "Manekin",
+            "name_zh": "奇偶（男）" if appearance_key == "manekin" else "奇偶（女）",
+            "element": "ELEMENT_ADAPTIVE",
+            "current_element": current_element,
+            "current_element_name": current_element_name,
+            "traveler_form_name": selected_form["name_zh"] if selected_form else None,
+            "element_source": "traveler",
+            "element_behavior": "adaptive",
+            "rarity": base.get("rarity"),
+            "weapon_type": weapon_type,
+            "weapon": rng.choice(candidates),
+            "weapon_refinement": rng.randint(1, 5),
+            "level": level,
+            "ascension": 6 if level == 90 else 7,
+            "constellation": 0,
+            "constellations_available": False,
+            "talents": {"auto": 10, "skill": 10, "burst": 10},
+            "max_talent_level": 10,
+            "ascension_materials": [],
+            "mora_cost": 0,
+            "invested": False,
+            "identity": "manekin",
+            "appearance": appearance_key,
+            "appearance_name": appearance["name"],
+            "appearance_id": appearance["id"],
+            "character_id": appearance["id"],
+            "battle_support": "uncalibrated",
         })
     return roster, {record["name"]: record["id"] for record in by_name.values()}
 
@@ -591,7 +646,11 @@ def main() -> None:
 
     if args.invested < 1 or args.invested > len(MAIN_ROSTER):
         parser.error(f"--invested 必须介于 1 和预设目标阵容人数 {len(MAIN_ROSTER)} 之间")
-    minimum_characters = 2 if traveler_forms(language="en") else 1
+    minimum_characters = (
+        int(bool(traveler_forms(language="en")))
+        + int(all(key in _load_gzip("characters.en.json.gz") for key in ("manekin", "manekina")))
+        + 1
+    )
     if args.characters < minimum_characters or args.characters > available_character_count():
         parser.error(
             f"--characters 必须介于 {minimum_characters} 和当前图鉴角色数 "
@@ -606,7 +665,11 @@ def main() -> None:
     output.mkdir(parents=True, exist_ok=True)
     roster, _ = _build_roster(
         args.seed,
-        max(args.characters, args.invested + int(bool(traveler_forms(language="en")))),
+        max(
+            args.characters,
+            args.invested + int(bool(traveler_forms(language="en")))
+            + int(all(key in _load_gzip("characters.en.json.gz") for key in ("manekin", "manekina"))),
+        ),
         args.invested,
         args.traveler_element,
     )

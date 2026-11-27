@@ -375,12 +375,16 @@ def _party_members(config: dict) -> list[dict]:
     rows = config.get("members")
     if not isinstance(rows, list) or not rows:
         raise ValueError("members 必须是非空数组")
-    from data.references import is_traveler_identity
-    if sum(
-        1 for row in rows
-        if isinstance(row, dict) and is_traveler_identity(row.get("character"))
-    ) > 1:
+    from data.references import is_manekin_identity, is_traveler_identity
+    character_names = [
+        row.get("character") for row in rows if isinstance(row, dict)
+    ]
+    if sum(is_traveler_identity(name) for name in character_names) > 1:
         raise ValueError("一个队伍只能包含一个旅行者身份；空、荧及不同元素形态互斥")
+    if sum(is_manekin_identity(name) for name in character_names) > 1:
+        raise ValueError("一个队伍只能包含一个奇偶身份；男性与女性外观互斥")
+    if any(is_manekin_identity(name) for name in character_names):
+        raise ValueError("奇偶战斗模型尚未校准，不参与伤害计算或配装评分")
     members = []
     for row in rows:
         if not isinstance(row, dict) or "character" not in row:

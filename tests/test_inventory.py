@@ -82,6 +82,14 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual(self.inv.profiles(), ["Traveler"])
         self.assertEqual(self.inv.get(artifact_id)["equipped"], "Traveler")
 
+    def test_manekin_appearances_share_one_equipment_identity(self):
+        artifact_id, = self.inv.add([self.piece()])
+        self.assertEqual(self.inv.equip("Manekin", [artifact_id])["profile"], "Manekin")
+        self.assertEqual(self.inv.profile("Manekina"), "Manekin")
+        self.assertEqual(self.inv.equip("Manekina", [artifact_id])["profile"], "Manekin")
+        self.assertEqual(self.inv.profiles(), ["Manekin"])
+        self.assertEqual(self.inv.get(artifact_id)["equipped"], "Manekin")
+
     def test_panel_applies_static_bonuses_and_leaves_conditionals_as_text(self):
         pieces = [self.piece(slot, 15025) for slot in ("FLOWER", "PLUME", "SANDS", "GOBLET")]
         panel = loadout(pieces)

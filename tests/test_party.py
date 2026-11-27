@@ -81,6 +81,18 @@ class PartyOptimizerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "一个队伍只能包含一个旅行者身份"):
             optimize_party([], model_members)
 
+    def test_cli_and_optimizer_reject_duplicate_manekin_appearances_and_uncalibrated_scores(self):
+        for members in (
+            [{"character": "Manekin"}, {"character": "Manekina"}],
+            [{"character": "奇偶·男性"}, {"character": "Manekina"}],
+        ):
+            with self.subTest(members=members), self.assertRaisesRegex(
+                ValueError, "一个队伍只能包含一个奇偶身份",
+            ):
+                _party_members({"members": members})
+        with self.assertRaisesRegex(ValueError, "奇偶的技能倍率尚未校准"):
+            get_damage_model("Manekin")
+
     def test_cli_member_request_applies_fixed_four_piece_set(self):
         members = _party_members({
             "members": [{

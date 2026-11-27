@@ -21,8 +21,9 @@ from urllib.parse import parse_qs, urlsplit
 from data.references import (
     get_character_profile,
     get_game_record,
-    is_traveler_identity,
+    is_manekin_identity,
     list_game_records,
+    party_exclusive_identity,
     traveler_form,
     traveler_form_for_element,
     traveler_forms,
@@ -77,7 +78,7 @@ def validate_generation(payload: object) -> dict[str, Any]:
         "characters": _integer(
             payload.get("characters", min(8, available_character_count())),
             "角色数量",
-            2 if traveler_forms(language="en") else 1,
+            min(available_character_count(), 1 + int(bool(traveler_forms(language="en"))) + 1),
             available_character_count(),
         ),
         "artifacts": validate_artifact_count(payload.get("artifacts", 180)),
@@ -89,7 +90,7 @@ def validate_generation(payload: object) -> dict[str, Any]:
 def optimizer_roster_size(character_count: int, artifact_count: int) -> int:
     artifacts_per_preset_roster = len(MAIN_ROSTER) * len(SLOTS)
     return min(
-        max(1, character_count - int(bool(traveler_forms(language="en")))),
+        max(1, character_count - int(bool(traveler_forms(language="en"))) - 1),
         len(MAIN_ROSTER),
         max(1, artifact_count // artifacts_per_preset_roster),
     )
@@ -110,8 +111,16 @@ def build_selected_request(
         raise ValueError("角色选择无效")
     if len(set(selected_characters)) != len(selected_characters):
         raise ValueError("不能重复选择同一角色")
-    if sum(is_traveler_identity(name) for name in selected_characters) > 1:
+    identity_counts = {
+        identity: sum(party_exclusive_identity(name) == identity for name in selected_characters)
+        for identity in ("traveler", "manekin")
+    }
+    if identity_counts["traveler"] > 1:
         raise ValueError("一个队伍只能包含一个旅行者身份；空、荧及不同元素形态互斥")
+    if identity_counts["manekin"] > 1:
+        raise ValueError("一个队伍只能包含一个奇偶身份；男性与女性外观互斥")
+    if any(is_manekin_identity(name) for name in selected_characters):
+        raise ValueError("奇偶战斗模型尚未校准，不参与配装评分")
     if mode == "single" and len(selected_characters) != 1:
         raise ValueError("单角色模式只能选择一个角色")
     if mode == "multi" and len(selected_characters) < 2:
@@ -1091,7 +1100,8 @@ class AcceptanceService:
             if kind == "characters":
                 for character in account.get("roster", []):
                     record = get_game_record("characters", character["character"], language="zh")
-                    character_profile = get_character_profile(character["character"], language="zh")
+                    profile_query = character.get("appearance") if character.get("identity") == "manekin" else character["character"]
+                    character_profile = get_character_profile(profile_query or character["character"], language="zh")
                     talents = character.get("talents") or {}
                     ability_details = []
                     constellation_details = []
@@ -1110,15 +1120,25 @@ class AcceptanceService:
                                 constellation_details.append(
                                     f'{constellation["name"]}：{constellation.get("description", "")}'.rstrip("："),
                                 )
+                    elif character.get("identity") == "manekin":
+                        ability_details = [
+                            f'{ability["name"]}：{ability["summary"]}'
+                            for ability in character_profile["abilities"]
+                        ]
                     appearance = (
                         get_game_record("characters", character["appearance"], language="zh")
                         if character.get("identity") == "traveler" else None
                     )
+                    current_element = character.get("current_element")
                     fields = [
                         ("角色 ID", character.get("character_id", record.get("id"))),
                         ("英文名", character["character"]),
                         ("稀有度", character.get("rarity", record.get("rarity"))),
-                        ("元素", record.get("elementText") or character.get("element")),
+                        ("元素", (
+                        f'Adaptive（当前：{character.get("current_element_name") or current_element}）'
+                            if character.get("identity") == "manekin" and current_element
+                            else record.get("elementText") or character.get("element")
+                        )),
                         ("武器类型", record.get("weaponText") or character.get("weapon_type")),
                         ("等级", character.get("level")),
                         ("命座等级", character.get("constellation")),
@@ -1132,7 +1152,10 @@ class AcceptanceService:
                         ("命之座名称", record.get("constellation")),
                         ("角色简介", record.get("description")),
                     ]
-                    notes = ["模拟账号未保存角色突破阶段，因此不推算当前等级面板属性。"]
+                    notes = (
+                        [] if character.get("identity") == "manekin"
+                        else ["模拟账号未保存角色突破阶段，因此不推算当前等级面板属性。"]
+                    )
                     if character.get("identity") == "traveler":
                         fields.extend([
                             ("逻辑身份", "旅行者（空与荧共用）"),
@@ -1143,6 +1166,22 @@ class AcceptanceService:
                             ("当前形态命座图鉴", constellation_details),
                         ])
                         notes.append("旅行者只占一个账号身份；切换元素形态不会产生另一套配装。")
+                    elif character.get("identity") == "manekin":
+                        fields.extend([
+                            ("逻辑身份", "奇偶（Manekin / Manekina 共用）"),
+                            ("外观", character.get("appearance_name")),
+                            ("元素模式", "Adaptive（跟随旅行者当前元素）"),
+                            ("当前元素", character.get("current_element_name") or current_element),
+                            ("旅行者当前形态", character.get("traveler_form_name")),
+                            ("命座", "无"),
+                            ("能力摘要（倍率未接入）", ability_details),
+                            ("战斗模型状态", character_profile["battle_model_status"]),
+                            ("突破材料 / 摩拉", "无需材料；0 摩拉"),
+                        ])
+                        notes.extend([
+                            "奇偶只占一个角色与配装身份；男、女外观不可同时出现在同一队伍。",
+                            "能力描述据游戏技能说明整理；当前离线数据无完整技能参数与倍率，未校准且不参与配装评分。",
+                        ])
                     item = _detail_item(
                         kind,
                         character.get("character_id", record.get("id", 0)),
@@ -1154,7 +1193,11 @@ class AcceptanceService:
                     )
                     entries.append((
                         item,
-                        " ".join((character["character"], character.get("weapon", ""))),
+                        " ".join((
+                            character["character"],
+                            character.get("appearance_name", ""),
+                            character.get("weapon", ""),
+                        )),
                     ))
             elif kind == "weapons":
                 for index, weapon in enumerate(account.get("weapons", [])):
@@ -1293,6 +1336,11 @@ class AcceptanceService:
                 "invested": item.get("invested", False),
                 "identity": item.get("identity"),
                 "form_key": item.get("form_key"),
+                "appearance": item.get("appearance"),
+                "current_element": item.get("current_element"),
+                "current_element_name": item.get("current_element_name"),
+                "traveler_form_name": item.get("traveler_form_name"),
+                "battle_support": item.get("battle_support"),
             }
             for item in account.get("roster", [])
         ]

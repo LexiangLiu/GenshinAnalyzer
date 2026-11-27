@@ -394,7 +394,7 @@ def optimize_party(
     """Assign one five-piece loadout to every member without sharing artifacts."""
     if not members:
         raise ValueError("至少需要一个角色")
-    from data.references import is_traveler_identity
+    from data.references import is_manekin_identity, is_traveler_identity
     traveler_members = [
         member for member in members
         if is_traveler_identity(member.model.character)
@@ -402,6 +402,15 @@ def optimize_party(
     ]
     if len(traveler_members) > 1:
         raise ValueError("一个队伍只能包含一个旅行者身份；空、荧及不同元素形态互斥")
+    manekin_members = [
+        member for member in members
+        if is_manekin_identity(member.model.character)
+        or is_manekin_identity(member.character.get("id"))
+    ]
+    if len(manekin_members) > 1:
+        raise ValueError("一个队伍只能包含一个奇偶身份；男性与女性外观互斥")
+    if manekin_members:
+        raise ValueError("奇偶战斗模型尚未校准，不参与配装评分")
     if type(max_nodes) is not int or max_nodes < 1:
         raise ValueError("max_nodes 必须是正整数")
     if type(restarts) is not int or restarts < 0:

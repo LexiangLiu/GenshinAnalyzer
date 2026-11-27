@@ -80,26 +80,47 @@ class ValidateGenerationTests(unittest.TestCase):
         self.assertEqual(len(roster), roster_limit)
         self.assertEqual(len({member["character"] for member in roster}), roster_limit)
         travelers = [member for member in roster if member.get("identity") == "traveler"]
+        manekins = [member for member in roster if member.get("identity") == "manekin"]
         self.assertEqual(len(travelers), 1)
+        self.assertEqual(len(manekins), 1)
         self.assertIn(travelers[0]["form_key"], {form["key"] for form in traveler_forms()})
         self.assertIn(travelers[0]["appearance"], ("aether", "lumine"))
+        self.assertIn(manekins[0]["appearance"], ("manekin", "manekina"))
+        self.assertEqual(manekins[0]["identity"], "manekin")
+        self.assertEqual(manekins[0]["element"], "ELEMENT_ADAPTIVE")
+        self.assertEqual(manekins[0]["current_element"], travelers[0]["element"])
+        self.assertTrue(manekins[0]["current_element_name"])
+        self.assertEqual(manekins[0]["constellation"], 0)
+        self.assertFalse(manekins[0]["constellations_available"])
+        self.assertEqual(manekins[0]["talents"], {"auto": 10, "skill": 10, "burst": 10})
+        self.assertEqual(manekins[0]["ascension_materials"], [])
+        self.assertEqual(manekins[0]["mora_cost"], 0)
+        self.assertIn(manekins[0]["level"], (90, 95))
 
     def test_traveler_form_is_seeded_or_explicitly_selected(self):
         explicit = validate_generation({
-            "characters": 2, "traveler_element": "anemo", "seed": 73,
+            "characters": 3, "traveler_element": "anemo", "seed": 73,
         })
         self.assertEqual(
             validate_generation({"traveler_element": "风"})["traveler_element"],
             "anemo",
         )
         self.assertEqual(explicit["traveler_element"], "anemo")
-        first, _ = _build_roster(73, 2, 1, explicit["traveler_element"])
-        second, _ = _build_roster(73, 2, 1, explicit["traveler_element"])
+        first, _ = _build_roster(73, 3, 1, explicit["traveler_element"])
+        second, _ = _build_roster(73, 3, 1, explicit["traveler_element"])
         traveler, = [member for member in first if member.get("identity") == "traveler"]
         self.assertEqual(traveler, next(member for member in second if member.get("identity") == "traveler"))
         self.assertEqual(traveler["form_key"], "traveleranemo")
         with self.assertRaisesRegex(ValueError, "旅行者元素形态无效"):
             validate_generation({"traveler_element": "unknown"})
+
+    def test_minimum_account_contains_one_each_of_traveler_and_manekin(self):
+        minimum = validate_generation({"characters": 3})["characters"]
+        self.assertEqual(minimum, 3)
+        roster, _ = _build_roster(seed=12, owned_count=minimum, invested_count=1)
+        self.assertEqual(len(roster), minimum)
+        self.assertEqual(sum(row.get("identity") == "traveler" for row in roster), 1)
+        self.assertEqual(sum(row.get("identity") == "manekin" for row in roster), 1)
 
     def test_browser_input_limit_comes_from_offline_roster(self):
         page = AcceptanceRequestHandler._page_content()
@@ -114,6 +135,7 @@ class ValidateGenerationTests(unittest.TestCase):
         self.assertIn("固定四件套".encode("utf-8"), page)
         self.assertIn(b"fixed_four_piece_sets", page)
         self.assertIn("旅行者元素".encode("utf-8"), page)
+        self.assertIn("奇偶".encode("utf-8"), page)
         self.assertNotIn(b"__TRAVELER_ELEMENT_OPTIONS__", page)
 
     def test_optimizer_roster_scales_with_inventory_without_capping_owned_roster(self):
@@ -122,11 +144,11 @@ class ValidateGenerationTests(unittest.TestCase):
         self.assertEqual(optimizer_roster_size(roster_limit, 20), 1)
         self.assertEqual(
             optimizer_roster_size(roster_limit, 180),
-            min(roster_limit - 1, len(MAIN_ROSTER), 180 // per_character_inventory),
+            min(roster_limit - 2, len(MAIN_ROSTER), 180 // per_character_inventory),
         )
         self.assertEqual(
             optimizer_roster_size(roster_limit, 2000),
-            min(roster_limit - 1, len(MAIN_ROSTER), 2000 // per_character_inventory),
+            min(roster_limit - 2, len(MAIN_ROSTER), 2000 // per_character_inventory),
         )
 
 
@@ -217,6 +239,19 @@ class BuildSelectedRequestTests(unittest.TestCase):
                 "multi",
                 0,
                 1000,
+            )
+
+    def test_selected_request_rejects_duplicate_manekin_appearances_and_uncalibrated_scoring(self):
+        with self.assertRaisesRegex(ValueError, "一个队伍只能包含一个奇偶身份"):
+            build_selected_request(
+               self.request, ["Manekin", "Manekina"], "multi", 0, 1000,
+            )
+        self.request["members"].append(
+            {"character": "Manekin", "name": "奇偶", "target_four_piece_set": None},
+        )
+        with self.assertRaisesRegex(ValueError, "奇偶战斗模型尚未校准"):
+            build_selected_request(
+               self.request, ["Manekin"], "single", 0, 1000,
             )
 
 
@@ -455,7 +490,7 @@ class ProjectionIntegrationTests(unittest.TestCase):
     def test_service_returns_current_and_projected_results_separately(self):
         service = AcceptanceService()
         self.addCleanup(service.close)
-        generated = service.generate({"characters": 2, "artifacts": 20, "seed": 73})
+        generated = service.generate({"characters": 3, "artifacts": 20, "seed": 73})
         traveler, = [
             row for row in generated["account"]["roster"]
             if row.get("identity") == "traveler"
@@ -466,6 +501,23 @@ class ProjectionIntegrationTests(unittest.TestCase):
         )["items"]
         self.assertEqual(len(traveler_detail), 1)
         self.assertIn("当前形态天赋图鉴", {field["label"] for field in traveler_detail[0]["fields"]})
+        manekin, = [
+            row for row in generated["account"]["roster"]
+            if row.get("identity") == "manekin"
+        ]
+        self.assertNotIn(
+            manekin["character"],
+            {row["character"] for row in generated["account"]["optimizable_roster"]},
+        )
+        manekin_detail, = service.details(
+            generated["session_id"], "characters", query="Manekin",
+        )["items"]
+        manekin_fields = {field["label"]: field["value"] for field in manekin_detail["fields"]}
+        self.assertEqual(manekin_fields["逻辑身份"], "奇偶（Manekin / Manekina 共用）")
+        self.assertEqual(manekin_fields["当前元素"], manekin["current_element_name"])
+        self.assertTrue(manekin_fields["能力摘要（倍率未接入）"])
+        self.assertIn("未校准", manekin_fields["战斗模型状态"])
+        self.assertTrue(any("不参与配装评分" in note for note in manekin_detail["notes"]))
         character = generated["account"]["optimizable_roster"][0]["character"]
         default_set = generated["account"]["optimizable_roster"][0]["model_target_four_piece_set"]
         self.assertTrue(generated["account"]["available_fixed_four_piece_sets"])
@@ -522,7 +574,7 @@ class ProjectionIntegrationTests(unittest.TestCase):
     def test_service_can_optimize_the_single_generated_traveler_form(self):
         service = AcceptanceService()
         self.addCleanup(service.close)
-        generated = service.generate({"characters": 2, "artifacts": 20, "seed": 91})
+        generated = service.generate({"characters": 3, "artifacts": 20, "seed": 91})
         traveler, = [
             row for row in generated["account"]["optimizable_roster"]
             if row.get("identity") == "traveler"

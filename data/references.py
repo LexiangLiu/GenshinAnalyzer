@@ -22,17 +22,28 @@ _TRAVELER_ELEMENTS = {
     "cryo": ("冰", "Cryo"),
 }
 _TRAVELER_APPEARANCES = {"aether": 10000005, "lumine": 10000007}
-_MANEKIN_EXCLUSION_REASONS = {
-    "manekin": (
-        "千星奇域探索人偶；离线资料暂无可建模的战斗技能，因此不加入账号战斗角色、配装候选或伤害公式目录。",
-        "Miliastra Wonderland exploration doll; no modelable combat kit is present in the offline data, "
-        "so it is excluded from account combat rosters, loadout candidates, and the damage catalog.",
+_MANEKIN_APPEARANCES = {"manekin": 10000117, "manekina": 10000118}
+_MANEKIN_ABILITIES = {
+    "zh": (
+        ("普通攻击", "Outlander Arts / Vigilant Watch", "奇偶的普通攻击。"),
+        ("元素战技", "Punishing Barrage", "增加与敌人的距离，并使普通攻击、重击和下落攻击转为奇偶当前元素伤害，且不能被其他元素附魔覆盖。"),
+        ("元素爆发", "No Entry", "创建一个领域，敌人进入时受到伤害。"),
+        ("被动天赋", "Battlelines Redrawn", "离场时，领域爆炸并造成相当于攻击力 200% 的当前元素伤害。"),
+        ("被动天赋", "Combat Readiness", "离场且元素能量低于 30% 时，每秒恢复 2 点元素能量。"),
+        ("被动天赋", "Agile Stance", "施放元素战技或元素爆发时，随机切换至已有的换装。"),
     ),
-    "manekina": (
-        "千星奇域探索人偶；离线资料暂无可建模的战斗技能，因此不加入账号战斗角色、配装候选或伤害公式目录。",
-        "Miliastra Wonderland exploration doll; no modelable combat kit is present in the offline data, "
-        "so it is excluded from account combat rosters, loadout candidates, and the damage catalog.",
+    "en": (
+        ("Normal Attack", "Outlander Arts / Vigilant Watch", "Manekin's normal attack."),
+        ("Elemental Skill", "Punishing Barrage", "Creates distance from enemies and converts Normal, Charged, and Plunging Attacks to the current Adaptive Element; this infusion cannot be overridden."),
+        ("Elemental Burst", "No Entry", "Creates a field that deals damage when an enemy enters it."),
+        ("Passive", "Battlelines Redrawn", "On leaving the field, the field explodes and deals current-element damage equal to 200% of ATK."),
+        ("Passive", "Combat Readiness", "While off-field and below 30% Energy, restores 2 Energy per second."),
+        ("Passive", "Agile Stance", "Casting an Elemental Skill or Burst randomly switches to an owned outfit."),
     ),
+}
+_MANEKIN_UNCALIBRATED = {
+    "zh": "战斗能力已记录，但天赋倍率与完整技能参数不在当前离线资料中；未校准，不参与配装评分或伤害模型。",
+    "en": "Combat abilities are documented, but talent multipliers and complete skill parameters are absent from the offline data; uncalibrated and excluded from loadout scoring and damage models.",
 }
 
 
@@ -145,6 +156,76 @@ def is_traveler_identity(query: object) -> bool:
     return traveler_form(query) is not None or traveler_form(query, language="zh") is not None
 
 
+def manekin_appearance(query: object) -> str | None:
+    """Resolve a Manekin appearance key, ID, or localized name to its shared identity."""
+    token = _name_token(query)
+    if not token:
+        return None
+    for key, character_id in _MANEKIN_APPEARANCES.items():
+        aliases = {
+            key,
+            str(character_id),
+            _rows("characters", "en")[key].get("name", ""),
+            _rows("characters", "zh")[key].get("name", ""),
+        }
+        if token in {_name_token(alias) for alias in aliases if alias}:
+            return key
+    if token in {_name_token("manekin"), _name_token("奇偶")}:
+        return "manekin"
+    return None
+
+
+def is_manekin_identity(query: object) -> bool:
+    """Whether a query denotes the shared Manekin/Manekina combat identity."""
+    return manekin_appearance(query) is not None
+
+
+def party_exclusive_identity(query: object) -> str | None:
+    """Return the identity group that must not be duplicated in one party."""
+    if is_traveler_identity(query):
+        return "traveler"
+    if is_manekin_identity(query):
+        return "manekin"
+    return None
+
+
+def _manekin_record(appearance_key: str | None, language: str) -> dict:
+    appearances = _rows("characters", language)
+    source = deepcopy(appearances["manekin"])
+    source["key"] = "manekin"
+    source["identity"] = "manekin"
+    source["name"] = "奇偶" if language == "zh" else "Manekin / Manekina"
+    source["name_en"] = "Manekin / Manekina"
+    source["elementType"] = "ELEMENT_ADAPTIVE"
+    source["elementText"] = "跟随旅行者当前元素" if language == "zh" else "Adaptive (follows Traveler)"
+    source["appearance_ids"] = list(_MANEKIN_APPEARANCES.values())
+    source["appearances"] = [
+        {
+            "key": key,
+            "id": character_id,
+            "name": appearances[key]["name"],
+            "gender": appearances[key].get("gender"),
+        }
+        for key, character_id in _MANEKIN_APPEARANCES.items()
+    ]
+    source["active_appearance"] = appearance_key
+    source.pop("costs", None)
+    source["battle_support"] = "uncalibrated"
+    source["battle_model_status"] = _MANEKIN_UNCALIBRATED[language]
+    source["battle_exclusion_reason"] = source["battle_model_status"]
+    source["ability_source"] = (
+        "游戏内角色与技能描述；倍率和完整技能参数未包含于当前离线 genshin-db 数据。"
+        if language == "zh" else
+        "In-game character and skill descriptions; multipliers and complete skill parameters are absent from the current offline genshin-db data."
+    )
+    source["activity_role"] = (
+        "提瓦特战斗角色；千星奇域内可切换外观"
+        if language == "zh" else
+        "Teyvat combat character; appearance can be switched in Miliastra Wonderland"
+    )
+    return source
+
+
 def _traveler_record(key: str | None, language: str) -> dict:
     appearances = _rows("characters", language)
     source = deepcopy(appearances["aether"])
@@ -179,19 +260,25 @@ def _special_character_record(category: str, query: str | int, language: str) ->
     if token in {"traveler", _name_token("旅行者")}:
         return _traveler_record(None, language)
     form = traveler_form(query, language=language)
-    return _traveler_record(form["key"], language) if form else None
+    if form:
+        return _traveler_record(form["key"], language)
+    appearance = manekin_appearance(query)
+    return _manekin_record(appearance, language) if appearance else None
 
 
 def _annotate_character(record: dict, language: str) -> dict:
     key = str(record.get("key", "")).casefold()
     if key in _TRAVELER_APPEARANCES:
         record["traveler_identity"] = "traveler"
-    reason = _MANEKIN_EXCLUSION_REASONS.get(str(record.get("key", "")).casefold())
-    if reason is not None:
-        record["battle_support"] = "excluded"
-        record["battle_exclusion_reason"] = reason[0] if language == "zh" else reason[1]
+    if key in _MANEKIN_APPEARANCES:
+        record["identity"] = "manekin"
+        record["battle_support"] = "uncalibrated"
+        record["battle_model_status"] = _MANEKIN_UNCALIBRATED[language]
+        record["battle_exclusion_reason"] = record["battle_model_status"]
         record["activity_role"] = (
-            "千星奇域探索人偶" if language == "zh" else "Miliastra Wonderland exploration doll"
+            "提瓦特战斗角色；千星奇域内可切换外观"
+            if language == "zh" else
+            "Teyvat combat character; appearance can be switched in Miliastra Wonderland"
         )
     return record
 
@@ -242,6 +329,8 @@ def list_game_records(
     token = search.strip().casefold() if search else ""
     matching = []
     for key, row in rows.items():
+        if category == "characters" and key in _MANEKIN_APPEARANCES:
+            continue
         name = str(row.get("name", key))
         if version is not None and row.get("version") != version:
             continue
@@ -257,13 +346,6 @@ def list_game_records(
         }
         if category == "characters" and key in _TRAVELER_APPEARANCES:
             summary["identity"] = "traveler"
-        reason = _MANEKIN_EXCLUSION_REASONS.get(key)
-        if category == "characters" and reason is not None:
-            summary["battle_support"] = "excluded"
-            summary["battle_exclusion_reason"] = reason[0] if language == "zh" else reason[1]
-            summary["activity_role"] = (
-                "千星奇域探索人偶" if language == "zh" else "Miliastra Wonderland exploration doll"
-            )
         matching.append(summary)
     if category == "characters":
         synthetic = [_traveler_record(None, language)]
@@ -283,6 +365,37 @@ def list_game_records(
                 "version": row.get("version"),
                 "identity": "traveler",
                 **{field: row[field] for field in ("rarity", "weaponType", "elementType", "category", "regionName") if field in row},
+            })
+        puppet = _manekin_record(None, language)
+        appearance_names = [
+            _rows("characters", localized_language)[key]["name"]
+            for localized_language in ("zh", "en")
+            for key in _MANEKIN_APPEARANCES
+        ]
+        if (
+            (version is None or puppet.get("version") == version)
+            and not (filters and any(field not in puppet or puppet[field] != value for field, value in filters.items()))
+            and (
+                not token
+                or any(token in str(value).casefold() for value in (
+                    puppet["key"], puppet["name"], puppet["name_en"], "奇偶", *appearance_names,
+                    *(appearance["key"] for appearance in puppet["appearances"]),
+                ))
+            )
+        ):
+            matching.append({
+                "key": "manekin",
+                "id": puppet["id"],
+                "name": puppet["name"],
+                "name_en": puppet["name_en"],
+                "version": puppet.get("version"),
+                "identity": "manekin",
+                "appearances": puppet["appearances"],
+                "battle_support": "uncalibrated",
+                "battle_model_status": puppet["battle_model_status"],
+                "battle_exclusion_reason": puppet["battle_exclusion_reason"],
+                "activity_role": puppet["activity_role"],
+                **{field: puppet[field] for field in ("rarity", "weaponType", "elementType") if field in puppet},
             })
     end = None if limit is None else offset + limit
     return matching[offset:end]
@@ -309,6 +422,18 @@ def get_character_profile(query: str | int, *, language: str = "zh") -> dict:
     if is_traveler_identity(query):
         profile["identity"] = "traveler"
         profile["active_form"] = key if key.startswith("traveler") else None
+    elif is_manekin_identity(query):
+        profile.update({
+            "identity": "manekin",
+            "abilities": [
+                {"category": category, "name": name, "summary": summary}
+                for category, name, summary in _MANEKIN_ABILITIES[language]
+            ],
+            "battle_model_status": _MANEKIN_UNCALIBRATED[language],
+            "talent_multipliers_available": False,
+            "constellations_available": False,
+            "ability_source": character["ability_source"],
+        })
     return profile
 
 
@@ -321,6 +446,8 @@ def get_game_stats(
         raise ValueError(f"该类别没有等级属性数据：{category}")
     if type(level) is not int or level < 1:
         raise ValueError("等级必须为正整数")
+    if category == "characters" and is_manekin_identity(query):
+        raise ValueError("当前离线图鉴没有奇偶的角色面板成长数据")
     record = get_game_record(category, query, language=language)
     levels = _read(f"{category}.stats.json.gz")[str(record["id"])]
     available = levels.get(str(level))

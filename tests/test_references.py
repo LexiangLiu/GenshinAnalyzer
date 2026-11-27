@@ -12,7 +12,9 @@ from artifact_sim import (
     list_game_records,
 )
 from data.references import (
+    is_manekin_identity,
     is_traveler_identity,
+    party_exclusive_identity,
     traveler_form,
     traveler_form_for_element,
     traveler_forms,
@@ -130,19 +132,39 @@ class ReferenceDataTests(unittest.TestCase):
             self.assertEqual(traveler_stats[stat], aether_stats[stat])
             self.assertEqual(aether_stats[stat], lumine_stats[stat])
 
-    def test_manekin_records_explain_combat_exclusion_without_losing_details(self):
-        for name in ("Manekin", "Manekina"):
+    def test_manekin_appearances_share_adaptive_uncalibrated_combat_identity(self):
+        appearance_ids = set()
+        for name, appearance in (("Manekin", "manekin"), ("Manekina", "manekina")):
             with self.subTest(name=name):
                 profile = get_character_profile(name, language="en")
                 character = profile["character"]
-                self.assertEqual(character["battle_support"], "excluded")
-                self.assertIn("Miliastra Wonderland", character["activity_role"])
-                self.assertIn("no modelable combat kit", character["battle_exclusion_reason"])
+                self.assertEqual(profile["identity"], "manekin")
+                self.assertEqual(character["key"], "manekin")
+                self.assertEqual(character["active_appearance"], appearance)
+                self.assertEqual(character["elementType"], "ELEMENT_ADAPTIVE")
+                self.assertEqual(character["battle_support"], "uncalibrated")
+                self.assertIn("Teyvat combat character", character["activity_role"])
+                self.assertIn("multipliers", character["battle_model_status"])
+                self.assertEqual(len(profile["abilities"]), 6)
+                self.assertIn("Punishing Barrage", {ability["name"] for ability in profile["abilities"]})
+                self.assertFalse(profile["talent_multipliers_available"])
+                self.assertFalse(profile["constellations_available"])
                 self.assertEqual(profile["talents"], [])
                 self.assertEqual(profile["constellations"], [])
+                self.assertNotIn("costs", character)
+                appearance_ids.update(item["id"] for item in character["appearances"])
         indexed = list_game_records("characters", language="en", search="Manekin")
-        self.assertEqual(len(indexed), 2)
-        self.assertTrue(all(row["battle_support"] == "excluded" for row in indexed))
+        self.assertEqual(len(indexed), 1)
+        self.assertEqual(indexed[0]["identity"], "manekin")
+        self.assertEqual(indexed[0]["battle_support"], "uncalibrated")
+        self.assertEqual(appearance_ids, {10000117, 10000118})
+        self.assertTrue(is_manekin_identity("Manekin"))
+        self.assertTrue(is_manekin_identity("Manekina"))
+        self.assertTrue(is_manekin_identity("奇偶·男性"))
+        self.assertEqual(party_exclusive_identity("Manekin"), "manekin")
+        self.assertEqual(party_exclusive_identity("Manekina"), "manekin")
+        with self.assertRaisesRegex(ValueError, "没有奇偶的角色面板成长数据"):
+            get_game_stats("characters", "Manekin", 90)
 
     def test_offline_cli(self):
         result = subprocess.check_output(
