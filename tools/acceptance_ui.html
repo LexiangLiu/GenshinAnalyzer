@@ -437,10 +437,14 @@
               <label class="field">备份目标目录
                 <input id="persistence-backup-dir" type="text" maxlength="260" placeholder="留空时使用 ~/.genshin-analyzer/backups">
               </label>
+              <label class="field">恢复备份目录
+                <input id="persistence-restore-dir" type="text" maxlength="260" placeholder="完整 backup 目录路径">
+              </label>
             </div>
             <div class="button-row">
               <button id="persistence-health-button" class="button" type="button">检查持久化健康</button>
               <button id="persistence-backup-button" class="button" type="button">创建一致性备份</button>
+              <button id="persistence-restore-button" class="button" type="button">恢复备份（覆盖现有持久化）</button>
             </div>
             <div id="persistence-status" class="status" role="status"></div>
             <div id="persistence-results" class="domain-results hidden"></div>
@@ -2395,6 +2399,32 @@
         byId("persistence-results").replaceChildren(card);
         byId("persistence-results").classList.remove("hidden");
         setStatus("persistence-status", "备份已通过快速校验和 SHA-256 清单记录。");
+      } catch (error) {
+        setStatus("persistence-status", error.message, true);
+      }
+    });
+
+    byId("persistence-restore-button").addEventListener("click", async () => {
+      const backupDir = byId("persistence-restore-dir").value.trim();
+      if (!backupDir) {
+        setStatus("persistence-status", "请填写要恢复的完整备份目录。", true);
+        return;
+      }
+      if (!window.confirm("恢复会覆盖现有账号快照、目标、方案和缓存。是否继续？")) {
+        setStatus("persistence-status", "恢复已取消，现有持久化未修改。");
+        return;
+      }
+      setStatus("persistence-status", "正在校验 manifest、SHA-256 和 SQLite，并覆盖持久化…");
+      try {
+        const result = await post("/api/persistence/restore", { backup_dir: backupDir });
+        const card = document.createElement("div");
+        card.className = "domain-card";
+        card.textContent =
+          `恢复完成：${(result.restored || []).join("、") || "无数据库文件"}；`
+          + `健康状态 ${result.health?.status || "unknown"}。`;
+        byId("persistence-results").replaceChildren(card);
+        byId("persistence-results").classList.remove("hidden");
+        setStatus("persistence-status", "恢复完成；请重新加载或重新生成当前工作流。");
       } catch (error) {
         setStatus("persistence-status", error.message, true);
       }

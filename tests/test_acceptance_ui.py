@@ -156,6 +156,7 @@ class ValidateGenerationTests(unittest.TestCase):
         self.assertIn("持久化健康与备份".encode("utf-8"), page)
         self.assertIn(b"persistence-health-button", page)
         self.assertIn(b"persistence-backup-button", page)
+        self.assertIn(b"persistence-restore-button", page)
 
     def test_live_http_resource_plans_survive_service_restart(self):
         with tempfile.TemporaryDirectory() as directory:
