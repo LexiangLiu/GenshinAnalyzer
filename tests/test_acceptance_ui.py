@@ -33,17 +33,18 @@ from tools.simulate_account import (
     available_character_count,
     validate_artifact_count,
 )
+from data.references import traveler_forms
 
 
 class ValidateGenerationTests(unittest.TestCase):
     def test_defaults_and_configurable_seed(self):
         self.assertEqual(
             validate_generation({"characters": 3, "artifacts": 80, "seed": 17}),
-            {"characters": 3, "artifacts": 80, "seed": 17},
+            {"characters": 3, "artifacts": 80, "seed": 17, "traveler_element": None},
         )
         self.assertEqual(
             validate_generation({}),
-            {"characters": 8, "artifacts": 180, "seed": 42},
+            {"characters": 8, "artifacts": 180, "seed": 42, "traveler_element": None},
         )
 
     def test_artifact_capacity_boundary_is_shared_with_generator(self):
@@ -63,6 +64,7 @@ class ValidateGenerationTests(unittest.TestCase):
         roster_limit = available_character_count()
         for payload in (
             {"characters": 0},
+            {"characters": 1},
             {"characters": roster_limit + 1},
             {"artifacts": 19},
             {"seed": True},
@@ -77,6 +79,48 @@ class ValidateGenerationTests(unittest.TestCase):
         roster, _ = _build_roster(seed=73, owned_count=config["characters"], invested_count=1)
         self.assertEqual(len(roster), roster_limit)
         self.assertEqual(len({member["character"] for member in roster}), roster_limit)
+        travelers = [member for member in roster if member.get("identity") == "traveler"]
+        manekins = [member for member in roster if member.get("identity") == "manekin"]
+        self.assertEqual(len(travelers), 1)
+        self.assertEqual(len(manekins), 1)
+        self.assertIn(travelers[0]["form_key"], {form["key"] for form in traveler_forms()})
+        self.assertIn(travelers[0]["appearance"], ("aether", "lumine"))
+        self.assertIn(manekins[0]["appearance"], ("manekin", "manekina"))
+        self.assertEqual(manekins[0]["identity"], "manekin")
+        self.assertEqual(manekins[0]["element"], "ELEMENT_ADAPTIVE")
+        self.assertEqual(manekins[0]["current_element"], travelers[0]["element"])
+        self.assertTrue(manekins[0]["current_element_name"])
+        self.assertEqual(manekins[0]["constellation"], 0)
+        self.assertFalse(manekins[0]["constellations_available"])
+        self.assertEqual(manekins[0]["talents"], {"auto": 10, "skill": 10, "burst": 10})
+        self.assertEqual(manekins[0]["ascension_materials"], [])
+        self.assertEqual(manekins[0]["mora_cost"], 0)
+        self.assertIn(manekins[0]["level"], (90, 95))
+
+    def test_traveler_form_is_seeded_or_explicitly_selected(self):
+        explicit = validate_generation({
+            "characters": 3, "traveler_element": "anemo", "seed": 73,
+        })
+        self.assertEqual(
+            validate_generation({"traveler_element": "风"})["traveler_element"],
+            "anemo",
+        )
+        self.assertEqual(explicit["traveler_element"], "anemo")
+        first, _ = _build_roster(73, 3, 1, explicit["traveler_element"])
+        second, _ = _build_roster(73, 3, 1, explicit["traveler_element"])
+        traveler, = [member for member in first if member.get("identity") == "traveler"]
+        self.assertEqual(traveler, next(member for member in second if member.get("identity") == "traveler"))
+        self.assertEqual(traveler["form_key"], "traveleranemo")
+        with self.assertRaisesRegex(ValueError, "旅行者元素形态无效"):
+            validate_generation({"traveler_element": "unknown"})
+
+    def test_minimum_account_contains_one_each_of_traveler_and_manekin(self):
+        minimum = validate_generation({"characters": 3})["characters"]
+        self.assertEqual(minimum, 3)
+        roster, _ = _build_roster(seed=12, owned_count=minimum, invested_count=1)
+        self.assertEqual(len(roster), minimum)
+        self.assertEqual(sum(row.get("identity") == "traveler" for row in roster), 1)
+        self.assertEqual(sum(row.get("identity") == "manekin" for row in roster), 1)
 
     def test_browser_input_limit_comes_from_offline_roster(self):
         page = AcceptanceRequestHandler._page_content()
@@ -90,6 +134,9 @@ class ValidateGenerationTests(unittest.TestCase):
         )
         self.assertIn("固定四件套".encode("utf-8"), page)
         self.assertIn(b"fixed_four_piece_sets", page)
+        self.assertIn("旅行者元素".encode("utf-8"), page)
+        self.assertIn("奇偶".encode("utf-8"), page)
+        self.assertNotIn(b"__TRAVELER_ELEMENT_OPTIONS__", page)
 
     def test_optimizer_roster_scales_with_inventory_without_capping_owned_roster(self):
         roster_limit = available_character_count()
@@ -97,11 +144,11 @@ class ValidateGenerationTests(unittest.TestCase):
         self.assertEqual(optimizer_roster_size(roster_limit, 20), 1)
         self.assertEqual(
             optimizer_roster_size(roster_limit, 180),
-            min(roster_limit, len(MAIN_ROSTER), 180 // per_character_inventory),
+            min(roster_limit - 2, len(MAIN_ROSTER), 180 // per_character_inventory),
         )
         self.assertEqual(
             optimizer_roster_size(roster_limit, 2000),
-            min(roster_limit, len(MAIN_ROSTER), 2000 // per_character_inventory),
+            min(roster_limit - 2, len(MAIN_ROSTER), 2000 // per_character_inventory),
         )
 
 
@@ -156,6 +203,89 @@ class BuildSelectedRequestTests(unittest.TestCase):
             [15031, 15035],
         )
 
+    def test_formula_objectives_normalize_weights_per_character(self):
+        registry = {
+            key: {"character": character}
+            for key, character in (
+                ("a_normal", "A"), ("a_skill", "A"),
+                ("b_skill", "B"), ("b_burst", "B"),
+            )
+        }
+        choices = {
+            "A": [{"key": "a_normal"}, {"key": "a_skill"}],
+            "B": [{"key": "b_skill"}, {"key": "b_burst"}],
+        }
+        objectives = {
+            "A": {
+                "mode": "relative",
+                "formulas": [
+                    {"key": "a_normal", "weight": 3},
+                    {"key": "a_skill", "weight": 1},
+                ],
+            },
+            "B": {
+                "mode": "raw",
+                "formulas": [
+                    {"key": "b_skill", "weight": 1},
+                    {"key": "b_burst", "weight": 1},
+                ],
+            },
+        }
+        with (
+            patch("tools.acceptance_ui.available_models", return_value=registry),
+            patch(
+                "tools.acceptance_ui._formula_choices",
+                side_effect=lambda character, member: choices[character],
+            ),
+            patch("tools.acceptance_ui.catalog_formula_selectable", return_value=True),
+        ):
+            result = build_selected_request(
+                self.request,
+                ["A", "B"],
+                "multi",
+                17,
+                1000,
+                formula_objectives=objectives,
+            )
+
+        by_character = {member["character"]: member["formula_objective"] for member in result["members"]}
+        self.assertEqual(by_character["A"]["mode"], "relative")
+        self.assertEqual(by_character["A"]["formulas"][0]["weight"], 0.75)
+        self.assertEqual(by_character["A"]["formulas"][1]["weight"], 0.25)
+        self.assertEqual(by_character["B"]["mode"], "raw")
+        self.assertEqual([row["weight"] for row in by_character["B"]["formulas"]], [0.5, 0.5])
+
+    def test_composite_objective_rejects_uncalibrated_formula(self):
+        registry = {"a_low": {"character": "A"}, "a_good": {"character": "A"}}
+        with (
+            patch("tools.acceptance_ui.available_models", return_value=registry),
+            patch(
+                "tools.acceptance_ui._formula_choices",
+                return_value=[{"key": "a_low"}, {"key": "a_good"}],
+            ),
+            patch(
+                "tools.acceptance_ui.catalog_formula_selectable",
+                side_effect=lambda key: key == "a_good",
+            ),
+            self.assertRaisesRegex(ValueError, "未达到可综合评分"),
+        ):
+            build_selected_request(
+                self.request,
+                ["A"],
+                "single",
+                0,
+                1000,
+                formula_objectives={
+                    "A": {
+                        "mode": "raw",
+                        "formulas": [
+                            {"key": "a_low", "weight": 1},
+                            {"key": "a_good", "weight": 1},
+                        ],
+                    },
+                },
+            )
+
     def test_rejects_invalid_selection_and_search_budget(self):
         invalid = (
             ([], "single", 0, 1000, None),
@@ -179,6 +309,33 @@ class BuildSelectedRequestTests(unittest.TestCase):
                     self.request, ["A"], "single", 0, 1000,
                     fixed_four_piece_sets=fixed_sets,
                 )
+
+    def test_selected_request_rejects_multiple_traveler_forms(self):
+        self.request["members"].extend([
+            {"character": "Traveler (Anemo)", "name": "旅行者·风", "target_four_piece_set": 15032},
+            {"character": "旅行者·岩", "name": "旅行者·岩", "target_four_piece_set": 15032},
+        ])
+        with self.assertRaisesRegex(ValueError, "一个队伍只能包含一个旅行者身份"):
+            build_selected_request(
+                self.request,
+                ["Traveler (Anemo)", "旅行者·岩"],
+                "multi",
+                0,
+                1000,
+            )
+
+    def test_selected_request_rejects_duplicate_manekin_appearances_and_uncalibrated_scoring(self):
+        with self.assertRaisesRegex(ValueError, "一个队伍只能包含一个奇偶身份"):
+            build_selected_request(
+               self.request, ["Manekin", "Manekina"], "multi", 0, 1000,
+            )
+        self.request["members"].append(
+            {"character": "Manekin", "name": "奇偶", "target_four_piece_set": None},
+        )
+        with self.assertRaisesRegex(ValueError, "奇偶战斗模型尚未校准"):
+            build_selected_request(
+               self.request, ["Manekin"], "single", 0, 1000,
+            )
 
 
 class ProjectionIntegrationTests(unittest.TestCase):
@@ -416,7 +573,36 @@ class ProjectionIntegrationTests(unittest.TestCase):
     def test_service_returns_current_and_projected_results_separately(self):
         service = AcceptanceService()
         self.addCleanup(service.close)
-        generated = service.generate({"characters": 1, "artifacts": 20, "seed": 73})
+        generated = service.generate({"characters": 3, "artifacts": 20, "seed": 73})
+        traveler, = [
+            row for row in generated["account"]["roster"]
+            if row.get("identity") == "traveler"
+        ]
+        self.assertIn(traveler["form_key"], {form["key"] for form in traveler_forms()})
+        traveler_detail = service.details(
+            generated["session_id"], "characters", query="Traveler",
+        )["items"]
+        self.assertEqual(len(traveler_detail), 1)
+        self.assertIn("当前形态天赋图鉴", {field["label"] for field in traveler_detail[0]["fields"]})
+        manekin, = [
+            row for row in generated["account"]["roster"]
+            if row.get("identity") == "manekin"
+        ]
+        self.assertNotIn(
+            manekin["character"],
+            {row["character"] for row in generated["account"]["optimizable_roster"]},
+        )
+        manekin_detail, = service.details(
+            generated["session_id"], "characters", query="Manekin",
+        )["items"]
+        manekin_fields = {field["label"]: field["value"] for field in manekin_detail["fields"]}
+        self.assertEqual(manekin_fields["逻辑身份"], "奇偶（Manekin / Manekina 共用）")
+        self.assertEqual(manekin_fields["当前元素"], manekin["current_element_name"])
+        self.assertTrue(manekin_fields["能力摘要"])
+        self.assertIn("普攻 Lv10", manekin_fields["技能倍率与参数（当前天赋等级）"])
+        self.assertIn("583.2%", manekin_fields["技能倍率与参数（当前天赋等级）"])
+        self.assertIn("未校准", manekin_fields["战斗模型状态"])
+        self.assertTrue(any("不参与配装评分" in note for note in manekin_detail["notes"]))
         character = generated["account"]["optimizable_roster"][0]["character"]
         default_set = generated["account"]["optimizable_roster"][0]["model_target_four_piece_set"]
         self.assertTrue(generated["account"]["available_fixed_four_piece_sets"])
@@ -469,9 +655,102 @@ class ProjectionIntegrationTests(unittest.TestCase):
             for member in optimized["projection"]["comparison"]["members"]
         ))
         self.assertIsNone(service._session["optimization"]["result"]["members"][0]["loadout"]["pieces"][0].get("expected_full_level"))
+        combined = service.optimize({
+            "session_id": generated["session_id"],
+            "selected_characters": [character],
+            "fixed_four_piece_sets": {character: default_set},
+            "formula_objectives": {
+                character: {
+                    "mode": "relative",
+                    "formulas": [
+                        {"key": "neuvillette_normal_2", "weight": 3},
+                        {"key": "neuvillette_skill", "weight": 1},
+                    ],
+                },
+            },
+            "mode": "single",
+            "seed": 73,
+            "max_nodes": 1000,
+        })
+        combined_member, = combined["result"]["members"]
+        objective = combined_member["formula_objective"]
+        self.assertEqual(objective["mode"], "relative")
+        self.assertEqual(len(objective["components"]), 2)
+        self.assertAlmostEqual(
+            sum(component["weight"] for component in objective["components"]), 1,
+        )
+        self.assertAlmostEqual(
+            sum(component["contribution"] for component in objective["components"]),
+            objective["score"],
+        )
+        self.assertEqual(
+            {formula["key"] for formula in combined_member["formula_models"] if formula["selected"]},
+            {"neuvillette_normal_2", "neuvillette_skill"},
+        )
+
+    def test_service_can_optimize_the_single_generated_traveler_form(self):
+        service = AcceptanceService()
+        self.addCleanup(service.close)
+        generated = service.generate({"characters": 3, "artifacts": 20, "seed": 91})
+        traveler, = [
+            row for row in generated["account"]["optimizable_roster"]
+            if row.get("identity") == "traveler"
+        ]
+        optimized = service.optimize({
+            "session_id": generated["session_id"],
+            "selected_characters": [traveler["character"]],
+            "mode": "single",
+            "seed": 91,
+            "max_nodes": 1000,
+        })
+        result, = optimized["result"]["members"]
+        self.assertEqual(result["name"], traveler["name_zh"])
+        self.assertTrue(result["model"].startswith(traveler["form_key"]))
 
 
 class FormulaPresentationTests(unittest.TestCase):
+    def test_resin_expectation_controls_show_only_aggregate_results(self):
+        html_path = Path(__file__).resolve().parents[1] / "tools" / "acceptance_ui.html"
+        html = html_path.read_text(encoding="utf-8")
+        for control in (
+            'id="expectation-domain"',
+            'id="expectation-start"',
+            'id="expectation-budgets"',
+            'id="expectation-samples"',
+            'id="expectation-button"',
+            'id="expectation-results"',
+        ):
+            with self.subTest(control=control):
+                self.assertIn(control, html)
+        self.assertIn("0,200,600,1200", html)
+        self.assertIn("只展示统计期望，不展示抽样装备", html)
+        self.assertIn("满足固定四件套", html)
+        self.assertIn("空库存（无圣遗物约束）", html)
+        self.assertIn("state.expectationPending", html)
+        self.assertIn('post("/api/expectations"', html)
+
+    def test_account_farming_controls_use_shared_inventory_and_render_risk_breakdown(self):
+        html_path = Path(__file__).resolve().parents[1] / "tools" / "acceptance_ui.html"
+        html = html_path.read_text(encoding="utf-8")
+        for control in (
+            'id="account-farming-domain-list"',
+            'id="account-farming-start"',
+            'id="account-farming-budgets"',
+            'id="account-farming-samples"',
+            'id="account-farming-target"',
+            'id="account-farming-button"',
+            'id="account-farming-results"',
+        ):
+            with self.subTest(control=control):
+                self.assertIn(control, html)
+        self.assertIn('post("/api/account-farming"', html)
+        self.assertIn("selectedCount > 8", html)
+        self.assertIn("共享库存上联合重配", html)
+        self.assertIn("Wilson 95%", html)
+        self.assertIn("P10–P90", html)
+        self.assertIn("panel_delta", html)
+        self.assertIn("account_gain_contribution_pct", html)
+
     def test_long_expression_wraps_products_without_changing_formula_tokens(self):
         source = (
             "(ATK + 0.25 * ELEMENTAL_MASTERY) * "
@@ -501,7 +780,7 @@ class FormulaPresentationTests(unittest.TestCase):
         self.assertIn("displayedExpression.split(\"\\n\")", html)
         self.assertIn(".formula-line", html)
         self.assertIn(".formula-term", html)
-        self.assertIn("selectedFormula?.label", html)
+        self.assertIn("selectedFormulas[0]?.label", html)
         self.assertNotIn("textContent = text(formula.key)", html)
         self.assertNotIn("text(member.model)", html)
         self.assertNotIn("JSON.stringify(metadata, null, 2)", html)

@@ -41,6 +41,12 @@ def character_profile(name: str) -> str:
     name = name.strip()
     if not name:
         raise ValueError("配装名称不能为空")
+    from .references import is_manekin_identity, is_traveler_identity, traveler_form
+    if is_manekin_identity(name):
+        return "Manekin"
+    if is_traveler_identity(name):
+        form = traveler_form(name)
+        return str(form["name_en"]) if form else "Traveler"
     key = "".join(char for char in name.casefold() if char.isalnum())
     for data in CHARACTERS.values():
         aliases = (data["name"], data["name_en"])
@@ -49,6 +55,16 @@ def character_profile(name: str) -> str:
         }:
             return data["name_en"]
     return name
+
+
+def character_identity(name: str) -> str:
+    """Resolve equipment ownership to one logical identity, not an appearance or form."""
+    from .references import is_manekin_identity, is_traveler_identity
+    if is_traveler_identity(name):
+        return "Traveler"
+    if is_manekin_identity(name):
+        return "Manekin"
+    return character_profile(name)
 
 
 def characters(*, element=None, weapon=None, region=None):

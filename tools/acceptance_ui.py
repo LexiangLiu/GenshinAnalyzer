@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import argparse
+from html import escape
 import json
-from math import isclose
+from math import isclose, isfinite
 import os
 import re
 import subprocess
@@ -17,9 +18,24 @@ from pathlib import Path
 from typing import Any, Mapping
 from urllib.parse import parse_qs, urlsplit
 
-from data.references import get_game_record, list_game_records
+from data.references import (
+    get_character_profile,
+    get_game_record,
+    is_manekin_identity,
+    list_game_records,
+    party_exclusive_identity,
+    traveler_form,
+    traveler_form_for_element,
+    traveler_forms,
+)
 from damage import damage_engine_info, list_damage_formulas
-from damage.character_models import catalog_spec
+from damage.build_objective import character_weapon_panel
+from damage.character_models import (
+    catalog_available,
+    catalog_character_coverage,
+    catalog_formula_selectable,
+    catalog_spec,
+)
 from damage.damage_models import (
     available_models,
     evaluate_formula_breakdown,
@@ -50,25 +66,83 @@ def _integer(value: object, label: str, minimum: int, maximum: int) -> int:
     return value
 
 
-def validate_generation(payload: object) -> dict[str, int]:
+def _manekin_rank_summary(
+    combat_data: Mapping[str, Any],
+    current_element: object,
+    talents: Mapping[str, Any],
+) -> str:
+    element = str(current_element or "").removeprefix("ELEMENT_").casefold()
+    form = traveler_form_for_element(element)
+    if form is None or form["element"] not in combat_data["elements"]:
+        raise ValueError("奇偶战斗参数需要有效的旅行者元素形态")
+    skills = combat_data["elements"][form["element"]]["skills"]
+
+    def rank(skill_key: str, talent_key: str) -> Mapping[str, Any]:
+        level = talents.get(talent_key)
+        if type(level) is not int:
+            raise ValueError(f"奇偶缺少 {talent_key} 天赋等级")
+        for entry in skills[skill_key]["ranks"]:
+            if entry["level"] == level:
+                return entry["parameters"]
+        raise ValueError(f"奇偶 {talent_key} 天赋等级超出离线参数范围：{level}")
+
+    def percent(value: float) -> str:
+        return f"{value * 100:.1f}%"
+
+    normal = rank("normal_attack", "auto")
+    skill = rank("elemental_skill", "skill")
+    burst = rank("elemental_burst", "burst")
+    burst_meta = skills["elemental_burst"]
+    return (
+        f'普攻 Lv{talents["auto"]}：1/2/3/4段 '
+        f'{percent(normal["normal_hit_1"])}/{percent(normal["normal_hit_2"])}/'
+        f'{percent(normal["normal_hit_3"])}×2/{percent(normal["normal_hit_4"])}；'
+        f'重击 {percent(normal["charged_hit_1"])}+{percent(normal["charged_hit_2"])}；'
+        f'下落 {percent(normal["plunge_damage"])}（低/高坠 '
+        f'{percent(normal["low_plunge_damage"])}/{percent(normal["high_plunge_damage"])}）。'
+        f'战技 Lv{talents["skill"]}：{percent(skill["skill_damage"])}，'
+        f'附魔 {skill["infusion_duration_seconds"]:g} 秒，冷却 '
+        f'{skills["elemental_skill"]["cooldown_seconds"]:g} 秒，'
+        f'{skills["elemental_skill"]["max_charges"]} 次使用。'
+        f'爆发 Lv{talents["burst"]}：领域召唤 '
+        f'{percent(burst["restricted_area_summon_damage"])}，进入伤害 '
+        f'{percent(burst["restricted_area_trespass_damage"])}；持续 '
+        f'{burst["restricted_area_duration_seconds"]:g} 秒，冷却 '
+        f'{burst_meta["cooldown_seconds"]:g} 秒，能量 {burst_meta["energy_cost"]}。'
+    )
+
+
+def validate_generation(payload: object) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("请求内容必须是 JSON 对象")
+    traveler_element = payload.get("traveler_element")
+    if traveler_element in ("", None):
+        traveler_element = None
+    else:
+        form = (
+            traveler_form(traveler_element)
+            if isinstance(traveler_element, str) else None
+        ) or traveler_form_for_element(traveler_element)
+        if form is None:
+            raise ValueError("旅行者元素形态无效")
+        traveler_element = form["element"]
     return {
         "characters": _integer(
             payload.get("characters", min(8, available_character_count())),
             "角色数量",
-            1,
+            min(available_character_count(), 1 + int(bool(traveler_forms(language="en"))) + 1),
             available_character_count(),
         ),
         "artifacts": validate_artifact_count(payload.get("artifacts", 180)),
         "seed": _integer(payload.get("seed", 42), "随机种子", -MAX_SAFE_INTEGER, MAX_SAFE_INTEGER),
+        "traveler_element": traveler_element,
     }
 
 
 def optimizer_roster_size(character_count: int, artifact_count: int) -> int:
     artifacts_per_preset_roster = len(MAIN_ROSTER) * len(SLOTS)
     return min(
-        character_count,
+        max(1, character_count - int(bool(traveler_forms(language="en"))) - 1),
         len(MAIN_ROSTER),
         max(1, artifact_count // artifacts_per_preset_roster),
     )
@@ -82,6 +156,7 @@ def build_selected_request(
     max_nodes: object,
     domains: object = None,
     fixed_four_piece_sets: object = None,
+    formula_objectives: object = None,
 ) -> dict[str, Any]:
     if not isinstance(selected_characters, list) or not selected_characters:
         raise ValueError("至少选择一个角色")
@@ -89,6 +164,16 @@ def build_selected_request(
         raise ValueError("角色选择无效")
     if len(set(selected_characters)) != len(selected_characters):
         raise ValueError("不能重复选择同一角色")
+    identity_counts = {
+        identity: sum(party_exclusive_identity(name) == identity for name in selected_characters)
+        for identity in ("traveler", "manekin")
+    }
+    if identity_counts["traveler"] > 1:
+        raise ValueError("一个队伍只能包含一个旅行者身份；空、荧及不同元素形态互斥")
+    if identity_counts["manekin"] > 1:
+        raise ValueError("一个队伍只能包含一个奇偶身份；男性与女性外观互斥")
+    if any(is_manekin_identity(name) for name in selected_characters):
+        raise ValueError("奇偶战斗模型尚未校准，不参与配装评分")
     if mode == "single" and len(selected_characters) != 1:
         raise ValueError("单角色模式只能选择一个角色")
     if mode == "multi" and len(selected_characters) < 2:
@@ -128,6 +213,61 @@ def build_selected_request(
 
     request = dict(base_request)
     request["members"] = [dict(by_character[name]) for name in selected_characters]
+    normalized_objectives = {}
+    if formula_objectives is not None:
+        if not isinstance(formula_objectives, dict):
+            raise ValueError("公式目标设置无效")
+        if any(not isinstance(name, str) or name not in selected_characters
+               for name in formula_objectives):
+            raise ValueError("公式目标只能为本次选择的角色设置")
+        model_catalog = available_models()
+        for character, objective in formula_objectives.items():
+            if not isinstance(objective, dict) or set(objective) != {"mode", "formulas"}:
+                raise ValueError("公式目标必须包含 mode 和 formulas")
+            mode = objective["mode"]
+            formulas = objective["formulas"]
+            if mode not in ("single", "relative", "raw") or not isinstance(formulas, list):
+                raise ValueError("公式目标模式或公式列表无效")
+            minimum = 1 if mode == "single" else 2
+            if len(formulas) < minimum or (mode == "single" and len(formulas) != 1):
+                raise ValueError("单公式模式需选择一个公式；综合模式至少选择两个公式")
+            formula_choice_keys = {
+                choice["key"]
+                for choice in _formula_choices(character, by_character[character])
+            }
+            keys = []
+            weights = []
+            for formula in formulas:
+                if not isinstance(formula, dict) or set(formula) != {"key", "weight"}:
+                    raise ValueError("每个公式选择都必须包含 key 和 weight")
+                key = formula["key"]
+                weight = formula["weight"]
+                if not isinstance(key, str) or not key or key in keys:
+                    raise ValueError("公式键无效或重复")
+                if key not in model_catalog:
+                    raise ValueError(f"公式 {key} 不在已校准模型目录中")
+                if key not in formula_choice_keys:
+                    raise ValueError(f"公式 {key} 不属于 {character} 或不支持当前配置信息")
+                if mode in ("relative", "raw") and not catalog_formula_selectable(key):
+                    raise ValueError(f"公式 {key} 未达到可综合评分的校准等级")
+                if type(weight) not in (int, float) or not isfinite(weight) or weight < 0:
+                    raise ValueError("公式权重必须是有限非负数")
+                keys.append(key)
+                weights.append(float(weight))
+            total_weight = sum(weights)
+            if not isfinite(total_weight) or total_weight <= 0:
+                raise ValueError("至少一个公式权重大于零")
+            normalized_objectives[character] = {
+                "mode": mode,
+                "formulas": [
+                    {"key": key, "weight": weight / total_weight}
+                    for key, weight in zip(keys, weights)
+                ],
+            }
+    for member in request["members"]:
+        objective = normalized_objectives.get(member["character"])
+        if objective is not None:
+            member["formula_objective"] = objective
     if fixed_four_piece_sets is not None:
         if not isinstance(fixed_four_piece_sets, dict):
             raise ValueError("固定套装选择无效")
@@ -214,8 +354,50 @@ def _public_member(member: dict[str, Any]) -> dict[str, Any]:
         "reference_damage": member.get("reference_damage"),
         "normalized_damage": member.get("normalized_damage"),
         "score": member.get("score"),
+        "formula_objective": member.get("formula_objective"),
         "pieces": pieces,
     }
+
+
+def _formula_choices(character: str, member: Mapping[str, Any]) -> list[dict[str, Any]]:
+    weapon = member.get("weapon")
+    if not isinstance(weapon, dict):
+        weapon = {}
+    common = {
+        "level": int(member.get("level", 90)),
+        "ascension": int(member.get("ascension", 6)),
+        "constellation": int(member.get("constellation", 0)),
+        "talents": member.get("talents", {"auto": 10, "skill": 10, "burst": 10}),
+        "crit_mode": member.get("crit_mode", "average"),
+        "weapon_level": int(weapon.get("level", 90)),
+        "weapon_ascension": int(weapon.get("ascension", 6)),
+        "refinement": int(weapon.get("refinement", 1)),
+    }
+    if weapon.get("id") is not None:
+        common["weapon"] = weapon["id"]
+    target = member.get("target_four_piece_set")
+    result = []
+    for key, metadata in available_models().items():
+        selectable_composite = catalog_formula_selectable(key)
+        if not selectable_composite and key != member.get("model"):
+            continue
+        try:
+            options = dict(common)
+            if key in catalog_available() and target is not None:
+                options["target_four_piece_set"] = int(target)
+            model = get_damage_model(character, key, **options)
+        except (TypeError, ValueError):
+            continue
+        result.append({
+            "key": key,
+            "label": model.label,
+            "default": key == member.get("model"),
+            "category": metadata.get("category"),
+            "attack": metadata.get("attack"),
+            "accuracy": metadata.get("accuracy", "hand-written"),
+            "selectable_composite": selectable_composite,
+        })
+    return result
 
 
 def format_formula_expression(expression: str | None) -> str | None:
@@ -784,16 +966,41 @@ def _formula_models_for_member(member: dict[str, Any], request_member: dict[str,
     else:
         if target_set is not None:
             common["target_four_piece_set"] = int(target_set)
-    selected_model = get_damage_model(character, model_key, **common)
+    objective = request_member.get("formula_objective")
+    if isinstance(objective, dict) and isinstance(objective.get("formulas"), list):
+        selected_entries = objective["formulas"]
+    else:
+        selected_entries = [{"key": model_key, "weight": 1.0}]
+    selected_weights = {
+        str(entry.get("key")): float(entry.get("weight", 0))
+        for entry in selected_entries if isinstance(entry, dict)
+    }
+    objective_breakdown = member.get("formula_objective")
+    component_values = {
+        component.get("key"): component
+        for component in (objective_breakdown or {}).get("components", [])
+        if isinstance(component, dict)
+    } if isinstance(objective_breakdown, dict) else {}
+    selected_formula_models = {}
+    for key in selected_weights:
+        options_for_formula = dict(common)
+        if key in catalog_available() and target_set is not None:
+            options_for_formula["target_four_piece_set"] = int(target_set)
+        selected_formula_models[key] = get_damage_model(
+            character, key, **options_for_formula,
+        )
 
     formulas = []
-    found_selected = False
     loadout = member.get("loadout") or {}
     for key, metadata in available_models().items():
         if str(metadata.get("character", "")).casefold() != character.casefold():
             continue
-        is_selected = key == model_key
-        model = selected_model if is_selected else get_damage_model(character, key)
+        is_selected = key in selected_weights
+        model = (
+            selected_formula_models[key]
+            if is_selected
+            else get_damage_model(character, key)
+        )
         formula = _public_formula(model, is_selected)
         if is_selected:
             formula["actual_inputs"] = {
@@ -801,21 +1008,24 @@ def _formula_models_for_member(member: dict[str, Any], request_member: dict[str,
                 "final_panel": loadout.get("final_panel", {}),
                 "active_set_bonuses": loadout.get("active_set_bonuses", []),
             }
-            formula["numeric_breakdown"] = _numeric_formula_breakdown(
-                model, loadout, member.get("damage", loadout.get("damage")),
+            component = component_values.get(key)
+            reported_damage = (
+                component.get("damage")
+                if isinstance(component, dict)
+                else member.get("damage", loadout.get("damage"))
             )
-        formulas.append(formula)
-        found_selected = found_selected or is_selected
-    if not found_selected:
-        formula = _public_formula(selected_model, True)
-        formula["actual_inputs"] = {
-            "talents": selected_model.assumptions.get("talents", {}),
-            "final_panel": loadout.get("final_panel", {}),
-            "active_set_bonuses": loadout.get("active_set_bonuses", []),
-        }
-        formula["numeric_breakdown"] = _numeric_formula_breakdown(
-            selected_model, loadout, member.get("damage", loadout.get("damage")),
-        )
+            formula["objective_component"] = {
+                "weight": selected_weights[key],
+                "damage": reported_damage,
+                "reference_damage": component.get("reference_damage") if component else None,
+                "normalized_damage": component.get("normalized_damage") if component else None,
+                "contribution": component.get("contribution") if component else None,
+                "mode": objective.get("mode") if isinstance(objective, dict) else "single",
+            }
+            numeric_loadout = dict(loadout)
+            formula["numeric_breakdown"] = _numeric_formula_breakdown(
+                model, numeric_loadout, reported_damage,
+            )
         formulas.append(formula)
     references, _ = _upstream_attack_references(character, member.get("name"))
     formulas.extend(references)
@@ -838,10 +1048,19 @@ def _public_result(
         request_member = request_members.get(member.get("character"))
         if request_member is not None:
             public_member["formula_models"] = _formula_models_for_member(member, request_member)
-            public_member["formula_semantics"] = (
-                "本次优化只使用标记为“本次评分模型”的单个公式；同角色其他条目是可查阅的参考模型，"
-                "不会与之联合评分。"
-            )
+            objective = request_member.get("formula_objective")
+            if isinstance(objective, dict) and objective.get("mode") in ("relative", "raw"):
+                mode_label = "相对表现加权" if objective["mode"] == "relative" else "原始伤害加权"
+                breakdown = member.get("formula_objective") or {}
+                public_member["formula_semantics"] = (
+                    f"本次使用 {mode_label}；各公式权重已归一化。"
+                    f"相对模式的基准：{breakdown.get('reference_definition', '同一角色与武器的裸面板、无圣遗物和条件套装效果')}。"
+                )
+            else:
+                public_member["formula_semantics"] = (
+                    "本次优化使用标记为“本次评分模型”的单个公式；同角色其他条目是可查阅的参考模型，"
+                    "不会参与评分。"
+                )
             public_member["formula_reference_note"] = _upstream_attack_references(
                 member["character"], member.get("name"),
             )[1]
@@ -1068,38 +1287,111 @@ class AcceptanceService:
             if kind == "characters":
                 for character in account.get("roster", []):
                     record = get_game_record("characters", character["character"], language="zh")
+                    profile_query = character.get("appearance") if character.get("identity") == "manekin" else character["character"]
+                    character_profile = get_character_profile(profile_query or character["character"], language="zh")
                     talents = character.get("talents") or {}
+                    current_element = character.get("current_element")
+                    ability_details = []
+                    constellation_details = []
+                    combat_summary = None
+                    if character.get("identity") == "traveler":
+                        talent_record = next(iter(character_profile["talents"]), {})
+                        constellation_record = next(iter(character_profile["constellations"]), {})
+                        for key in ("combat1", "combat2", "combat3", "passive1", "passive2", "passive3"):
+                            ability = talent_record.get(key)
+                            if isinstance(ability, dict) and ability.get("name"):
+                                ability_details.append(
+                                    f'{ability["name"]}：{ability.get("description", "")}'.rstrip("："),
+                                )
+                        for index in range(1, 7):
+                            constellation = constellation_record.get(f"c{index}")
+                            if isinstance(constellation, dict) and constellation.get("name"):
+                                constellation_details.append(
+                                    f'{constellation["name"]}：{constellation.get("description", "")}'.rstrip("："),
+                                )
+                    elif character.get("identity") == "manekin":
+                        ability_details = [
+                            f'{ability["name"]}：{ability["summary"]}'
+                            for ability in character_profile["abilities"]
+                        ]
+                        combat_summary = _manekin_rank_summary(
+                            character_profile["combat_data"],
+                            current_element,
+                            talents,
+                        )
+                    appearance = (
+                        get_game_record("characters", character["appearance"], language="zh")
+                        if character.get("identity") == "traveler" else None
+                    )
+                    fields = [
+                        ("角色 ID", character.get("character_id", record.get("id"))),
+                        ("英文名", character["character"]),
+                        ("稀有度", character.get("rarity", record.get("rarity"))),
+                        ("元素", (
+                        f'Adaptive（当前：{character.get("current_element_name") or current_element}）'
+                            if character.get("identity") == "manekin" and current_element
+                            else record.get("elementText") or character.get("element")
+                        )),
+                        ("武器类型", record.get("weaponText") or character.get("weapon_type")),
+                        ("等级", character.get("level")),
+                        ("命座等级", character.get("constellation")),
+                        ("天赋等级", talents),
+                        ("装备武器", character.get("weapon")),
+                        ("武器精炼", character.get("weapon_refinement")),
+                        ("突破成长属性", record.get("substatText")),
+                        ("所属地区", record.get("regionName") or record.get("region")),
+                        ("所属组织", record.get("affiliation")),
+                        ("生日", record.get("birthday")),
+                        ("命之座名称", record.get("constellation")),
+                        ("角色简介", record.get("description")),
+                    ]
+                    notes = (
+                        [] if character.get("identity") == "manekin"
+                        else ["模拟账号未保存角色突破阶段，因此不推算当前等级面板属性。"]
+                    )
+                    if character.get("identity") == "traveler":
+                        fields.extend([
+                            ("逻辑身份", "旅行者（空与荧共用）"),
+                            ("当前元素形态", record["name"]),
+                            ("外观", appearance.get("name") if appearance else None),
+                            ("外观记录 ID", appearance.get("id") if appearance else None),
+                            ("当前形态天赋图鉴", ability_details),
+                            ("当前形态命座图鉴", constellation_details),
+                        ])
+                        notes.append("旅行者只占一个账号身份；切换元素形态不会产生另一套配装。")
+                    elif character.get("identity") == "manekin":
+                        fields.extend([
+                            ("逻辑身份", "奇偶（Manekin / Manekina 共用）"),
+                            ("外观", character.get("appearance_name")),
+                            ("元素模式", "Adaptive（跟随旅行者当前元素）"),
+                            ("当前元素", character.get("current_element_name") or current_element),
+                            ("旅行者当前形态", character.get("traveler_form_name")),
+                            ("命座", "无"),
+                            ("能力摘要", ability_details),
+                            ("技能倍率与参数（当前天赋等级）", combat_summary),
+                            ("战斗模型状态", character_profile["battle_model_status"]),
+                            ("突破材料 / 摩拉", "无需材料；0 摩拉"),
+                        ])
+                        notes.extend([
+                            "奇偶只占一个角色与配装身份；男、女外观不可同时出现在同一队伍。",
+                            "技能倍率来自版本 7.2 离线表并经独立角色数据交叉核对；固定版伤害引擎没有奇偶公式，仍未校准且不参与配装评分。",
+                        ])
                     item = _detail_item(
                         kind,
-                        record["id"],
+                        character.get("character_id", record.get("id", 0)),
                         character.get("name_zh") or record.get("name") or character["character"],
                         f'{character["character"]} · {character.get("level", "—")}级 · '
                         f'{character.get("weapon") or "未记录武器"}',
-                        [
-                            ("角色 ID", record["id"]),
-                            ("英文名", character["character"]),
-                            ("稀有度", character.get("rarity", record.get("rarity"))),
-                            ("元素", record.get("elementText") or character.get("element")),
-                            ("武器类型", record.get("weaponText") or character.get("weapon_type")),
-                            ("等级", character.get("level")),
-                            ("命座等级", character.get("constellation")),
-                            ("天赋等级", talents),
-                            ("装备武器", character.get("weapon")),
-                            ("武器精炼", character.get("weapon_refinement")),
-                            ("突破成长属性", record.get("substatText")),
-                            ("所属地区", record.get("regionName") or record.get("region")),
-                            ("所属组织", record.get("affiliation")),
-                            ("生日", record.get("birthday")),
-                            ("命之座名称", record.get("constellation")),
-                            ("角色简介", record.get("description")),
-                        ],
-                        notes=[
-                            "模拟账号未保存角色突破阶段，因此不推算当前等级面板属性。"
-                        ],
+                        fields,
+                        notes=notes,
                     )
                     entries.append((
                         item,
-                        " ".join((character["character"], character.get("weapon", ""))),
+                        " ".join((
+                            character["character"],
+                            character.get("appearance_name", ""),
+                            character.get("weapon", ""),
+                        )),
                     ))
             elif kind == "weapons":
                 for index, weapon in enumerate(account.get("weapons", [])):
@@ -1219,6 +1511,8 @@ class AcceptanceService:
             "--output",
             str(account_dir),
         ]
+        if config["traveler_element"] is not None:
+            command.extend(["--traveler-element", config["traveler_element"]])
         _run(command)
         account = _read_json(account_dir / "account.json")
         party_request = _read_json(account_dir / "party-request.json")
@@ -1234,6 +1528,13 @@ class AcceptanceService:
                 "weapon_type": item.get("weapon_type"),
                 "weapon": item.get("weapon"),
                 "invested": item.get("invested", False),
+                "identity": item.get("identity"),
+                "form_key": item.get("form_key"),
+                "appearance": item.get("appearance"),
+                "current_element": item.get("current_element"),
+                "current_element_name": item.get("current_element_name"),
+                "traveler_form_name": item.get("traveler_form_name"),
+                "battle_support": item.get("battle_support"),
             }
             for item in account.get("roster", [])
         ]
@@ -1245,6 +1546,7 @@ class AcceptanceService:
         optimizable_roster = [
             {
                 **item,
+                "formula_coverage": catalog_character_coverage(item["character"]),
                 "model_target_four_piece_set": next(
                     (
                         member.get("target_four_piece_set")
@@ -1253,6 +1555,17 @@ class AcceptanceService:
                         and member.get("character") == item["character"]
                     ),
                     None,
+                ),
+                "formula_models": _formula_choices(
+                    item["character"],
+                    next(
+                        (
+                            member for member in party_request.get("members", [])
+                            if isinstance(member, dict)
+                            and member.get("character") == item["character"]
+                        ),
+                        {},
+                    ),
                 ),
             }
             for item in roster if item["character"] in optimizable_names
@@ -1308,6 +1621,7 @@ class AcceptanceService:
                 payload.get("seed"),
                 payload.get("max_nodes"),
                 fixed_four_piece_sets=payload.get("fixed_four_piece_sets"),
+                formula_objectives=payload.get("formula_objectives"),
             )
             operation_id = uuid.uuid4().hex
             request_path = session["account_dir"] / f"request-{operation_id}.json"
@@ -1377,6 +1691,11 @@ class AcceptanceService:
                 previous_request["max_nodes"],
                 payload.get("domains"),
                 fixed_four_piece_sets,
+                {
+                    member["character"]: member["formula_objective"]
+                    for member in previous_request["members"]
+                    if "formula_objective" in member
+                },
             )
             operation_id = uuid.uuid4().hex
             request_path = session["account_dir"] / f"plan-request-{operation_id}.json"
@@ -1404,6 +1723,127 @@ class AcceptanceService:
                 "result": _public_plan(result),
             }
 
+    def expectations(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        with self._lock:
+            session = self._require_session(payload.get("session_id"))
+            previous = session.get("optimization")
+            if not isinstance(previous, dict) or payload.get("optimization_id") != previous["id"]:
+                raise ValueError("请先完成当前配置的单角色配装优化")
+            request = previous["request"]
+            if len(request.get("members", [])) != 1:
+                raise ValueError("树脂期望分析每次只支持一个角色，请切换到单角色优化")
+            from artifact_sim.__main__ import _party_members, _party_pieces
+            from planning.expectation import (
+                DEFAULT_SAMPLE_COUNT,
+                estimate_loadout_expectations,
+            )
+
+            domain = payload.get("domain_id")
+            starting_inventory = payload.get("starting_inventory", "inventory")
+            sample_count = _integer(
+                payload.get("sample_count", DEFAULT_SAMPLE_COUNT),
+                "抽样次数",
+                8,
+                64,
+            )
+            member_row = request["members"][0]
+            member = _party_members({"members": [member_row]})[0]["member"]
+            pieces = (
+                _party_pieces(
+                    {"expected_full_level": True},
+                    session["account_dir"] / "account.sqlite3",
+                )
+                if starting_inventory == "inventory"
+                else []
+            )
+            return estimate_loadout_expectations(
+                pieces,
+                model=member.model,
+                character=dict(member.character),
+                weapon=dict(member.weapon) if member.weapon is not None else None,
+                bonus_stats=dict(
+                    member.model.panel_bonus_stats
+                    if member.bonus_stats is None else member.bonus_stats
+                ),
+                domain=domain,
+                resin_budgets=payload.get("resin_budgets", ()),
+                starting_inventory=starting_inventory,
+                sample_count=sample_count,
+                seed=int(request.get("seed", 0)),
+                required_four_piece_set=member.fixed_four_piece_set,
+            )
+
+    def account_farming(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        with self._lock:
+            session = self._require_session(payload.get("session_id"))
+            previous = session.get("optimization")
+            if not isinstance(previous, dict) or payload.get("optimization_id") != previous["id"]:
+                raise ValueError("请先完成当前角色选择的配装优化，再继续规划")
+            request = previous["request"]
+            from artifact_sim.__main__ import _party_members, _party_pieces
+            from planning.account_farming import (
+                DEFAULT_ACCOUNT_BUDGETS,
+                DEFAULT_ACCOUNT_SAMPLES,
+                estimate_account_farming_priorities,
+            )
+
+            selected_domains = payload.get("domains")
+            available_domains = set()
+            for row in request.get("domains", []):
+                domain_id = row.get("id") if isinstance(row, dict) else row
+                if type(domain_id) is int:
+                    available_domains.add(domain_id)
+            if (
+                not isinstance(selected_domains, list)
+                or not selected_domains
+                or any(type(domain) is not int for domain in selected_domains)
+            ):
+                raise ValueError("至少选择一个有效秘境")
+            if len(set(selected_domains)) != len(selected_domains):
+                raise ValueError("不能重复选择同一秘境")
+            if any(domain not in available_domains for domain in selected_domains):
+                raise ValueError("所选秘境不在当前账号的可用列表中")
+
+            starting_inventory = payload.get("starting_inventory", "inventory")
+            if starting_inventory not in ("inventory", "zero"):
+                raise ValueError("起始库存必须是 inventory 或 zero")
+            sample_count = _integer(
+                payload.get("sample_count", DEFAULT_ACCOUNT_SAMPLES),
+                "抽样次数",
+                8,
+                64,
+            )
+            members = [
+                row["member"] for row in _party_members(
+                    {"members": request["members"]},
+                )
+            ]
+            pieces = (
+                _party_pieces(
+                    {"expected_full_level": True},
+                    session["account_dir"] / "account.sqlite3",
+                )
+                if starting_inventory == "inventory"
+                else []
+            )
+            return estimate_account_farming_priorities(
+                pieces,
+                members,
+                domains=selected_domains,
+                resin_budgets=payload.get(
+                    "resin_budgets",
+                    list(DEFAULT_ACCOUNT_BUDGETS),
+                ),
+                starting_inventory=starting_inventory,
+                sample_count=sample_count,
+                target_gain_pct=payload.get("target_gain_pct", 1.0),
+                seed=int(request.get("seed", 0)),
+            )
+
 
 class AcceptanceHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
@@ -1421,6 +1861,12 @@ class AcceptanceRequestHandler(BaseHTTPRequestHandler):
     def _page_content() -> bytes:
         page = PAGE.read_text(encoding="utf-8")
         page = page.replace("__CHARACTER_LIMIT__", str(available_character_count()))
+        form_options = "\n".join(
+            f'<option value="{escape(form["element"], quote=True)}">'
+            f'{escape(form["name_zh"])}</option>'
+            for form in traveler_forms(language="zh")
+        )
+        page = page.replace("__TRAVELER_ELEMENT_OPTIONS__", form_options)
         return page.replace("__ARTIFACT_LIMIT__", str(MAX_ARTIFACT_INVENTORY)).encode("utf-8")
 
     def _send_json(self, status: int, body: dict[str, Any]) -> None:
@@ -1527,6 +1973,8 @@ class AcceptanceRequestHandler(BaseHTTPRequestHandler):
             "/api/generate": self.server.service.generate,
             "/api/optimize": self.server.service.optimize,
             "/api/plan": self.server.service.plan,
+            "/api/expectations": self.server.service.expectations,
+            "/api/account-farming": self.server.service.account_farming,
         }
         action = actions.get(route)
         if action is None:

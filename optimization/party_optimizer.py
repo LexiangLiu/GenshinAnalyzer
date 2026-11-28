@@ -122,7 +122,7 @@ class PartyLoadout:
 
     def describe(self, normalize: bool) -> dict:
         target = self.target_four_piece_set
-        return {
+        result = {
             "name": self.member.label,
             "character": self.member.model.character,
             "model": self.member.model.key,
@@ -138,6 +138,13 @@ class PartyLoadout:
             "score": self.score(normalize),
             "loadout": self.loadout.describe(),
         }
+        breakdown = getattr(self.member.model, "score_breakdown", None)
+        if callable(breakdown):
+            result["formula_objective"] = breakdown(
+                self.loadout.stats,
+                self.loadout.set_flags,
+            )
+        return result
 
 
 @dataclass(frozen=True)
@@ -186,13 +193,20 @@ def _valid(loadout: Loadout, target: int | None) -> bool:
     return target is None or f"SET_{target}_4" in loadout.set_flags
 
 
-def _validate_inventory(pieces: Sequence[LoadoutPiece], members: Sequence[PartyMember]) -> None:
+def _validate_inventory(
+    pieces: Sequence[LoadoutPiece],
+    members: Sequence[PartyMember],
+    *,
+    allow_partial: bool = False,
+) -> None:
     seen = set()
     for piece in pieces:
         key = _identity(piece)
         if key in seen:
             raise ValueError(f"库存中存在重复圣遗物标识：{key}")
         seen.add(key)
+    if allow_partial:
+        return
     for slot in _SLOTS:
         count = sum(1 for piece in pieces if piece.artifact.slot == slot)
         if count < len(members):
@@ -390,16 +404,40 @@ def optimize_party(
     seed: int = 0,
     max_iterations: int = 8,
     normalize: bool = True,
+    allow_partial: bool = False,
 ) -> PartyOptimizeResult:
-    """Assign one five-piece loadout to every member without sharing artifacts."""
+    """Assign artifact loadouts to members without sharing artifacts.
+
+    ``allow_partial`` supports a developing inventory: missing slots and
+    target four-piece requirements do not make the party infeasible.
+    """
     if not members:
         raise ValueError("至少需要一个角色")
+    from data.references import is_manekin_identity, is_traveler_identity
+    traveler_members = [
+        member for member in members
+        if is_traveler_identity(member.model.character)
+        or is_traveler_identity(member.character.get("id"))
+    ]
+    if len(traveler_members) > 1:
+        raise ValueError("一个队伍只能包含一个旅行者身份；空、荧及不同元素形态互斥")
+    manekin_members = [
+        member for member in members
+        if is_manekin_identity(member.model.character)
+        or is_manekin_identity(member.character.get("id"))
+    ]
+    if len(manekin_members) > 1:
+        raise ValueError("一个队伍只能包含一个奇偶身份；男性与女性外观互斥")
+    if manekin_members:
+        raise ValueError("奇偶战斗模型尚未校准，不参与配装评分")
     if type(max_nodes) is not int or max_nodes < 1:
         raise ValueError("max_nodes 必须是正整数")
     if type(restarts) is not int or restarts < 0:
         raise ValueError("restarts 必须是非负整数")
     if type(max_iterations) is not int or max_iterations < 1:
         raise ValueError("max_iterations 必须是正整数")
+    if type(allow_partial) is not bool:
+        raise ValueError("allow_partial 必须是布尔值")
     normalized_pieces = []
     for item in pieces:
         if isinstance(item, LoadoutPiece):
@@ -411,8 +449,12 @@ def optimize_party(
             else:
                 raise TypeError("库存只能包含 Artifact 或 LoadoutPiece")
     panels = [member.panel() for member in members]
-    targets = [member.resolved_set() for member in members]
-    _validate_inventory(normalized_pieces, members)
+    targets = (
+        [None] * len(members)
+        if allow_partial
+        else [member.resolved_set() for member in members]
+    )
+    _validate_inventory(normalized_pieces, members, allow_partial=allow_partial)
 
     independent: list[PartyLoadout] = []
     total_nodes = 0
@@ -438,6 +480,10 @@ def optimize_party(
     conflicts = sum(count - 1 for count in usage.values() if count > 1)
 
     warnings: list[str] = []
+    if allow_partial:
+        warnings.append(
+            "允许不完整配装；目标四件套不作硬约束，套装效果仅按实际装备计入。",
+        )
     for member in members:
         calibration = member.model.assumptions.get("calibration")
         if isinstance(calibration, dict) and calibration.get("accuracy") in ("low", "unvalidated"):

@@ -37,6 +37,7 @@ from damage.character_models import (  # noqa: E402
     build_expression, model_from_spec, resolve_set_effects,
 )
 from data.game_data import SETS  # noqa: E402
+from data.references import traveler_forms  # noqa: E402
 
 
 BRIDGE = ROOT / "damage" / "go_damage" / "bridge.mjs"
@@ -47,8 +48,6 @@ TALENTS = {"auto": 10, "skill": 10, "burst": 10}
 BASE_LEVEL = 90
 BASE_ASCENSION = 6
 RESISTANCE = 0
-SKIP_GO_KEYS = {"Neuvillette"}  # keep the hand-written, weapon-specific model
-
 COMMON_SOURCES = [
     "https://www.genshindamagecalculator.com/guides/damage-formula/",
     "https://github.com/frzyc/GenshinOptimizer",
@@ -309,6 +308,10 @@ def _category(attack: dict) -> str:
     return "normal"
 
 
+def _attack_family(attack: dict) -> str:
+    return _category(attack)
+
+
 def _talent_scaling_curve(
     node: str,
     go_key: str,
@@ -363,7 +366,10 @@ def _candidate_attacks(attacks: list[dict]) -> list[dict]:
     result = []
     for attack in attacks:
         name = str(attack["name"]).casefold()
-        if re.match(r"^c[1-6]", name) or name.startswith(("lock_", "a1", "a4", "passive")):
+        if (
+            re.match(r"^c[1-6]", name)
+            or name.startswith(("lock_", "a1", "a4", "passive", "lockedpassive", "constellation"))
+        ):
             continue
         result.append(attack)
     return result
@@ -483,10 +489,15 @@ def _model_stats(local: dict, sample: dict, element: str) -> dict:
     return stats
 
 
-def calibrate_one(node: str, character: dict, *, seed: int = 0) -> dict | None:
+def calibrate_one(
+    node: str,
+    character: dict,
+    *,
+    seed: int = 0,
+    selected_attack: str | None = None,
+    is_default: bool = True,
+) -> dict | None:
     go_key = _go_key(character["name_en"])
-    if go_key in SKIP_GO_KEYS:
-        return None
     profile = PROFILES.get(go_key, {})
     weapon = profile.get("weapon")
     weapon_name = profile.get("weapon_name")
@@ -501,8 +512,9 @@ def calibrate_one(node: str, character: dict, *, seed: int = 0) -> dict | None:
     if not conditions:
         conditions = _auto_conditions(catalog.get("conditions") or {})
     try:
+        requested_attack = selected_attack or profile.get("attack")
         attack = next(
-            (row for row in catalog["attacks"] if row["name"] == profile.get("attack")),
+            (row for row in catalog["attacks"] if row["name"] == requested_attack),
             None,
         )
         if attack is None:
@@ -639,12 +651,22 @@ def calibrate_one(node: str, character: dict, *, seed: int = 0) -> dict | None:
     if not coefficients and abs(constant) < 1e-9:
         return None
 
-    target_set = profile.get("target_set")
+    target_set = profile.get("target_set") if is_default else None
     if target_set is None:
         target_set = _choose_target_set(element, category, character.get("region"))
     resolved = resolve_set_effects(target_set, category, element)
     set_effects = {str(target_set): resolved} if target_set is not None and resolved else {}
-    label = profile.get("label") or f"{character['name']} {attack_name}（自动校准）"
+    if is_default and profile.get("label"):
+        label = profile["label"]
+    else:
+        family_label = {
+            "normal": "普攻",
+            "skill": "元素战技",
+            "burst": "元素爆发",
+            "charged": "重击",
+            "plunge": "下落攻击",
+        }.get(category, "伤害")
+        label = f"{character['name']}·{family_label}（{attack_name}）"
     spec = {
         "key": f"{go_key.casefold()}_{attack_name.casefold()}",
         "character": character["name_en"],
@@ -652,6 +674,7 @@ def calibrate_one(node: str, character: dict, *, seed: int = 0) -> dict | None:
         "go_key": go_key,
         "weapon_type": character.get("weapon_type"),
         "label": label,
+        "is_default": is_default,
         "element": element,
         "attack": attack_name,
         "category": category,
@@ -731,6 +754,117 @@ def calibrate_one(node: str, character: dict, *, seed: int = 0) -> dict | None:
     return spec
 
 
+def _representative_attacks(
+    node: str,
+    go_key: str,
+    attacks: list[dict],
+    conditions: dict,
+    weapon: str | None,
+) -> dict[str, dict]:
+    candidates = _candidate_attacks(attacks)
+    if not candidates:
+        return {}
+    payload = {
+        "character": go_key,
+        "level": BASE_LEVEL,
+        "ascension": BASE_ASCENSION,
+        "constellation": 0,
+        "talents": TALENTS,
+        "conditions": conditions,
+        "enemy": {"level": 90, "resistance": RESISTANCE},
+        "mode": "noncrit",
+        "attacks": [attack["name"] for attack in candidates],
+    }
+    if weapon is not None:
+        payload["weapon"] = {
+            "key": weapon,
+            "level": BASE_LEVEL,
+            "ascension": BASE_ASCENSION,
+            "refinement": 1,
+        }
+    result = _call(node, "calculate", payload)
+    damage = {
+        str(row.get("name")): float(row.get("damage", 0))
+        for row in result.get("attacks", [])
+    }
+    representatives = {}
+    for family in ("normal", "skill", "burst"):
+        eligible = [
+            attack for attack in candidates
+            if _attack_family(attack) == family
+            and math.isfinite(damage.get(str(attack["name"]), 0))
+            and damage.get(str(attack["name"]), 0) > 0
+        ]
+        if eligible:
+            representatives[family] = max(
+                eligible,
+                key=lambda attack: damage.get(str(attack["name"]), 0),
+            )
+    return representatives
+
+
+def calibrate_character(
+    node: str,
+    character: dict,
+    *,
+    seed: int = 0,
+) -> list[dict]:
+    primary = calibrate_one(node, character, seed=seed, is_default=True)
+    if primary is None:
+        return []
+    go_key = _go_key(character["name_en"])
+    profile = PROFILES.get(go_key, {})
+    catalog = _call(node, "formulas", {"character": go_key})
+    conditions = dict(profile.get("conditions") or {})
+    if not conditions:
+        conditions = _auto_conditions(catalog.get("conditions") or {})
+    representatives = _representative_attacks(
+        node,
+        go_key,
+        catalog.get("attacks", []),
+        conditions,
+        profile.get("weapon"),
+    )
+    primary_family = _attack_family({
+        "name": primary["attack"],
+        "category": primary["category"],
+    })
+    models = [primary]
+    for family in ("normal", "skill", "burst"):
+        attack = representatives.get(family)
+        if (
+            attack is None
+            or attack["name"] == primary["attack"]
+            or family == primary_family
+        ):
+            continue
+        try:
+            spec = calibrate_one(
+                node,
+                character,
+                seed=seed,
+                selected_attack=str(attack["name"]),
+                is_default=False,
+            )
+        except Exception as exc:  # noqa: BLE001 - other calibrated nodes remain useful
+            print(
+                f"[skip] {character['name_en']} {family} {attack['name']}: {exc}",
+                file=sys.stderr,
+            )
+            continue
+        if spec is None:
+            continue
+        if spec["accuracy"] not in ("high", "medium"):
+            print(
+                f"[skip] {character['name_en']} {family} {attack['name']}: "
+                f"校准误差不可用于综合评分 ({spec['accuracy']})",
+                file=sys.stderr,
+            )
+            continue
+        models.append(spec)
+    return models
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="生成角色伤害模型目录")
     parser.add_argument("--node", default="node", help="Node.js 可执行文件")
@@ -742,14 +876,20 @@ def main() -> None:
 
     zh = _load_gzip("characters.zh.json.gz")
     en = _load_gzip("characters.en.json.gz")
+    talents_en = _load_gzip("talents.en.json.gz")
     targets = []
     only = {name.casefold() for name in args.only}
+    only_tokens = {_go_key(name).casefold() for name in args.only}
     for key, row in zh.items():
         if key in ("aether", "lumine", "manekin", "manekina"):
             continue
         name_en = en.get(key, {}).get("name", row.get("name", key))
-        if only and not (key.casefold() in only or str(row.get("name", "")).casefold() in only
-                         or name_en.casefold() in only):
+        if only and not (
+            key.casefold() in only
+            or str(row.get("name", "")).casefold() in only
+            or name_en.casefold() in only
+            or _go_key(key).casefold() in only_tokens
+        ):
             continue
         targets.append({
             "key": key,
@@ -759,28 +899,73 @@ def main() -> None:
             "weapon_type": str(row.get("weaponType", "")).removeprefix("WEAPON_"),
             "region": row.get("region"),
         })
+    for form in traveler_forms(language="zh"):
+        key = form["key"]
+        row = zh["aether"]
+        name = form["name_zh"]
+        name_en = talents_en[key]["name"]
+        if only and "traveler" not in only and not any(
+            candidate.casefold() in only or _go_key(candidate).casefold() in only_tokens
+            for candidate in (key, name, name_en, form["name_en"], form["element"])
+        ):
+            continue
+        targets.append({
+            "key": key,
+            "name": name,
+            "name_en": name_en,
+            "element": form["elementType"],
+            "weapon_type": str(row.get("weaponType", "")).removeprefix("WEAPON_"),
+            "region": row.get("region"),
+        })
 
     results = []
     with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
         futures = {
-            pool.submit(calibrate_one, args.node, character, seed=args.seed): character
+            pool.submit(calibrate_character, args.node, character, seed=args.seed): character
             for character in targets
         }
         for future, character in futures.items():
             try:
-                spec = future.result()
+                specs = future.result()
             except Exception as exc:  # noqa: BLE001
                 print(f"[skip] {character['name_en']}: {exc}", file=sys.stderr)
                 continue
-            if spec is not None:
+            for spec in specs or []:
                 results.append(spec)
                 error = (spec.get("calibration") or {}).get("max_relative_error")
                 print(
                     f"[ok] {spec['character']} {spec['attack']} "
-                    f"set={spec['target_four_piece_set']} err={error if error is None else f'{error:.2%}'}",
+                    f"set={spec['target_four_piece_set']} err={error if error is None else f'{error:.2%}'}"
+                    f"{' [default]' if spec.get('is_default') else ''}",
                 )
 
     results.sort(key=lambda item: (item["character"].casefold(), item["key"]))
+    coverage = []
+    for character in targets:
+        rows = [spec for spec in results if spec["character"] == character["name_en"]]
+        available_categories = sorted({
+            _attack_family({"name": spec["attack"], "category": spec["category"]})
+            for spec in rows
+        })
+        missing_categories = [
+            category for category in ("normal", "skill", "burst")
+            if category not in available_categories
+        ]
+        coverage.append({
+            "character": character["name_en"],
+            "character_zh": character["name"],
+            "available_categories": available_categories,
+            "missing_categories": missing_categories,
+            "status": (
+                "complete" if not missing_categories
+                else "partial" if rows
+                else "insufficient"
+            ),
+            "note": (
+                "缺少的攻击类别没有通过校准可靠性门槛的上游节点。"
+                if missing_categories else None
+            ),
+        })
     payload = {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -793,6 +978,7 @@ def main() -> None:
             "enemy": {"level": 90, "resistance": RESISTANCE},
             "weapon": None,
         },
+        "coverage": coverage,
         "models": results,
     }
     args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

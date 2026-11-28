@@ -17,6 +17,13 @@ const rawPath = resolve(packagePath, 'src/min/data.min.json');
 const upstream = require(rawPath);
 const design = require(resolve(packagePath, 'src/design.json'));
 const output = resolve(__dirname, '../data/reference_data');
+let supplements = {};
+try {
+  const previousManifest = JSON.parse(readFileSync(resolve(output, 'manifest.json'), 'utf8'));
+  if (previousManifest.game_version === gameVersion) supplements = previousManifest.supplements ?? {};
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error;
+}
 const languages = {zh: 'ChineseSimplified', en: 'English'};
 const englishOnly = new Set(['elements', 'rarity', 'weaponmaterialtypes', 'talentmaterialtypes']);
 const updateNotice = 'https://ys.mihoyo.com/main/news/detail/167205';
@@ -25,6 +32,7 @@ const manifest = {
   schema_version: 1,
   game_version: gameVersion,
   languages: Object.keys(languages),
+  supplements,
   sources: {
     genshin_db: {version: metadata.version, sha256: digest(readFileSync(rawPath))},
     tcg_distribution: {commit: tcgCommit, input_sha256: {}},

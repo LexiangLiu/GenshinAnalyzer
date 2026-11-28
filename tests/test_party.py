@@ -58,6 +58,63 @@ def _members():
 
 
 class PartyOptimizerTests(unittest.TestCase):
+    def test_partial_party_builds_allow_zero_and_incomplete_inventories(self):
+        members = _members()
+
+        empty_result = optimize_party([], members, allow_partial=True)
+        self.assertEqual(len(empty_result.members), 2)
+        self.assertGreater(empty_result.total_objective, 0)
+        self.assertTrue(empty_result.exact)
+        self.assertTrue(all(not assignment.loadout.artifacts() for assignment in empty_result.members))
+        self.assertIn("目标四件套不作硬约束", " ".join(empty_result.warnings))
+
+        partial_result = optimize_party(
+            _pieces(Simulator(19), 15031, count=1)[:1],
+            members,
+            allow_partial=True,
+        )
+        equipped = [
+            piece
+            for assignment in partial_result.members
+            for piece in assignment.loadout.artifacts()
+        ]
+        self.assertLessEqual(len(equipped), 1)
+
+    def test_cli_and_optimizer_reject_multiple_traveler_forms_or_appearances(self):
+        for members in (
+            [{"character": "Aether"}, {"character": "Lumine"}],
+            [
+                {"character": "Traveler (Anemo)"},
+                {"character": "travelergeo"},
+            ],
+        ):
+            with self.subTest(members=members), self.assertRaisesRegex(
+                ValueError, "一个队伍只能包含一个旅行者身份",
+            ):
+                _party_members({"members": members})
+
+        model_members = [
+            PartyMember(
+                model=get_damage_model(form),
+                character={"id": form},
+            )
+            for form in ("Traveler (Anemo)", "Traveler (Geo)")
+        ]
+        with self.assertRaisesRegex(ValueError, "一个队伍只能包含一个旅行者身份"):
+            optimize_party([], model_members)
+
+    def test_cli_and_optimizer_reject_duplicate_manekin_appearances_and_uncalibrated_scores(self):
+        for members in (
+            [{"character": "Manekin"}, {"character": "Manekina"}],
+            [{"character": "奇偶·男性"}, {"character": "Manekina"}],
+        ):
+            with self.subTest(members=members), self.assertRaisesRegex(
+                ValueError, "一个队伍只能包含一个奇偶身份",
+            ):
+                _party_members({"members": members})
+        with self.assertRaisesRegex(ValueError, "奇偶的技能倍率尚未校准"):
+            get_damage_model("Manekin")
+
     def test_cli_member_request_applies_fixed_four_piece_set(self):
         members = _party_members({
             "members": [{

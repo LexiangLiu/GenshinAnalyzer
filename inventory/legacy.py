@@ -8,7 +8,7 @@ from math import isclose, isfinite
 
 from core.models import Artifact, Enhancement, Roll
 from core.simulation import Simulator
-from data.game_data import character_profile
+from data.game_data import character_identity as character_profile
 
 
 _STATS = {

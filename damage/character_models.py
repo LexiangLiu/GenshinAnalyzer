@@ -495,6 +495,22 @@ def catalog_spec(key: str) -> dict:
     raise ValueError(f"未知角色伤害模型：{key}")
 
 
+def catalog_formula_selectable(key: str) -> bool:
+    try:
+        spec = catalog_spec(key)
+    except ValueError:
+        return False
+    return spec.get("accuracy") in ("high", "medium")
+
+
+def catalog_character_coverage(character: str) -> dict | None:
+    token = character.strip().casefold()
+    for row in _catalog().get("coverage", []):
+        if str(row.get("character", "")).casefold() == token:
+            return dict(row)
+    return None
+
+
 def _token(value: object) -> str:
     return "".join(ch for ch in str(value).casefold() if ch.isalnum())
 
@@ -598,10 +614,13 @@ def get_catalog_model(key: str, crit_mode: str = "average", **options) -> Damage
 
 def default_catalog_key(character: str) -> str | None:
     token = character.strip().casefold()
-    for spec in catalog_models():
-        if str(spec.get("character", "")).casefold() == token:
-            return str(spec["key"])
-    return None
+    matches = [
+        spec for spec in catalog_models()
+        if str(spec.get("character", "")).casefold() == token
+    ]
+    if not matches:
+        return None
+    return str(next((spec for spec in matches if spec.get("is_default")), matches[0])["key"])
 
 
 def catalog_available() -> dict:
@@ -618,5 +637,6 @@ def catalog_available() -> dict:
             "target_four_piece_set": spec.get("target_four_piece_set"),
             "accuracy": spec.get("accuracy"),
             "max_relative_error": (spec.get("calibration") or {}).get("max_relative_error"),
+            "is_default": bool(spec.get("is_default", False)),
         }
     return result

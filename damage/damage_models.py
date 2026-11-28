@@ -250,6 +250,235 @@ class DamageModel:
         }
 
 
+@dataclass(frozen=True)
+class WeightedDamageModel:
+    """A positive weighted objective over calibrated models for one character."""
+
+    models: tuple[DamageModel, ...]
+    weights: tuple[float, ...]
+    mode: str
+    reference_damages: tuple[float, ...]
+    target_four_piece_set: int | None = None
+    key: str = field(init=False)
+    character: str = field(init=False)
+    label: str = field(init=False)
+    expression: str = field(init=False)
+    assumptions: Mapping[str, object] = field(init=False)
+    panel_bonus_stats: Mapping[str, float] = field(default_factory=dict, init=False)
+    monotone: bool = field(init=False)
+    formula_factors: Mapping[str, object] = field(default_factory=dict, init=False)
+
+    def __post_init__(self) -> None:
+        if self.mode not in ("relative", "raw"):
+            raise ValueError("公式组合模式必须是 relative 或 raw")
+        if len(self.models) < 2 or len(self.models) != len(self.weights):
+            raise ValueError("公式组合至少需要两个公式，且每个公式都要有权重")
+        if len(self.models) != len(self.reference_damages):
+            raise ValueError("公式组合缺少固定参考伤害值")
+        character = self.models[0].character
+        if any(model.character.casefold() != character.casefold() for model in self.models):
+            raise ValueError("只能组合属于同一角色的伤害公式")
+        if any(not isfinite(value) or value <= 0 for value in self.reference_damages):
+            raise ValueError("每个公式的参考伤害必须为有限正数")
+        if (
+            any(type(weight) not in (int, float) or not isfinite(weight) or weight < 0 for weight in self.weights)
+        ):
+            raise ValueError("公式权重必须是有限非负数，且至少一个权重大于零")
+        weight_total = sum(self.weights)
+        if not isfinite(weight_total) or weight_total <= 0:
+            raise ValueError("公式权重必须是有限非负数，且至少一个权重大于零")
+        normalized = tuple(weight / weight_total for weight in self.weights)
+        object.__setattr__(self, "weights", normalized)
+        object.__setattr__(self, "character", character)
+        object.__setattr__(self, "key", f"weighted_{self.mode}__" + "__".join(model.key for model in self.models))
+        object.__setattr__(self, "label", "多公式综合评分")
+        object.__setattr__(self, "expression", "weighted calibrated formula objective")
+        active_models = [
+            model for model, weight in zip(self.models, normalized) if weight > 0
+        ]
+        shared_panel_bonus = dict(active_models[0].panel_bonus_stats)
+        if any(dict(model.panel_bonus_stats) != shared_panel_bonus for model in active_models[1:]):
+            raise ValueError("组合公式必须使用一致的内置面板加成")
+        object.__setattr__(self, "panel_bonus_stats", shared_panel_bonus)
+        object.__setattr__(
+            self,
+            "monotone",
+            all(model.monotone for model, weight in zip(self.models, normalized) if weight > 0),
+        )
+        requirements = {
+            model.assumptions.get("weapon")
+            for model, weight in zip(self.models, normalized)
+            if weight > 0 and model.assumptions.get("weapon") is not None
+        }
+        if len(requirements) > 1:
+            raise ValueError("组合公式要求不同的固定武器，无法共享同一配装")
+        assumptions: dict[str, object] = {
+            "crit_mode": self.models[0].assumptions.get("crit_mode", "average"),
+            "formula_objective": self.describe_objective(),
+        }
+        if requirements:
+            assumptions["weapon"] = next(iter(requirements))
+        object.__setattr__(self, "assumptions", assumptions)
+        if self.target_four_piece_set is None:
+            object.__setattr__(self, "target_four_piece_set", self.models[0].target_four_piece_set)
+
+    @property
+    def relevant_stats(self) -> frozenset[str]:
+        return frozenset(
+            stat for model, weight in zip(self.models, self.weights) if weight > 0
+            for stat in model.relevant_stats
+        )
+
+    @property
+    def set_flags(self) -> frozenset[str]:
+        return frozenset(
+            flag for model, weight in zip(self.models, self.weights) if weight > 0
+            for flag in model.set_flags
+        )
+
+    @property
+    def substats(self) -> tuple[str, ...]:
+        return tuple(sorted({
+            stat for model, weight in zip(self.models, self.weights) if weight > 0
+            for stat in model.substats
+        }))
+
+    def _component_stats(self, model: DamageModel, stats: Mapping[str, object]) -> dict:
+        return dict(stats)
+
+    def evaluate(self, stats: Mapping[str, object], active_sets) -> float:
+        return self.score_breakdown(stats, active_sets)["score"]
+
+    def evaluate_increases(self, stats: Mapping[str, object], active_sets, increases) -> float:
+        values = [
+            model.evaluate_increases(self._component_stats(model, stats), active_sets, increases)
+            for model in self.models
+        ]
+        return self._combine(values)
+
+    def _combine(self, values: list[float]) -> float:
+        if self.mode == "relative":
+            values = [
+                value / reference
+                for value, reference in zip(values, self.reference_damages)
+            ]
+        return sum(weight * value for weight, value in zip(self.weights, values))
+
+    def score_breakdown(self, stats: Mapping[str, object], active_sets) -> dict:
+        values = [
+            model.evaluate(self._component_stats(model, stats), active_sets)
+            for model in self.models
+        ]
+        components = []
+        score = 0.0
+        for model, weight, damage, reference in zip(
+            self.models, self.weights, values, self.reference_damages,
+        ):
+            normalized = damage / reference
+            contribution = weight * (normalized if self.mode == "relative" else damage)
+            score += contribution
+            components.append({
+                "key": model.key,
+                "label": model.label,
+                "weight": weight,
+                "damage": damage,
+                "reference_damage": reference,
+                "normalized_damage": normalized,
+                "contribution": contribution,
+            })
+        return {
+            "mode": self.mode,
+            "score": score,
+            "reference_definition": (
+                "同一角色等级、武器与模型假设下的裸面板；不装备圣遗物，"
+                "不激活条件套装效果。各模型的固有面板加成仍按模型分别计入。"
+            ),
+            "components": components,
+        }
+
+    def describe_objective(self) -> dict:
+        return {
+            "mode": self.mode,
+            "weights": [
+                {"key": model.key, "label": model.label, "weight": weight}
+                for model, weight in zip(self.models, self.weights)
+            ],
+            "reference_definition": (
+                "同一角色等级、武器与模型假设下的裸面板；不装备圣遗物，"
+                "不激活条件套装效果。各模型的固有面板加成仍按模型分别计入。"
+            ),
+        }
+
+    def describe(self) -> dict:
+        return {
+            "key": self.key,
+            "character": self.character,
+            "label": self.label,
+            "expression": self.expression,
+            "mode": self.mode,
+            "target_four_piece_set": self.target_four_piece_set,
+            "monotone": self.monotone,
+            "relevant_stats": sorted(self.relevant_stats),
+            "formula_objective": self.describe_objective(),
+        }
+
+    def scaled_expression(self) -> str:
+        terms = []
+        for model, weight, reference in zip(
+            self.models, self.weights, self.reference_damages,
+        ):
+            if weight <= 0:
+                continue
+            coefficient = weight / reference if self.mode == "relative" else weight
+            terms.append(f"({model.scaled_expression()}) * {coefficient:.17g}")
+        return " + ".join(terms)
+
+
+def create_weighted_damage_model(
+    models: list[DamageModel] | tuple[DamageModel, ...],
+    weights: list[float] | tuple[float, ...],
+    mode: str,
+    reference_stats: Mapping[str, object],
+    *,
+    target_four_piece_set: int | None = None,
+) -> WeightedDamageModel:
+    if len(models) < 2:
+        raise ValueError("综合评分至少需要选择两个已校准公式")
+    if len(models) != len(weights):
+        raise ValueError("公式权重数量必须与公式数量一致")
+    normalized_models = tuple(models)
+    if any(type(weight) not in (int, float) or not isfinite(weight) or weight < 0 for weight in weights):
+        raise ValueError("公式权重必须是有限非负数")
+    weight_total = sum(weights)
+    if not isfinite(weight_total) or weight_total <= 0:
+        raise ValueError("至少一个公式权重大于零")
+    if mode not in ("relative", "raw"):
+        raise ValueError("公式组合模式必须是 relative 或 raw")
+    references = []
+    active_models = [
+        model for model, weight in zip(models, weights) if weight > 0
+    ]
+    shared_panel_bonus = dict(active_models[0].panel_bonus_stats)
+    if any(dict(model.panel_bonus_stats) != shared_panel_bonus for model in active_models[1:]):
+        raise ValueError("组合公式必须使用一致的内置面板加成")
+    adjusted_reference_stats = dict(reference_stats)
+    from decimal import Decimal
+
+    for key, value in shared_panel_bonus.items():
+        adjusted_reference_stats[key] = (
+            adjusted_reference_stats.get(key, Decimal(0)) + Decimal(str(value))
+        )
+    for model in normalized_models:
+        references.append(model.evaluate(adjusted_reference_stats, set()))
+    return WeightedDamageModel(
+        models=normalized_models,
+        weights=tuple(float(weight) for weight in weights),
+        mode=mode,
+        reference_damages=tuple(references),
+        target_four_piece_set=target_four_piece_set,
+    )
+
+
 _TOME_NAMES = {
     "万世流涌大典", "tome of the eternal flow", "tomeoftheeternalflow", "14514",
 }
@@ -456,7 +685,16 @@ def available_models() -> dict:
 
 def get_damage_model(character: str | int, model: str | None = None, **options) -> DamageModel:
     """Resolve a hand-written or catalog model for one character."""
-    canonical = character_profile(str(character))
+    from data.references import is_manekin_identity, is_traveler_identity, traveler_form
+    if is_manekin_identity(character):
+        raise ValueError("奇偶的技能倍率尚未校准，不参与伤害模型和配装评分")
+    if is_traveler_identity(character):
+        form = traveler_form(character)
+        if form is None:
+            raise ValueError("旅行者必须指定当前元素形态，空与荧不能作为不同配装角色")
+        canonical = str(form["name_en"])
+    else:
+        canonical = character_profile(str(character))
     key = model or _DEFAULT_MODELS.get(canonical.casefold())
     if key is None:
         from .character_models import default_catalog_key
