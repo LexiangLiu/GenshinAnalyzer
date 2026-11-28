@@ -50,6 +50,15 @@ python -m tools.acceptance_ui --state-dir C:\path\to\genshin-analyzer-state
 
 ## 发布与维护清单
 
+## 性能基准
+
+```powershell
+python tools/run_acceptance_suite.py
+python tools/benchmark_growth.py --repeats 5
+```
+
+基准输出包含公式覆盖、方案计算/持久化和备份恢复的本机耗时，不设硬件 SLA，不声称配装或 Monte Carlo 的真实生产吞吐量。
+
 - 发布前运行 `python tools/run_acceptance_suite.py`，并保留完整测试输出。
 - 发布前运行旧 SQLite 迁移测试、并发保存测试、live HTTP 全工作流测试和持久化重启测试。
 - 公式目录更新时同时更新来源提交、生成时间、校准精度和覆盖审计；未校准公式不得进入可组合评分。

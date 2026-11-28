@@ -11,6 +11,7 @@ from goals import AccountGoal, BuildGoal, CharacterGoal
 from planning_v2 import calculate_growth_plan
 from damage.character_models import catalog_coverage_audit
 from data.provenance import provenance_snapshot
+from tools.benchmark_growth import benchmark
 
 
 class ResourcePlanningTests(unittest.TestCase):
@@ -403,6 +404,17 @@ class ResourcePlanningTests(unittest.TestCase):
         unknown_fields = {item["field"] for item in provenance["unknown"]}
         self.assertIn("real_account_sync", unknown_fields)
         self.assertIn("live_activity_fetch", unknown_fields)
+
+    def test_growth_benchmark_returns_reproducible_report_shape(self):
+        report = benchmark(repeats=1)
+        self.assertEqual(report["schema_version"], 1)
+        self.assertEqual(report["repeats"], 1)
+        self.assertIn("coverage_audit", report["operations"])
+        self.assertIn("planning_calculate_and_save", report["operations"])
+        self.assertIn("persistence_backup", report["operations"])
+        for metrics in report["operations"].values():
+            self.assertGreaterEqual(metrics["mean_seconds"], 0)
+            self.assertGreaterEqual(metrics["min_seconds"], 0)
 
     def test_goal_update_invalidates_cached_plan(self):
         service = PlanningService(self.root)
