@@ -203,6 +203,89 @@ class BuildSelectedRequestTests(unittest.TestCase):
             [15031, 15035],
         )
 
+    def test_formula_objectives_normalize_weights_per_character(self):
+        registry = {
+            key: {"character": character}
+            for key, character in (
+                ("a_normal", "A"), ("a_skill", "A"),
+                ("b_skill", "B"), ("b_burst", "B"),
+            )
+        }
+        choices = {
+            "A": [{"key": "a_normal"}, {"key": "a_skill"}],
+            "B": [{"key": "b_skill"}, {"key": "b_burst"}],
+        }
+        objectives = {
+            "A": {
+                "mode": "relative",
+                "formulas": [
+                    {"key": "a_normal", "weight": 3},
+                    {"key": "a_skill", "weight": 1},
+                ],
+            },
+            "B": {
+                "mode": "raw",
+                "formulas": [
+                    {"key": "b_skill", "weight": 1},
+                    {"key": "b_burst", "weight": 1},
+                ],
+            },
+        }
+        with (
+            patch("tools.acceptance_ui.available_models", return_value=registry),
+            patch(
+                "tools.acceptance_ui._formula_choices",
+                side_effect=lambda character, member: choices[character],
+            ),
+            patch("tools.acceptance_ui.catalog_formula_selectable", return_value=True),
+        ):
+            result = build_selected_request(
+                self.request,
+                ["A", "B"],
+                "multi",
+                17,
+                1000,
+                formula_objectives=objectives,
+            )
+
+        by_character = {member["character"]: member["formula_objective"] for member in result["members"]}
+        self.assertEqual(by_character["A"]["mode"], "relative")
+        self.assertEqual(by_character["A"]["formulas"][0]["weight"], 0.75)
+        self.assertEqual(by_character["A"]["formulas"][1]["weight"], 0.25)
+        self.assertEqual(by_character["B"]["mode"], "raw")
+        self.assertEqual([row["weight"] for row in by_character["B"]["formulas"]], [0.5, 0.5])
+
+    def test_composite_objective_rejects_uncalibrated_formula(self):
+        registry = {"a_low": {"character": "A"}, "a_good": {"character": "A"}}
+        with (
+            patch("tools.acceptance_ui.available_models", return_value=registry),
+            patch(
+                "tools.acceptance_ui._formula_choices",
+                return_value=[{"key": "a_low"}, {"key": "a_good"}],
+            ),
+            patch(
+                "tools.acceptance_ui.catalog_formula_selectable",
+                side_effect=lambda key: key == "a_good",
+            ),
+            self.assertRaisesRegex(ValueError, "未达到可综合评分"),
+        ):
+            build_selected_request(
+                self.request,
+                ["A"],
+                "single",
+                0,
+                1000,
+                formula_objectives={
+                    "A": {
+                        "mode": "raw",
+                        "formulas": [
+                            {"key": "a_low", "weight": 1},
+                            {"key": "a_good", "weight": 1},
+                        ],
+                    },
+                },
+            )
+
     def test_rejects_invalid_selection_and_search_budget(self):
         invalid = (
             ([], "single", 0, 1000, None),
@@ -572,6 +655,38 @@ class ProjectionIntegrationTests(unittest.TestCase):
             for member in optimized["projection"]["comparison"]["members"]
         ))
         self.assertIsNone(service._session["optimization"]["result"]["members"][0]["loadout"]["pieces"][0].get("expected_full_level"))
+        combined = service.optimize({
+            "session_id": generated["session_id"],
+            "selected_characters": [character],
+            "fixed_four_piece_sets": {character: default_set},
+            "formula_objectives": {
+                character: {
+                    "mode": "relative",
+                    "formulas": [
+                        {"key": "neuvillette_normal_2", "weight": 3},
+                        {"key": "neuvillette_skill", "weight": 1},
+                    ],
+                },
+            },
+            "mode": "single",
+            "seed": 73,
+            "max_nodes": 1000,
+        })
+        combined_member, = combined["result"]["members"]
+        objective = combined_member["formula_objective"]
+        self.assertEqual(objective["mode"], "relative")
+        self.assertEqual(len(objective["components"]), 2)
+        self.assertAlmostEqual(
+            sum(component["weight"] for component in objective["components"]), 1,
+        )
+        self.assertAlmostEqual(
+            sum(component["contribution"] for component in objective["components"]),
+            objective["score"],
+        )
+        self.assertEqual(
+            {formula["key"] for formula in combined_member["formula_models"] if formula["selected"]},
+            {"neuvillette_normal_2", "neuvillette_skill"},
+        )
 
     def test_service_can_optimize_the_single_generated_traveler_form(self):
         service = AcceptanceService()
@@ -623,7 +738,7 @@ class FormulaPresentationTests(unittest.TestCase):
         self.assertIn("displayedExpression.split(\"\\n\")", html)
         self.assertIn(".formula-line", html)
         self.assertIn(".formula-term", html)
-        self.assertIn("selectedFormula?.label", html)
+        self.assertIn("selectedFormulas[0]?.label", html)
         self.assertNotIn("textContent = text(formula.key)", html)
         self.assertNotIn("text(member.model)", html)
         self.assertNotIn("JSON.stringify(metadata, null, 2)", html)

@@ -2,7 +2,8 @@ import unittest
 
 from artifact_sim.build_objective import character_weapon_panel
 from artifact_sim.character_models import (
-    catalog_available, catalog_models, catalog_spec, get_catalog_model, weapon_matches,
+    catalog_available, catalog_character_coverage, catalog_formula_selectable,
+    catalog_models, catalog_spec, default_catalog_key, get_catalog_model, weapon_matches,
 )
 from artifact_sim.damage_models import get_damage_model
 from artifact_sim.game_data import SETS
@@ -45,10 +46,29 @@ class CharacterModelCatalogTests(unittest.TestCase):
     def test_default_models_and_accuracy_metadata(self):
         harbinger = get_damage_model("阿蕾奇诺")
         self.assertEqual(harbinger.key, "arlecchino_normal_3")
+        self.assertEqual(get_damage_model("Arlecchino").key, "arlecchino_normal_3")
         self.assertIn("PYRO_DMG_BONUS", harbinger.relevant_stats)
         self.assertIn("CRIT_RATE", harbinger.relevant_stats)
         self.assertEqual(harbinger.assumptions["calibration"]["accuracy"], "high")
         self.assertIn("sources", harbinger.assumptions)
+
+    def test_expanded_catalog_preserves_one_default_and_marks_partial_coverage(self):
+        groups = {}
+        for spec in catalog_models():
+            groups.setdefault(spec["character"], []).append(spec)
+        self.assertGreater(len(catalog_models()), 300)
+        for character, specs in groups.items():
+            defaults = [spec for spec in specs if spec.get("is_default")]
+            self.assertEqual(len(defaults), 1, character)
+            self.assertEqual(default_catalog_key(character), defaults[0]["key"])
+            self.assertTrue(all(spec["accuracy"] in ("high", "medium") for spec in specs))
+        arlecchino = groups["Arlecchino"]
+        self.assertEqual({spec["category"] for spec in arlecchino}, {"normal", "skill", "burst"})
+        self.assertTrue(all(catalog_formula_selectable(spec["key"]) for spec in arlecchino))
+        itto_coverage = catalog_character_coverage("Arataki Itto")
+        self.assertEqual(itto_coverage["status"], "partial")
+        self.assertEqual(itto_coverage["missing_categories"], ["burst"])
+        self.assertIn("可靠性门槛", itto_coverage["note"])
 
     def test_noncrit_catalog_model_removes_crit_stats(self):
         model = get_catalog_model("arlecchino_normal_3", "noncrit")
@@ -144,8 +164,10 @@ class CharacterModelCatalogTests(unittest.TestCase):
                     spec for spec in catalog_models()
                     if spec["go_key"].casefold() == form["name_en"].replace(" ", "").replace("(", "").replace(")", "").casefold()
                 ]
-                self.assertEqual(len(matches), 1)
-                spec, = matches
+                self.assertGreaterEqual(len(matches), 3)
+                defaults = [spec for spec in matches if spec.get("is_default")]
+                self.assertEqual(len(defaults), 1)
+                spec, = defaults
                 self.assertIn(spec["key"], model_keys)
                 self.assertIn(spec["accuracy"], ("high", "medium"))
                 self.assertLessEqual(spec["calibration"]["max_relative_error"], 0.1)

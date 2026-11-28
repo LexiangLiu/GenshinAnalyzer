@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from html import escape
 import json
-from math import isclose
+from math import isclose, isfinite
 import os
 import re
 import subprocess
@@ -29,7 +29,13 @@ from data.references import (
     traveler_forms,
 )
 from damage import damage_engine_info, list_damage_formulas
-from damage.character_models import catalog_spec
+from damage.build_objective import character_weapon_panel
+from damage.character_models import (
+    catalog_available,
+    catalog_character_coverage,
+    catalog_formula_selectable,
+    catalog_spec,
+)
 from damage.damage_models import (
     available_models,
     evaluate_formula_breakdown,
@@ -150,6 +156,7 @@ def build_selected_request(
     max_nodes: object,
     domains: object = None,
     fixed_four_piece_sets: object = None,
+    formula_objectives: object = None,
 ) -> dict[str, Any]:
     if not isinstance(selected_characters, list) or not selected_characters:
         raise ValueError("至少选择一个角色")
@@ -206,6 +213,61 @@ def build_selected_request(
 
     request = dict(base_request)
     request["members"] = [dict(by_character[name]) for name in selected_characters]
+    normalized_objectives = {}
+    if formula_objectives is not None:
+        if not isinstance(formula_objectives, dict):
+            raise ValueError("公式目标设置无效")
+        if any(not isinstance(name, str) or name not in selected_characters
+               for name in formula_objectives):
+            raise ValueError("公式目标只能为本次选择的角色设置")
+        model_catalog = available_models()
+        for character, objective in formula_objectives.items():
+            if not isinstance(objective, dict) or set(objective) != {"mode", "formulas"}:
+                raise ValueError("公式目标必须包含 mode 和 formulas")
+            mode = objective["mode"]
+            formulas = objective["formulas"]
+            if mode not in ("single", "relative", "raw") or not isinstance(formulas, list):
+                raise ValueError("公式目标模式或公式列表无效")
+            minimum = 1 if mode == "single" else 2
+            if len(formulas) < minimum or (mode == "single" and len(formulas) != 1):
+                raise ValueError("单公式模式需选择一个公式；综合模式至少选择两个公式")
+            formula_choice_keys = {
+                choice["key"]
+                for choice in _formula_choices(character, by_character[character])
+            }
+            keys = []
+            weights = []
+            for formula in formulas:
+                if not isinstance(formula, dict) or set(formula) != {"key", "weight"}:
+                    raise ValueError("每个公式选择都必须包含 key 和 weight")
+                key = formula["key"]
+                weight = formula["weight"]
+                if not isinstance(key, str) or not key or key in keys:
+                    raise ValueError("公式键无效或重复")
+                if key not in model_catalog:
+                    raise ValueError(f"公式 {key} 不在已校准模型目录中")
+                if key not in formula_choice_keys:
+                    raise ValueError(f"公式 {key} 不属于 {character} 或不支持当前配置信息")
+                if mode in ("relative", "raw") and not catalog_formula_selectable(key):
+                    raise ValueError(f"公式 {key} 未达到可综合评分的校准等级")
+                if type(weight) not in (int, float) or not isfinite(weight) or weight < 0:
+                    raise ValueError("公式权重必须是有限非负数")
+                keys.append(key)
+                weights.append(float(weight))
+            total_weight = sum(weights)
+            if not isfinite(total_weight) or total_weight <= 0:
+                raise ValueError("至少一个公式权重大于零")
+            normalized_objectives[character] = {
+                "mode": mode,
+                "formulas": [
+                    {"key": key, "weight": weight / total_weight}
+                    for key, weight in zip(keys, weights)
+                ],
+            }
+    for member in request["members"]:
+        objective = normalized_objectives.get(member["character"])
+        if objective is not None:
+            member["formula_objective"] = objective
     if fixed_four_piece_sets is not None:
         if not isinstance(fixed_four_piece_sets, dict):
             raise ValueError("固定套装选择无效")
@@ -292,8 +354,50 @@ def _public_member(member: dict[str, Any]) -> dict[str, Any]:
         "reference_damage": member.get("reference_damage"),
         "normalized_damage": member.get("normalized_damage"),
         "score": member.get("score"),
+        "formula_objective": member.get("formula_objective"),
         "pieces": pieces,
     }
+
+
+def _formula_choices(character: str, member: Mapping[str, Any]) -> list[dict[str, Any]]:
+    weapon = member.get("weapon")
+    if not isinstance(weapon, dict):
+        weapon = {}
+    common = {
+        "level": int(member.get("level", 90)),
+        "ascension": int(member.get("ascension", 6)),
+        "constellation": int(member.get("constellation", 0)),
+        "talents": member.get("talents", {"auto": 10, "skill": 10, "burst": 10}),
+        "crit_mode": member.get("crit_mode", "average"),
+        "weapon_level": int(weapon.get("level", 90)),
+        "weapon_ascension": int(weapon.get("ascension", 6)),
+        "refinement": int(weapon.get("refinement", 1)),
+    }
+    if weapon.get("id") is not None:
+        common["weapon"] = weapon["id"]
+    target = member.get("target_four_piece_set")
+    result = []
+    for key, metadata in available_models().items():
+        selectable_composite = catalog_formula_selectable(key)
+        if not selectable_composite and key != member.get("model"):
+            continue
+        try:
+            options = dict(common)
+            if key in catalog_available() and target is not None:
+                options["target_four_piece_set"] = int(target)
+            model = get_damage_model(character, key, **options)
+        except (TypeError, ValueError):
+            continue
+        result.append({
+            "key": key,
+            "label": model.label,
+            "default": key == member.get("model"),
+            "category": metadata.get("category"),
+            "attack": metadata.get("attack"),
+            "accuracy": metadata.get("accuracy", "hand-written"),
+            "selectable_composite": selectable_composite,
+        })
+    return result
 
 
 def format_formula_expression(expression: str | None) -> str | None:
@@ -862,16 +966,41 @@ def _formula_models_for_member(member: dict[str, Any], request_member: dict[str,
     else:
         if target_set is not None:
             common["target_four_piece_set"] = int(target_set)
-    selected_model = get_damage_model(character, model_key, **common)
+    objective = request_member.get("formula_objective")
+    if isinstance(objective, dict) and isinstance(objective.get("formulas"), list):
+        selected_entries = objective["formulas"]
+    else:
+        selected_entries = [{"key": model_key, "weight": 1.0}]
+    selected_weights = {
+        str(entry.get("key")): float(entry.get("weight", 0))
+        for entry in selected_entries if isinstance(entry, dict)
+    }
+    objective_breakdown = member.get("formula_objective")
+    component_values = {
+        component.get("key"): component
+        for component in (objective_breakdown or {}).get("components", [])
+        if isinstance(component, dict)
+    } if isinstance(objective_breakdown, dict) else {}
+    selected_formula_models = {}
+    for key in selected_weights:
+        options_for_formula = dict(common)
+        if key in catalog_available() and target_set is not None:
+            options_for_formula["target_four_piece_set"] = int(target_set)
+        selected_formula_models[key] = get_damage_model(
+            character, key, **options_for_formula,
+        )
 
     formulas = []
-    found_selected = False
     loadout = member.get("loadout") or {}
     for key, metadata in available_models().items():
         if str(metadata.get("character", "")).casefold() != character.casefold():
             continue
-        is_selected = key == model_key
-        model = selected_model if is_selected else get_damage_model(character, key)
+        is_selected = key in selected_weights
+        model = (
+            selected_formula_models[key]
+            if is_selected
+            else get_damage_model(character, key)
+        )
         formula = _public_formula(model, is_selected)
         if is_selected:
             formula["actual_inputs"] = {
@@ -879,21 +1008,24 @@ def _formula_models_for_member(member: dict[str, Any], request_member: dict[str,
                 "final_panel": loadout.get("final_panel", {}),
                 "active_set_bonuses": loadout.get("active_set_bonuses", []),
             }
-            formula["numeric_breakdown"] = _numeric_formula_breakdown(
-                model, loadout, member.get("damage", loadout.get("damage")),
+            component = component_values.get(key)
+            reported_damage = (
+                component.get("damage")
+                if isinstance(component, dict)
+                else member.get("damage", loadout.get("damage"))
             )
-        formulas.append(formula)
-        found_selected = found_selected or is_selected
-    if not found_selected:
-        formula = _public_formula(selected_model, True)
-        formula["actual_inputs"] = {
-            "talents": selected_model.assumptions.get("talents", {}),
-            "final_panel": loadout.get("final_panel", {}),
-            "active_set_bonuses": loadout.get("active_set_bonuses", []),
-        }
-        formula["numeric_breakdown"] = _numeric_formula_breakdown(
-            selected_model, loadout, member.get("damage", loadout.get("damage")),
-        )
+            formula["objective_component"] = {
+                "weight": selected_weights[key],
+                "damage": reported_damage,
+                "reference_damage": component.get("reference_damage") if component else None,
+                "normalized_damage": component.get("normalized_damage") if component else None,
+                "contribution": component.get("contribution") if component else None,
+                "mode": objective.get("mode") if isinstance(objective, dict) else "single",
+            }
+            numeric_loadout = dict(loadout)
+            formula["numeric_breakdown"] = _numeric_formula_breakdown(
+                model, numeric_loadout, reported_damage,
+            )
         formulas.append(formula)
     references, _ = _upstream_attack_references(character, member.get("name"))
     formulas.extend(references)
@@ -916,10 +1048,19 @@ def _public_result(
         request_member = request_members.get(member.get("character"))
         if request_member is not None:
             public_member["formula_models"] = _formula_models_for_member(member, request_member)
-            public_member["formula_semantics"] = (
-                "本次优化只使用标记为“本次评分模型”的单个公式；同角色其他条目是可查阅的参考模型，"
-                "不会与之联合评分。"
-            )
+            objective = request_member.get("formula_objective")
+            if isinstance(objective, dict) and objective.get("mode") in ("relative", "raw"):
+                mode_label = "相对表现加权" if objective["mode"] == "relative" else "原始伤害加权"
+                breakdown = member.get("formula_objective") or {}
+                public_member["formula_semantics"] = (
+                    f"本次使用 {mode_label}；各公式权重已归一化。"
+                    f"相对模式的基准：{breakdown.get('reference_definition', '同一角色与武器的裸面板、无圣遗物和条件套装效果')}。"
+                )
+            else:
+                public_member["formula_semantics"] = (
+                    "本次优化使用标记为“本次评分模型”的单个公式；同角色其他条目是可查阅的参考模型，"
+                    "不会参与评分。"
+                )
             public_member["formula_reference_note"] = _upstream_attack_references(
                 member["character"], member.get("name"),
             )[1]
@@ -1405,6 +1546,7 @@ class AcceptanceService:
         optimizable_roster = [
             {
                 **item,
+                "formula_coverage": catalog_character_coverage(item["character"]),
                 "model_target_four_piece_set": next(
                     (
                         member.get("target_four_piece_set")
@@ -1413,6 +1555,17 @@ class AcceptanceService:
                         and member.get("character") == item["character"]
                     ),
                     None,
+                ),
+                "formula_models": _formula_choices(
+                    item["character"],
+                    next(
+                        (
+                            member for member in party_request.get("members", [])
+                            if isinstance(member, dict)
+                            and member.get("character") == item["character"]
+                        ),
+                        {},
+                    ),
                 ),
             }
             for item in roster if item["character"] in optimizable_names
@@ -1468,6 +1621,7 @@ class AcceptanceService:
                 payload.get("seed"),
                 payload.get("max_nodes"),
                 fixed_four_piece_sets=payload.get("fixed_four_piece_sets"),
+                formula_objectives=payload.get("formula_objectives"),
             )
             operation_id = uuid.uuid4().hex
             request_path = session["account_dir"] / f"request-{operation_id}.json"
@@ -1537,6 +1691,11 @@ class AcceptanceService:
                 previous_request["max_nodes"],
                 payload.get("domains"),
                 fixed_four_piece_sets,
+                {
+                    member["character"]: member["formula_objective"]
+                    for member in previous_request["members"]
+                    if "formula_objective" in member
+                },
             )
             operation_id = uuid.uuid4().hex
             request_path = session["account_dir"] / f"plan-request-{operation_id}.json"

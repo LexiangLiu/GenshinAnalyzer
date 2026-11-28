@@ -82,7 +82,7 @@
     .segmented button.active { color: var(--text); background: #293943; }
     .selection-count { color: var(--muted); font-size: 12px; }
     .roster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-height: 300px; overflow: auto; padding-right: 2px; }
-    .roster-card { display: flex; gap: 9px; align-items: center; min-height: 70px; padding: 8px 9px; background: #111820; border: 1px solid #293743; border-radius: 10px; transition: border-color .15s, background .15s; }
+    .roster-card { display: grid; grid-template-columns: minmax(0, 1fr) 124px; gap: 9px; align-items: center; min-height: 70px; padding: 8px 9px; background: #111820; border: 1px solid #293743; border-radius: 10px; transition: border-color .15s, background .15s; }
     .roster-card:has(input:checked) { border-color: #579c87; background: rgba(53, 126, 105, .13); }
     .roster-main { display: flex; gap: 8px; align-items: center; min-width: 0; flex: 1; cursor: pointer; }
     .roster-main input { accent-color: var(--accent-strong); }
@@ -90,6 +90,14 @@
     .roster-meta { margin-top: 3px; color: var(--muted); font-size: 10px; }
     .roster-set { display: grid; gap: 4px; width: 124px; flex: 0 0 124px; color: var(--muted); font-size: 9px; }
     .roster-set select { width: 100%; min-width: 0; color: var(--text); background: #0e141b; border: 1px solid #334351; border-radius: 7px; padding: 6px 5px; font-size: 10px; }
+    .formula-picker { grid-column: 1 / -1; min-width: 0; padding-top: 7px; border-top: 1px solid #27343d; }
+    .formula-picker > summary { cursor: pointer; color: #b6d9cd; font-size: 10px; }
+    .formula-picker-controls { display: grid; gap: 7px; margin-top: 8px; }
+    .formula-mode { display: grid; gap: 4px; color: var(--muted); font-size: 10px; }
+    .formula-mode select { color: var(--text); background: #0e141b; border: 1px solid #334351; border-radius: 7px; padding: 6px; font-size: 10px; }
+    .formula-choice { display: grid; grid-template-columns: auto minmax(0, 1fr) 70px; align-items: center; gap: 7px; color: #c9d6db; font-size: 10px; }
+    .formula-choice input[type="checkbox"] { accent-color: var(--accent-strong); }
+    .formula-choice input[type="number"] { width: 100%; color: var(--text); background: #0e141b; border: 1px solid #334351; border-radius: 6px; padding: 5px; font-size: 10px; }
     .detail-tabs { display: flex; gap: 5px; margin-bottom: 12px; }
     .detail-tabs button { color: var(--muted); border: 1px solid #334351; padding: 7px 10px; background: #10171e; border-radius: 8px; font-size: 11px; }
     .detail-tabs button.active { color: var(--text); border-color: #579c87; background: rgba(53, 126, 105, .18); }
@@ -379,6 +387,7 @@
       mode: "single",
       optimization: null,
       fixedSets: {},
+      formulaObjectives: {},
       detailKind: "characters",
       detailPage: 1,
       detailQuery: "",
@@ -553,6 +562,7 @@
       state.account = data;
       state.optimization = null;
       state.fixedSets = {};
+      state.formulaObjectives = {};
       state.detailKind = "characters";
       state.detailPage = 1;
       state.detailQuery = "";
@@ -626,7 +636,8 @@
     }
 
     function selectedCharacters() {
-      return [...byId("roster").querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value);
+      return [...byId("roster").querySelectorAll('.roster-main input[type="checkbox"]:checked')]
+        .map((input) => input.value);
     }
 
     function selectedFixedSets() {
@@ -641,6 +652,60 @@
         === JSON.stringify(Object.entries(right || {}).sort(([a], [b]) => a.localeCompare(b)));
     }
 
+    function formulaObjectiveForCard(card) {
+      const picker = card.querySelector(".formula-picker");
+      if (!picker) return null;
+      const mode = picker.querySelector(".formula-mode select")?.value;
+      const formulas = [...picker.querySelectorAll(".formula-choice")].flatMap((row) => {
+        const check = row.querySelector(".formula-model-check");
+        if (!check.checked) return [];
+        return [{
+          key: check.value,
+          weight: Number(row.querySelector(".formula-model-weight").value)
+        }];
+      });
+      return { mode, formulas };
+    }
+
+    function selectedFormulaObjectives() {
+      const selected = new Set(selectedCharacters());
+      const result = {};
+      byId("roster").querySelectorAll(".roster-card").forEach((card) => {
+        const character = card.querySelector(".roster-main input")?.value;
+        if (!selected.has(character)) return;
+        const objective = formulaObjectiveForCard(card);
+        if (objective) result[character] = objective;
+      });
+      return result;
+    }
+
+    function sameFormulaObjectives(left, right) {
+      const normalize = (value) => Object.fromEntries(
+        Object.entries(value || {}).sort(([a], [b]) => a.localeCompare(b))
+          .map(([character, objective]) => [
+            character,
+            {
+              mode: objective.mode,
+              formulas: [...objective.formulas].sort((a, b) => a.key.localeCompare(b.key))
+                .map((formula) => ({ key: formula.key, weight: Number(formula.weight) }))
+            }
+          ])
+      );
+      return JSON.stringify(normalize(left)) === JSON.stringify(normalize(right));
+    }
+
+    function validFormulaObjectives(objectives) {
+      return Object.values(objectives).every((objective) => {
+        const count = objective.formulas.length;
+        const minimum = objective.mode === "single" ? 1 : 2;
+        const total = objective.formulas.reduce((sum, formula) => sum + formula.weight, 0);
+        return (objective.mode === "single" ? count === 1 : count >= minimum)
+          && objective.formulas.every((formula) =>
+            Number.isFinite(formula.weight) && formula.weight >= 0)
+          && Number.isFinite(total) && total > 0;
+      });
+    }
+
     function optimizationMatchesControls() {
       if (!state.optimization) return false;
       const selected = selectedCharacters().slice().sort();
@@ -649,14 +714,18 @@
         && selected.length === optimized.length
         && selected.every((name, index) => name === optimized[index])
         && sameFixedSets(selectedFixedSets(), state.optimization.fixed_four_piece_sets)
+        && sameFormulaObjectives(selectedFormulaObjectives(), state.optimization.formula_objectives)
         && Number(byId("optimization-seed").value) === state.optimization.seed
         && Number(byId("max-nodes").value) === state.optimization.max_nodes;
     }
 
     function updateSelection() {
       const checked = selectedCharacters();
+      const formulaObjectives = selectedFormulaObjectives();
+      state.formulaObjectives = { ...state.formulaObjectives, ...formulaObjectives };
       byId("selection-count").textContent = `已选 ${checked.length} 位`;
-      byId("optimize-button").disabled = state.mode === "single" ? checked.length !== 1 : checked.length < 2;
+      byId("optimize-button").disabled = (state.mode === "single" ? checked.length !== 1 : checked.length < 2)
+        || !validFormulaObjectives(formulaObjectives);
       if (state.optimization && !optimizationMatchesControls()) {
         state.optimization = null;
         byId("optimization-results-panel").classList.add("hidden");
@@ -681,7 +750,7 @@
         input.checked = state.mode === "single" ? index === 0 : index < Math.min(2, roster.length);
         input.addEventListener("change", () => {
           if (state.mode === "single" && input.checked) {
-            list.querySelectorAll('input[type="checkbox"]').forEach((other) => { if (other !== input) other.checked = false; });
+            list.querySelectorAll('.roster-main input[type="checkbox"]').forEach((other) => { if (other !== input) other.checked = false; });
           }
           updateSelection();
         });
@@ -724,6 +793,127 @@
         });
         setControl.append(setCaption, setSelect);
         card.append(label, setControl);
+        const formulas = character.formula_models || [];
+        if (formulas.length > 1 || character.formula_coverage?.missing_categories?.length) {
+          const picker = document.createElement("details");
+          picker.className = "formula-picker";
+          picker.open = true;
+          const pickerSummary = document.createElement("summary");
+          pickerSummary.textContent = "评分公式与权重";
+          const coverage = character.formula_coverage;
+          if (coverage?.missing_categories?.length) {
+            const categoryNames = { normal: "普攻", skill: "元素战技", burst: "元素爆发" };
+            const note = document.createElement("div");
+            note.className = "formula-note";
+            const missing = coverage.missing_categories
+              .map((category) => categoryNames[category] || category).join("、");
+            note.textContent = `校准覆盖不足：${missing}没有通过可靠性门槛的上游伤害节点，因此不会用于综合评分。`;
+            picker.append(pickerSummary, note);
+          } else {
+            picker.append(pickerSummary);
+          }
+          const controls = document.createElement("div");
+          controls.className = "formula-picker-controls";
+          const existing = state.formulaObjectives[character.character];
+          const modeLabel = document.createElement("label");
+          modeLabel.className = "formula-mode";
+          modeLabel.append(document.createTextNode("评分方式"));
+          const modeSelect = document.createElement("select");
+          [
+            ["single", "单公式"],
+            ["relative", "相对表现加权"],
+            ["raw", "原始伤害加权"]
+          ].forEach(([value, title]) => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = title;
+            modeSelect.append(option);
+          });
+          modeSelect.value = existing?.mode || "single";
+          modeSelect.addEventListener("change", () => {
+            if (modeSelect.value === "single") {
+              const rows = [...controls.querySelectorAll(".formula-choice")];
+              rows.forEach((row) => {
+                row.querySelector(".formula-model-check").disabled = false;
+              });
+              const chosen = rows.find((row) => row.querySelector(".formula-model-check").checked)
+                || rows.find((row) => row.querySelector(".formula-model-check").value
+                  === (formulas.find((formula) => formula.default)?.key || formulas[0].key));
+              rows.forEach((row) => {
+                row.querySelector(".formula-model-check").checked = row === chosen;
+                row.querySelector(".formula-model-weight").disabled = row !== chosen;
+              });
+            } else {
+              const rows = [...controls.querySelectorAll(".formula-choice")];
+              rows.forEach((row) => {
+                const check = row.querySelector(".formula-model-check");
+                check.disabled = check.dataset.selectableComposite !== "true";
+                if (check.disabled) check.checked = false;
+              });
+              const eligible = rows.filter((row) => !row.querySelector(".formula-model-check").disabled);
+              const selected = eligible.filter((row) => row.querySelector(".formula-model-check").checked);
+              if (selected.length < 2 && eligible.length >= 2) {
+                eligible.forEach((row, index) => {
+                  const check = row.querySelector(".formula-model-check");
+                  check.checked = index < 2;
+                  row.querySelector(".formula-model-weight").value = index < 2 ? "0.5" : "0";
+                });
+              }
+              rows.forEach((row) => {
+                row.querySelector(".formula-model-weight").disabled =
+                  !row.querySelector(".formula-model-check").checked;
+              });
+            }
+            updateSelection();
+          });
+          modeLabel.append(modeSelect);
+          controls.append(modeLabel);
+          formulas.forEach((formula) => {
+            const row = document.createElement("label");
+            row.className = "formula-choice";
+            const check = document.createElement("input");
+            check.type = "checkbox";
+            check.className = "formula-model-check";
+            check.value = formula.key;
+            check.disabled = !formula.selectable_composite && !formula.default;
+            check.dataset.selectableComposite = String(Boolean(formula.selectable_composite));
+            const saved = existing?.formulas?.find((item) => item.key === formula.key);
+            check.checked = saved ? true : !existing && formula.default;
+            const labelText = document.createElement("span");
+            labelText.textContent = `${text(formula.label)}${formula.selectable_composite ? "" : "（不可参与综合评分）"}`;
+            const weight = document.createElement("input");
+            weight.type = "number";
+            weight.className = "formula-model-weight";
+            weight.min = "0";
+            weight.max = "1";
+            weight.step = "0.05";
+            weight.value = String(saved?.weight ?? (formula.default ? 1 : 0));
+            weight.disabled = !check.checked;
+            check.addEventListener("change", () => {
+              if (modeSelect.value === "single" && check.checked) {
+                controls.querySelectorAll(".formula-model-check").forEach((other) => {
+                  if (other !== check) other.checked = false;
+                });
+              }
+              controls.querySelectorAll(".formula-choice").forEach((choice) => {
+                choice.querySelector(".formula-model-weight").disabled =
+                  !choice.querySelector(".formula-model-check").checked;
+              });
+              updateSelection();
+            });
+            weight.addEventListener("input", updateSelection);
+            row.append(check, labelText, weight);
+            controls.append(row);
+          });
+          if (modeSelect.value !== "single") {
+            controls.querySelectorAll(".formula-model-check").forEach((check) => {
+              check.disabled = check.dataset.selectableComposite !== "true";
+              if (check.disabled) check.checked = false;
+            });
+          }
+          picker.append(controls);
+          card.append(picker);
+        }
         list.append(card);
       });
       updateSelection();
@@ -768,6 +958,11 @@
       const note = document.createElement("p");
       note.className = "formula-note";
       note.textContent = safeDisplayText(member.formula_semantics, "本次优化只使用标记的评分模型。");
+      if (member.formula_objective) {
+        const objective = member.formula_objective;
+        const mode = objective.mode === "relative" ? "相对表现加权" : "原始伤害加权";
+        note.textContent += ` 综合分 ${number(objective.score, 6)}；参考定义：${safeDisplayText(objective.reference_definition, "同角色和武器的裸面板")}。`;
+      }
       if (member.formula_reference_note) {
         note.textContent += ` ${safeDisplayText(member.formula_reference_note, "参考公式索引暂不可用。")}`;
       }
@@ -779,8 +974,11 @@
         card.className = `formula-card${formula.selected ? " scoring" : ""}`;
         card.open = Boolean(formula.selected);
         const title = document.createElement("summary");
+        const component = formula.objective_component;
         const formulaKind = formula.selected
-          ? "本次评分模型"
+         ? component && component.mode !== "single"
+           ? `参与评分 · 权重 ${number(component.weight * 100, 1)}%`
+           : "本次评分模型"
           : formula.formula_type === "attack_reference"
             ? "上游节点参考 · 不参与评分"
             : "参考模型";
@@ -854,6 +1052,15 @@
           valueTitle.className = "formula-values-title";
           valueTitle.textContent = "本次优化实际代入值";
           valuePanel.append(valueTitle);
+          if (component && component.mode !== "single") {
+            const componentSummary = document.createElement("p");
+            componentSummary.className = "formula-value-source";
+            componentSummary.textContent =
+              `原始值 ${number(component.damage, 4)}；`
+              + `裸面板归一化值 ${number(component.normalized_damage, 6)}；`
+              + `本公式加权贡献 ${number(component.contribution, 6)}。`;
+            valuePanel.append(componentSummary);
+          }
           const breakdown = formula.numeric_breakdown;
           if (!breakdown?.available) {
             const unavailable = document.createElement("p");
@@ -997,8 +1204,11 @@
         title.textContent = text(member.name || member.character);
         const model = document.createElement("div");
         model.className = "member-model";
-        const selectedFormula = (member.formula_models || []).find((formula) => formula.selected);
-        const formulaLabel = safeDisplayText(selectedFormula?.label, "角色伤害模型");
+        const selectedFormulas = (member.formula_models || []).filter((formula) => formula.selected);
+        const objective = member.formula_objective;
+        const formulaLabel = objective
+          ? `${objective.mode === "relative" ? "相对表现加权" : "原始伤害加权"}（${selectedFormulas.length} 个公式）`
+          : safeDisplayText(selectedFormulas[0]?.label, "角色伤害模型");
         const setName = safeDisplayText(member.target_four_piece_set?.name);
         model.textContent = `${formulaLabel}${setName !== "—" ? ` · 目标四件套：${setName}` : ""}`;
         titleBlock.append(title, model);
@@ -1259,6 +1469,7 @@
         session_id: state.account.session_id,
         selected_characters: selected,
         fixed_four_piece_sets: selectedFixedSets(),
+        formula_objectives: selectedFormulaObjectives(),
         mode: state.mode,
         seed: Number(byId("optimization-seed").value),
         max_nodes: Number(byId("max-nodes").value)
@@ -1276,6 +1487,7 @@
           && currentSelection.length === submittedSelection.length
           && currentSelection.every((name, index) => name === submittedSelection[index])
           && sameFixedSets(selectedFixedSets(), requestConfig.fixed_four_piece_sets)
+          && sameFormulaObjectives(selectedFormulaObjectives(), requestConfig.formula_objectives)
           && Number(byId("optimization-seed").value) === requestConfig.seed
           && Number(byId("max-nodes").value) === requestConfig.max_nodes;
         if (!stillCurrent) {
@@ -1289,6 +1501,7 @@
           ...data,
           mode: requestConfig.mode,
           fixed_four_piece_sets: requestConfig.fixed_four_piece_sets,
+          formula_objectives: requestConfig.formula_objectives,
           seed: requestConfig.seed,
           max_nodes: requestConfig.max_nodes
         };

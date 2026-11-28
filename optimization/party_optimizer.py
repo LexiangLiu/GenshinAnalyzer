@@ -122,7 +122,7 @@ class PartyLoadout:
 
     def describe(self, normalize: bool) -> dict:
         target = self.target_four_piece_set
-        return {
+        result = {
             "name": self.member.label,
             "character": self.member.model.character,
             "model": self.member.model.key,
@@ -138,6 +138,13 @@ class PartyLoadout:
             "score": self.score(normalize),
             "loadout": self.loadout.describe(),
         }
+        breakdown = getattr(self.member.model, "score_breakdown", None)
+        if callable(breakdown):
+            result["formula_objective"] = breakdown(
+                self.loadout.stats,
+                self.loadout.set_flags,
+            )
+        return result
 
 
 @dataclass(frozen=True)

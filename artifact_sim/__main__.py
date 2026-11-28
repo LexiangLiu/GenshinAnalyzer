@@ -6,14 +6,21 @@ import sqlite3
 import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from math import isfinite
 
 from . import (
     Artifact, Inventory, LoadoutPiece, PartyMember, Simulator, analyze_farming, auto_main_stats,
     catalog, characters, get_damage_model, loadout, optimize_party, plan_party, plan_single_character,
 )
 from core.roll_probability import expected_full_level_substats
-from damage.character_models import catalog_available, catalog_spec
+from damage.character_models import (
+    catalog_available,
+    catalog_formula_selectable,
+    catalog_spec,
+)
+from damage.build_objective import character_weapon_panel
 from damage import calculate_damage, damage_engine_info, list_damage_formulas
+from damage.damage_models import available_models, create_weighted_damage_model
 from data.game_data import SETS, character_profile, lookup
 from inventory.legacy import legacy_backup
 from data.references import game_data_info, get_character_profile, get_game_record, get_game_stats, list_game_records
@@ -371,6 +378,69 @@ def _party_pieces(config: dict, db: Path) -> list[LoadoutPiece]:
             for artifact_id, artifact in inventory.artifacts()]
 
 
+def _resolve_formula_objective(
+    character: str,
+    model_key: str | None,
+    objective: object,
+    options: dict,
+    character_config: dict,
+    weapon_panel: dict | None,
+    target_four_piece_set: int | None,
+):
+    if objective is None:
+        model = get_damage_model(character, model_key, **options)
+        if model.key in catalog_available() and target_four_piece_set is not None:
+            model_options = dict(options)
+            model_options["target_four_piece_set"] = target_four_piece_set
+            model = get_damage_model(character, model.key, **model_options)
+        return model
+    if not isinstance(objective, dict) or set(objective) != {"mode", "formulas"}:
+        raise ValueError("formula_objective 必须包含 mode 和 formulas")
+    mode = objective["mode"]
+    formulas = objective["formulas"]
+    if mode not in ("single", "relative", "raw") or not isinstance(formulas, list):
+        raise ValueError("公式目标模式或公式列表无效")
+    minimum = 1 if mode == "single" else 2
+    if len(formulas) < minimum or (mode == "single" and len(formulas) != 1):
+        raise ValueError("单公式模式需选择一个公式；综合模式至少选择两个公式")
+    registered = available_models()
+    keys = set()
+    weights = []
+    resolved_models = []
+    for formula in formulas:
+        if not isinstance(formula, dict) or set(formula) != {"key", "weight"}:
+            raise ValueError("每个公式选择都必须包含 key 和 weight")
+        key = formula["key"]
+        weight = formula["weight"]
+        if not isinstance(key, str) or not key or key in keys:
+            raise ValueError("公式键无效或重复")
+        if type(weight) not in (int, float) or not isfinite(weight) or weight < 0:
+            raise ValueError("公式权重必须是有限非负数")
+        if key not in registered:
+            raise ValueError(f"公式 {key} 不在已校准模型目录中")
+        if mode in ("relative", "raw") and not catalog_formula_selectable(key):
+            raise ValueError(f"公式 {key} 未达到可综合评分的校准等级")
+        keys.add(key)
+        weights.append(float(weight))
+        formula_options = dict(options)
+        if key in catalog_available() and target_four_piece_set is not None:
+            formula_options["target_four_piece_set"] = target_four_piece_set
+        resolved_models.append(get_damage_model(character, key, **formula_options))
+    weight_total = sum(weights)
+    if not isfinite(weight_total) or weight_total <= 0:
+        raise ValueError("至少一个公式权重大于零")
+    if mode == "single":
+        return resolved_models[0]
+    reference_stats, _ = character_weapon_panel(character_config, weapon_panel, {})
+    return create_weighted_damage_model(
+        resolved_models,
+        weights,
+        mode,
+        reference_stats,
+        target_four_piece_set=target_four_piece_set,
+    )
+
+
 def _party_members(config: dict) -> list[dict]:
     rows = config.get("members")
     if not isinstance(rows, list) or not rows:
@@ -424,12 +494,21 @@ def _party_members(config: dict) -> list[dict]:
         fixed_target_id = (
             None if fixed_target is None else int(lookup(SETS, fixed_target)["id"])
         )
-        model = get_damage_model(row["character"], row.get("model"), **common)
         selected_target = fixed_target_id if fixed_target_id is not None else target_id
-        if model.key in catalog_available() and selected_target is not None:
-            model_options = dict(common)
-            model_options["target_four_piece_set"] = selected_target
-            model = get_damage_model(row["character"], model.key, **model_options)
+        character_config = {
+            "id": row["character"],
+            "level": int(row.get("level", 90)),
+            "ascension": int(row.get("ascension", 6)),
+        }
+        model = _resolve_formula_objective(
+            row["character"],
+            row.get("model"),
+            row.get("formula_objective"),
+            common,
+            character_config,
+            normalized_weapon,
+            selected_target,
+        )
         members.append({
             "member": PartyMember(
                 model=model,
@@ -533,6 +612,10 @@ def _plan_parser(commands):
     plan = commands.add_parser("plan", help="单角色最优配装与刷取期望树脂")
     plan.add_argument("--character", required=True, help="角色中英文名称或 ID")
     plan.add_argument("--model", help="伤害模型键；省略时使用角色默认模型")
+    plan.add_argument(
+        "--formula-objective",
+        help='JSON 公式目标，例如 {"mode":"relative","formulas":[{"key":"a","weight":0.7},{"key":"b","weight":0.3}]}',
+    )
     plan.add_argument("--level", type=int, default=90)
     plan.add_argument("--ascension", type=int, default=6)
     plan.add_argument("--talents", default="10/10/10", help="普攻/元素战技/元素爆发")
@@ -590,10 +673,26 @@ def _plan_command(args):
             "weapon_ca_stacks": args.weapon_stacks,
             "four_piece_stacks": args.four_piece_stacks,
         })
-    model = get_damage_model(args.character, args.model, **options)
     weapon_panel = None if weapon is None else {
         "id": weapon, "level": args.weapon_level, "ascension": args.weapon_ascension,
     }
+    formula_objective = (
+        None if args.formula_objective is None
+        else json.loads(args.formula_objective)
+    )
+    target_set = (
+        None if args.four_piece_set is None
+        else int(lookup(SETS, args.four_piece_set)["id"])
+    )
+    model = _resolve_formula_objective(
+        args.character,
+        args.model,
+        formula_objective,
+        options,
+        {"id": args.character, "level": args.level, "ascension": args.ascension},
+        weapon_panel,
+        target_set,
+    )
     return plan_single_character(
         pieces,
         model=model,
