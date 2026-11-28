@@ -126,9 +126,17 @@
     .advanced { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; padding-top: 15px; border-top: 1px solid #283540; }
     .section-label { margin: 0 0 10px; color: #cbd6da; font-size: 12px; font-weight: 650; }
     .domain-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .account-domain-list { max-height: 270px; overflow-y: auto; padding: 2px; }
     .domain-option { display: flex; align-items: flex-start; gap: 8px; color: #becbd0; font-size: 11px; line-height: 1.4; padding: 8px 9px; background: #10171e; border: 1px solid #283540; border-radius: 9px; cursor: pointer; }
     .domain-option input { margin-top: 2px; accent-color: var(--accent-strong); }
     .domain-sets { display: block; color: #71818d; font-size: 10px; margin-top: 3px; }
+    .expectation-tiers { display: grid; gap: 10px; margin-top: 12px; }
+    .expectation-tier { padding: 12px; background: #111820; border: 1px solid #293743; border-radius: 10px; }
+    .expectation-tier h3 { margin: 0 0 8px; font-size: 13px; }
+    .expectation-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .expectation-metric { padding: 8px; background: #0e141b; border-radius: 7px; color: #c9d6db; font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+    .expectation-metric strong { display: block; color: #e6eff1; font-size: 11px; }
+    .expectation-note { color: var(--muted); font-size: 10px; line-height: 1.55; }
     .results { display: grid; gap: 13px; }
     .result-toolbar { display: flex; justify-content: space-between; gap: 14px; align-items: center; }
     .result-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
@@ -193,6 +201,10 @@
     .recommended-tag { color: var(--accent); font-size: 10px; }
     .domain-metrics { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: 9px; color: #acbbc2; font-size: 11px; }
     .domain-members { color: #7e909a; font-size: 10px; margin-top: 8px; line-height: 1.5; }
+    .account-tier { margin-top: 10px; padding-top: 9px; border-top: 1px solid #293743; }
+    .account-tier h4 { margin: 0 0 6px; color: #d3e2e4; font-size: 11px; }
+    .account-role { margin-top: 7px; padding: 8px; border-radius: 7px; background: #0e141b; color: #aebdc3; font-size: 10px; line-height: 1.5; }
+    .account-role strong { color: #dce8e8; }
     .footnote { color: #6e7d86; font-size: 10px; line-height: 1.55; margin: 13px 0 0; }
     .hidden { display: none !important; }
     @media (max-width: 900px) {
@@ -214,6 +226,7 @@
       .pieces { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .result-summary { grid-template-columns: 1fr 1fr; }
       .domain-list { grid-template-columns: 1fr; }
+      .expectation-metrics { grid-template-columns: 1fr; }
       .advanced { grid-template-columns: 1fr; }
       .result-toolbar { align-items: flex-start; flex-direction: column; }
       .local-tag { font-size: 10px; }
@@ -310,13 +323,65 @@
 
         <section id="planning-panel" class="panel hidden">
           <div class="panel-head">
-            <div class="panel-title"><span class="panel-index">03</span><div><h2>继续树脂规划</h2><div class="panel-subtitle">复用优化时的角色、种子与库存；规划结果校验配装一致</div></div></div>
+            <div class="panel-title"><span class="panel-index">03</span><div><h2>树脂规划</h2><div class="panel-subtitle">评估当前优化中所选角色的单次替换收益与账号联合刷本收益</div></div></div>
           </div>
           <div class="panel-body">
             <p class="section-label">参与规划的秘境</p>
             <div id="domain-list" class="domain-list"></div>
             <div class="button-row"><button id="plan-button" class="button" type="button" disabled>运行秘境 / 树脂规划</button></div>
             <div id="plan-status" class="status" role="status"></div>
+            <p class="section-label">账号刷本优先级秘境（请选择 1–8 个）</p>
+            <div id="account-farming-domain-list" class="domain-list account-domain-list"></div>
+            <div class="advanced">
+              <label class="field">账号规划起点
+                <select id="account-farming-start">
+                  <option value="inventory">使用当前全部库存</option>
+                  <option value="zero">从零开始</option>
+                </select>
+              </label>
+              <label class="field">账号树脂预算（20 的倍数）
+                <input id="account-farming-budgets" type="text" value="200,600" maxlength="80">
+              </label>
+              <label class="field">每档抽样数
+                <input id="account-farming-samples" type="number" min="8" max="64" step="1" value="12">
+              </label>
+              <label class="field">达标阈值（账号提升 %）
+                <input id="account-farming-target" type="number" min="0" max="100" step="0.1" value="1">
+              </label>
+            </div>
+            <p class="expectation-note">账号规划在每个随机掉落样本后，将全部圣遗物作为共享库存，对当前优化所选角色联合重配；按账号模型目标提升/树脂排序。默认 200/600 树脂约为 1.1/3.3 天自然恢复。空库存时允许残缺配装，目标四件套按实际效果计分并单独报告达成率。最多 8 个秘境、8 档预算，且秘境数 × 预算数 × 抽样数不超过 192；近似区间只反映概率抽样误差，不包含共享库存启发式搜索误差。</p>
+            <div class="button-row"><button id="account-farming-button" class="button" type="button" disabled>比较账号刷本优先级</button></div>
+            <div id="account-farming-status" class="status" role="status"></div>
+            <div id="account-farming-results" class="domain-results hidden"></div>
+          </div>
+        </section>
+
+        <section id="expectation-panel" class="panel hidden">
+          <div class="panel-head">
+            <div class="panel-title"><span class="panel-index">04</span><div><h2>树脂投入的期望配装</h2><div class="panel-subtitle">随机生成未来库存，再逐次优化完整配装；只展示统计期望，不展示抽样装备</div></div></div>
+          </div>
+          <div class="panel-body">
+            <div class="field-grid">
+              <label class="field">刷取秘境
+                <select id="expectation-domain"></select>
+              </label>
+              <label class="field">起始库存
+                <select id="expectation-start">
+                  <option value="inventory">使用当前全部库存</option>
+                  <option value="zero">从零开始</option>
+                </select>
+              </label>
+              <label class="field">树脂预算（逗号分隔，20 的倍数）
+                <input id="expectation-budgets" type="text" value="0,200,600,1200" maxlength="80">
+              </label>
+              <label class="field">每档模拟次数
+                <input id="expectation-samples" type="number" min="8" max="64" step="1" value="16">
+              </label>
+            </div>
+            <p class="expectation-note">默认预算 0/200/600/1200 树脂约对应 0/1.1/3.3/6.7 天自然恢复（按 180 树脂/天）。模型按每 20 树脂 1 件五星、所有未来掉落强化至 +20 估算；未满级现有圣遗物使用期望满级属性。强化经验与摩拉不计入树脂。区间是抽样误差，不包含配装搜索未证明最优的误差。</p>
+            <div class="button-row"><button id="expectation-button" class="button" type="button" disabled>计算预算下的期望配装</button></div>
+            <div id="expectation-status" class="status" role="status"></div>
+            <div id="expectation-results" class="expectation-tiers"></div>
           </div>
         </section>
       </div>
@@ -386,6 +451,13 @@
       account: null,
       mode: "single",
       optimization: null,
+      optimizationPending: false,
+      expectation: null,
+      expectationPending: false,
+      expectationRequest: 0,
+      accountFarming: null,
+      accountFarmingPending: false,
+      accountFarmingRequest: 0,
       fixedSets: {},
       formulaObjectives: {},
       detailKind: "characters",
@@ -412,6 +484,7 @@
     };
     const number = (value, digits = 2) => Number.isFinite(Number(value))
       ? new Intl.NumberFormat("zh-CN", { maximumFractionDigits: digits }).format(Number(value)) : "—";
+    const signedNumber = (value, digits = 2) => `${Number(value) > 0 ? "+" : ""}${number(value, digits)}`;
     const percent = (value, digits = 2) => `${number(Number(value) * 100, digits)}%`;
     const text = (value) => value === undefined || value === null || value === "" ? "—" : String(value);
 
@@ -561,6 +634,13 @@
     function renderAccount(data) {
       state.account = data;
       state.optimization = null;
+      state.optimizationPending = false;
+      state.expectation = null;
+      state.expectationPending = false;
+      state.expectationRequest += 1;
+      state.accountFarming = null;
+      state.accountFarmingPending = false;
+      state.accountFarmingRequest += 1;
       state.fixedSets = {};
       state.formulaObjectives = {};
       state.detailKind = "characters";
@@ -573,6 +653,12 @@
       byId("optimization-results-panel").classList.add("hidden");
       byId("plan-results-panel").classList.add("hidden");
       byId("planning-panel").classList.remove("hidden");
+      byId("expectation-panel").classList.remove("hidden");
+      byId("expectation-results").replaceChildren();
+      setStatus("expectation-status", "");
+      byId("account-farming-results").replaceChildren();
+      byId("account-farming-results").classList.add("hidden");
+      setStatus("account-farming-status", "");
       byId("optimization-seed").value = String(data.config.seed);
 
       const summary = byId("account-summary");
@@ -625,6 +711,7 @@
       characterInput.value = String(Math.min(Number(characterInput.value), data.account.character_limit));
       renderRoster(data.account.optimizable_roster);
       renderDomains(data.account.domains);
+      renderExpectationDomains(data.account.domains);
       document.querySelectorAll("[data-detail-kind]").forEach((button) => {
         const active = button.dataset.detailKind === state.detailKind;
         button.classList.toggle("active", active);
@@ -724,16 +811,28 @@
       const formulaObjectives = selectedFormulaObjectives();
       state.formulaObjectives = { ...state.formulaObjectives, ...formulaObjectives };
       byId("selection-count").textContent = `已选 ${checked.length} 位`;
-      byId("optimize-button").disabled = (state.mode === "single" ? checked.length !== 1 : checked.length < 2)
+      byId("optimize-button").disabled = state.optimizationPending
+        || (state.mode === "single" ? checked.length !== 1 : checked.length < 2)
         || !validFormulaObjectives(formulaObjectives);
       if (state.optimization && !optimizationMatchesControls()) {
         state.optimization = null;
+        state.expectation = null;
+        state.expectationPending = false;
+        state.expectationRequest += 1;
+        state.accountFarming = null;
+        state.accountFarmingPending = false;
+        state.accountFarmingRequest += 1;
         byId("optimization-results-panel").classList.add("hidden");
         byId("plan-results-panel").classList.add("hidden");
+        byId("expectation-results").replaceChildren();
+        byId("account-farming-results").replaceChildren();
+        byId("account-farming-results").classList.add("hidden");
         setStatus("optimization-status", "角色或搜索配置已变化，请重新运行优化后再继续规划。");
         setStatus("plan-status", "");
+        setStatus("expectation-status", "");
       }
       updatePlanButton();
+      updateExpectationButton();
     }
 
     function renderRoster(roster) {
@@ -919,32 +1018,102 @@
       updateSelection();
     }
 
+    function domainOption(domain, checked, onChange) {
+      const label = document.createElement("label");
+      label.className = "domain-option";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = String(domain.id);
+      input.checked = checked;
+      input.addEventListener("change", () => onChange(input));
+      const description = document.createElement("span");
+      description.append(document.createTextNode(text(domain.name)));
+      const sets = document.createElement("span");
+      sets.className = "domain-sets";
+      sets.textContent = (domain.sets || []).join(" / ");
+      description.append(sets);
+      label.append(input, description);
+      return label;
+    }
+
     function renderDomains(domains) {
       const list = byId("domain-list");
+      const accountList = byId("account-farming-domain-list");
       list.replaceChildren();
+      accountList.replaceChildren();
       domains.forEach((domain) => {
-        const label = document.createElement("label");
-        label.className = "domain-option";
-        const input = document.createElement("input");
-        input.type = "checkbox";
-        input.value = String(domain.id);
-        input.checked = true;
-        input.addEventListener("change", updatePlanButton);
-        const description = document.createElement("span");
-        description.append(document.createTextNode(text(domain.name)));
-        const sets = document.createElement("span");
-        sets.className = "domain-sets";
-        sets.textContent = (domain.sets || []).join(" / ");
-        description.append(sets);
-        label.append(input, description);
-        list.append(label);
+        list.append(domainOption(domain, true, () => updatePlanButton()));
+        accountList.append(domainOption(domain, false, (input) => {
+          const selectedCount = accountList.querySelectorAll('input:checked').length;
+          if (input.checked && selectedCount > 8) {
+            input.checked = false;
+            setStatus("account-farming-status", "账号刷本最多比较 8 个秘境。", true);
+            updateAccountFarmingButton();
+            return;
+          }
+          invalidateAccountFarming();
+        }));
       });
       updatePlanButton();
     }
 
+    function renderExpectationDomains(domains) {
+      const select = byId("expectation-domain");
+      select.replaceChildren();
+      domains.forEach((domain) => {
+        const option = document.createElement("option");
+        option.value = String(domain.id);
+        option.textContent = `${text(domain.name)} · ${(domain.sets || []).map(text).join(" / ")}`;
+        select.append(option);
+      });
+      updateExpectationButton();
+    }
+
+    function updateExpectationButton() {
+      const valid = state.optimization
+        && !state.optimizationPending
+        && !state.expectationPending
+        && state.optimization.mode === "single"
+        && selectedCharacters().length === 1
+        && optimizationMatchesControls()
+        && byId("expectation-domain").value;
+      byId("expectation-button").disabled = !valid;
+    }
+
+    function invalidateExpectations() {
+      state.expectation = null;
+      state.expectationPending = false;
+      state.expectationRequest += 1;
+      byId("expectation-results").replaceChildren();
+      setStatus("expectation-status", "");
+      updateExpectationButton();
+    }
+
     function updatePlanButton() {
-      byId("plan-button").disabled = !optimizationMatchesControls()
+      byId("plan-button").disabled = state.optimizationPending || !optimizationMatchesControls()
         || byId("domain-list").querySelectorAll('input:checked').length === 0;
+      updateAccountFarmingButton();
+    }
+
+    function updateAccountFarmingButton() {
+      const selectedDomains = byId("account-farming-domain-list")
+        .querySelectorAll('input:checked').length;
+      byId("account-farming-button").disabled = !state.optimization
+        || state.optimizationPending
+        || state.accountFarmingPending
+        || !optimizationMatchesControls()
+        || selectedDomains === 0
+        || selectedDomains > 8;
+    }
+
+    function invalidateAccountFarming() {
+      state.accountFarming = null;
+      state.accountFarmingPending = false;
+      state.accountFarmingRequest += 1;
+      byId("account-farming-results").replaceChildren();
+      byId("account-farming-results").classList.add("hidden");
+      setStatus("account-farming-status", "");
+      updateAccountFarmingButton();
     }
 
     function renderFormulaModels(member) {
@@ -1359,6 +1528,126 @@
       content.append(block);
     }
 
+    function expectationValue(estimate, signed = false, unit = "") {
+      const format = (value) => `${signed && value > 0 ? "+" : ""}${number(value)}${unit}`;
+      const range = estimate.ci95 || [estimate.mean, estimate.mean];
+      return `期望 ${format(estimate.mean)}；95% 区间 ${format(range[0])}–${format(range[1])}`;
+    }
+
+    function expectationMetric(label, value, delta = null, unit = "") {
+      const card = document.createElement("div");
+      card.className = "expectation-metric";
+      const title = document.createElement("strong");
+      title.textContent = text(label);
+      const detail = document.createElement("span");
+      detail.textContent = delta
+        ? `${expectationValue(value, false, unit)}；相对基线 ${expectationValue(delta, true, unit)}`
+        : expectationValue(value, false, unit);
+      card.append(title, detail);
+      return card;
+    }
+
+    function renderExpectations(result) {
+      const content = byId("expectation-results");
+      content.replaceChildren();
+      const caption = document.createElement("p");
+      caption.className = "expectation-note";
+      const requiredSet = result.required_four_piece_set
+        ? ` · 固定套装：${text(result.required_four_piece_set.name)}` : "";
+      caption.textContent = `${text(result.domain.name)} · ${text(result.model_label)} · 起点：${result.starting_inventory === "zero" ? "空库存" : "当前全部库存"}${requiredSet} · 每档 ${number(result.method.samples, 0)} 次抽样`;
+      content.append(caption);
+
+      const baseline = document.createElement("section");
+      baseline.className = "expectation-tier";
+      const baselineHeading = document.createElement("h3");
+      baselineHeading.textContent = result.starting_inventory === "zero"
+        ? (result.required_four_piece_set
+          ? "刷前基线：空库存（无圣遗物约束）"
+          : "刷前基线：空库存")
+        : "刷前基线：当前库存的最优配装";
+      baseline.append(baselineHeading);
+      const baselineMetrics = document.createElement("div");
+      baselineMetrics.className = "expectation-metrics";
+      const exact = (value) => ({ mean: value, ci95: [value, value] });
+      baselineMetrics.append(expectationMetric(
+        "刷前模型目标值",
+        exact(result.baseline.objective)
+      ));
+      Object.entries(result.baseline.panel).forEach(([stat, value]) => {
+        const label = statNames[stat] || safeDisplayText(stat, "其他属性");
+        const unit = /(?:_PERCENT|_DMG_BONUS)$/.test(stat)
+          || ["CRIT_RATE", "CRIT_DMG", "ENERGY_RECHARGE", "HEALING_BONUS"].includes(stat)
+          ? "%" : "";
+        baselineMetrics.append(expectationMetric(`${label}面板`, exact(value), null, unit));
+      });
+      Object.entries(result.baseline.formulas).forEach(([key, value]) => {
+        const label = result.formula_labels[key] || "伤害公式";
+        baselineMetrics.append(expectationMetric(`${text(label)} · 刷前公式伤害`, exact(value)));
+      });
+      baseline.append(baselineMetrics);
+      content.append(baseline);
+
+      result.tiers.forEach((tier) => {
+        const card = document.createElement("section");
+        card.className = "expectation-tier";
+        const heading = document.createElement("h3");
+        heading.textContent = `${number(tier.resin, 0)} 树脂 · ${number(tier.claims, 0)} 次秘境领取`;
+        card.append(heading);
+        if (!tier.feasible_samples) {
+          const note = document.createElement("p");
+          note.className = "expectation-note";
+          note.textContent = "该预算的抽样库存中没有可满足固定四件套要求的配装。";
+          card.append(note);
+          content.append(card);
+          return;
+        }
+        const metrics = document.createElement("div");
+        metrics.className = "expectation-metrics";
+        metrics.append(
+          expectationMetric("优化后模型目标值", tier.objective),
+          expectationMetric("模型目标期望增量", tier.objective_delta)
+        );
+        if (tier.feasible_samples < tier.samples) {
+          const feasibility = document.createElement("div");
+          feasibility.className = "expectation-metric";
+          const title = document.createElement("strong");
+          title.textContent = "满足配装约束的样本比例";
+          const detail = document.createElement("span");
+          detail.textContent = `${tier.feasible_samples}/${tier.samples} 个样本（${percent(tier.feasible_fraction)}）`;
+          feasibility.append(title, detail);
+          metrics.append(feasibility);
+        }
+        Object.entries(tier.panel).forEach(([stat, estimate]) => {
+          const label = statNames[stat] || safeDisplayText(stat, "其他属性");
+          const delta = tier.panel_delta[stat];
+          const unit = /(?:_PERCENT|_DMG_BONUS)$/.test(stat)
+            || ["CRIT_RATE", "CRIT_DMG", "ENERGY_RECHARGE", "HEALING_BONUS"].includes(stat)
+            ? "%" : "";
+          metrics.append(expectationMetric(`${label}面板`, estimate, delta, unit));
+        });
+        Object.entries(tier.formulas).forEach(([key, estimate]) => {
+          const label = result.formula_labels[key] || "伤害公式";
+          metrics.append(expectationMetric(`${text(label)} · 公式伤害`, estimate, estimate.delta));
+        });
+        card.append(metrics);
+        const search = document.createElement("p");
+        search.className = "expectation-note";
+        const feasibleNote = tier.feasible_samples < tier.samples
+          ? `面板与伤害期望仅统计满足固定四件套的 ${tier.feasible_samples}/${tier.samples} 个样本。`
+          : "";
+        search.textContent = `${feasibleNote}配装搜索证明精确的样本占比 ${percent(tier.search.exact_fraction)}；平均节点 ${number(tier.search.mean_nodes, 0)} / ${number(tier.search.node_limit_per_sample, 0)}。`;
+        card.append(search);
+        content.append(card);
+      });
+
+      (result.method.limitations || []).forEach((limitation) => {
+        const note = document.createElement("p");
+        note.className = "expectation-note";
+        note.textContent = text(limitation);
+        content.append(note);
+      });
+    }
+
     function renderPlan(plan) {
       const panel = byId("plan-results-panel");
       panel.classList.remove("hidden");
@@ -1424,6 +1713,152 @@
       });
     }
 
+    function renderAccountFarming(result) {
+      const content = byId("account-farming-results");
+      content.replaceChildren();
+      content.classList.remove("hidden");
+      const accountNames = (result.baseline.members || [])
+        .map((member) => member.name)
+        .join("、");
+      const caption = document.createElement("p");
+      caption.className = "expectation-note";
+      caption.textContent = `目标角色：${accountNames}；起点：${result.starting_inventory === "zero" ? "从零开始" : "当前全部库存"}；每档 ${number(result.method.samples, 0)} 次抽样。账号基线分 ${number(result.baseline.account_score)}。`;
+      content.append(caption);
+      const normalization = document.createElement("p");
+      normalization.className = "expectation-note";
+      normalization.textContent = result.baseline.normalization;
+      content.append(normalization);
+
+      const rankingMap = new Map();
+      (result.rankings || []).forEach((ranking) => {
+        const names = ranking.domains
+          .map((domain) => `${domain.rank}. ${domain.domain_name} (${number(domain.gain_per_100_resin_pct)}%/百树脂)`)
+          .join("　·　");
+        const line = document.createElement("p");
+        line.className = "domain-members";
+        line.textContent = `${number(ranking.resin, 0)} 树脂排序：${names}`;
+        content.append(line);
+        ranking.domains.forEach((domain) => {
+          rankingMap.set(domain.domain_id, domain);
+        });
+      });
+
+      const domains = [...(result.domains || [])].sort((left, right) => {
+        const leftRank = rankingMap.get(left.domain_id)?.rank ?? Number.MAX_SAFE_INTEGER;
+        const rightRank = rankingMap.get(right.domain_id)?.rank ?? Number.MAX_SAFE_INTEGER;
+        return leftRank - rightRank;
+      });
+      domains.forEach((domain) => {
+        const rank = rankingMap.get(domain.domain_id);
+        const card = document.createElement("article");
+        card.className = `domain-result${domain.domain_id === result.recommended_domain_id ? " recommended" : ""}`;
+        const head = document.createElement("div");
+        head.className = "domain-head";
+        const title = document.createElement("div");
+        title.className = "domain-title";
+        title.textContent = text(domain.domain_name);
+        head.append(title);
+        if (domain.domain_id === result.recommended_domain_id) {
+          const tag = document.createElement("span");
+          tag.className = "recommended-tag";
+          tag.textContent = `推荐（${number(result.ranking_budget, 0)} 树脂）`;
+          head.append(tag);
+        } else if (rank) {
+          const tag = document.createElement("span");
+          tag.className = "recommended-tag";
+          tag.textContent = `排序第 ${rank.rank}`;
+          head.append(tag);
+        }
+        const sets = document.createElement("div");
+        sets.className = "domain-members";
+        sets.textContent = `掉落套装：${(domain.drop_sets || []).map((set) => set.name).join(" / ") || "—"}`;
+        card.append(head, sets);
+
+        (domain.tiers || []).forEach((tier) => {
+          const section = document.createElement("section");
+          section.className = "account-tier";
+          const heading = document.createElement("h4");
+          heading.textContent = `${number(tier.resin, 0)} 树脂：账号提升期望 ${number(tier.expected_gain_pct.mean)}%（95% 抽样区间 ${number(tier.expected_gain_pct.ci95?.[0])}–${number(tier.expected_gain_pct.ci95?.[1])}%）`;
+          section.append(heading);
+          const metrics = document.createElement("div");
+          metrics.className = "domain-metrics";
+          [
+            `账号目标期望值 ${number(tier.expected_account_score.mean)}`,
+            `每百树脂 ${number(tier.gain_per_100_resin_pct.mean)}%`,
+            `单次结果 P10–P90 ${number(tier.outcome_gain_pct_p10_p90[0])}–${number(tier.outcome_gain_pct_p10_p90[1])}%`,
+            `提升至少 ${number(tier.target_gain_pct)}% 的概率 ${percent(tier.probability_meet_target)}（Wilson 95% ${percent(tier.probability_meet_target_ci95[0])}–${percent(tier.probability_meet_target_ci95[1])}）`,
+            `共享库存搜索精确比例 ${percent(tier.shared_inventory_exact_fraction)}`
+          ].forEach((value) => {
+            const item = document.createElement("span");
+            item.textContent = value;
+            metrics.append(item);
+          });
+          section.append(metrics);
+
+          (tier.members || []).forEach((member) => {
+            const role = document.createElement("div");
+            role.className = "account-role";
+            const titleLine = document.createElement("strong");
+            titleLine.textContent = `${text(member.name)}：账号提升贡献期望 ${number(member.account_gain_contribution_pct.mean)}%`;
+            role.append(titleLine);
+            const objective = document.createElement("div");
+            objective.textContent = `模型目标期望值 ${number(member.expected_objective.mean)}；变化 ${signedNumber(member.expected_objective_delta.mean)}（95% 抽样区间 ${signedNumber(member.expected_objective_delta.ci95?.[0])}–${signedNumber(member.expected_objective_delta.ci95?.[1])}）；四件套达成概率：${member.target_set_completion_probability === null ? "无目标套装" : `${percent(member.target_set_completion_probability)}（Wilson 95% ${percent(member.target_set_completion_ci95[0])}–${percent(member.target_set_completion_ci95[1])}）`}`;
+            role.append(objective);
+            const panelDetails = document.createElement("details");
+            const panelSummary = document.createElement("summary");
+            panelSummary.textContent = "查看面板属性期望及相对基线变化";
+            const panelText = document.createElement("div");
+            panelText.textContent = Object.entries(member.panel)
+              .map(([stat, estimate]) => {
+                const delta = member.panel_delta[stat];
+                return `${statNames[stat] || safeDisplayText(stat, "其他属性")}：期望 ${number(estimate.mean)}（95% ${number(estimate.ci95?.[0])}–${number(estimate.ci95?.[1])}），变化 ${signedNumber(delta.mean)}（95% ${signedNumber(delta.ci95?.[0])}–${signedNumber(delta.ci95?.[1])}）`;
+              })
+              .join("；");
+            panelDetails.append(panelSummary, panelText);
+            role.append(panelDetails);
+
+            const formulas = Object.entries(member.formulas || {});
+            if (formulas.length) {
+              const formulaDetails = document.createElement("details");
+              const formulaSummary = document.createElement("summary");
+              const formulaMode = {
+                single: "单公式",
+                relative: "相对表现加权",
+                raw: "原始伤害加权"
+              }[member.formula_objective.mode] || "所选公式";
+              formulaSummary.textContent = `${formulaMode}：查看公式期望伤害与变化`;
+              const formulaText = document.createElement("div");
+              formulaText.textContent = formulas
+                .map(([, formula]) => `${text(formula.label)}（权重 ${number(formula.weight)}）：期望伤害 ${number(formula.damage.mean)}，变化 ${signedNumber(formula.delta.mean)}（95% 区间 ${signedNumber(formula.delta.ci95?.[0])}–${signedNumber(formula.delta.ci95?.[1])}）`)
+                .join("；");
+              formulaDetails.append(formulaSummary, formulaText);
+              role.append(formulaDetails);
+            }
+            section.append(role);
+          });
+          const searchNote = document.createElement("p");
+          searchNote.className = "expectation-note";
+          searchNote.textContent = `搜索平均迭代 ${number(tier.search.mean_iterations, 1)}；每位角色节点上限 ${number(tier.search.node_limit_per_member, 0)}。`;
+          section.append(searchNote);
+          card.append(section);
+        });
+        content.append(card);
+      });
+
+      (result.method.limitations || []).forEach((limitation) => {
+        const note = document.createElement("p");
+        note.className = "expectation-note";
+        note.textContent = text(limitation);
+        content.append(note);
+      });
+      (result.warnings || []).forEach((warning) => {
+        const note = document.createElement("p");
+        note.className = "status visible";
+        note.textContent = text(warning);
+        content.append(note);
+      });
+    }
+
     byId("generation-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       const button = byId("generate-button");
@@ -1476,6 +1911,10 @@
       };
       const button = byId("optimize-button");
       button.disabled = true;
+      state.optimizationPending = true;
+      invalidateExpectations();
+      invalidateAccountFarming();
+      byId("plan-results-panel").classList.add("hidden");
       setStatus("optimization-status", "正在运行当前配装优化与预期满级评估；请稍候…");
       setStatus("plan-status", "");
       try {
@@ -1511,6 +1950,7 @@
       } catch (error) {
         setStatus("optimization-status", error.message, true);
       } finally {
+        state.optimizationPending = false;
         updateSelection();
       }
     });
@@ -1545,6 +1985,130 @@
       loadDetails();
     });
     byId("detail-close").addEventListener("click", () => byId("detail-dialog").close());
+
+    byId("expectation-button").addEventListener("click", async () => {
+      if (!state.account || !state.optimization || state.optimization.mode !== "single") return;
+      const budgetsText = byId("expectation-budgets").value;
+      const rawBudgets = budgetsText
+        .split(",")
+        .map((value) => value.trim());
+      const budgets = rawBudgets.map(Number);
+      if (!rawBudgets.length || rawBudgets.some((value) => !value) || budgets.some((value) => !Number.isInteger(value))) {
+        setStatus("expectation-status", "请输入逗号分隔的整数树脂预算。", true);
+        return;
+      }
+
+      const requestId = ++state.expectationRequest;
+      const sessionId = state.account.session_id;
+      const optimizationId = state.optimization.optimization_id;
+      const domainId = Number(byId("expectation-domain").value);
+      const startingInventory = byId("expectation-start").value;
+      const sampleCount = Number(byId("expectation-samples").value);
+      const button = byId("expectation-button");
+      button.disabled = true;
+      state.expectationPending = true;
+      setStatus("expectation-status", "正在抽样生成未来掉落并逐档优化整套配装；不会展示某次抽样装备…");
+      try {
+        const result = await post("/api/expectations", {
+          session_id: sessionId,
+          optimization_id: optimizationId,
+          domain_id: domainId,
+          starting_inventory: startingInventory,
+          resin_budgets: budgets,
+          sample_count: sampleCount
+        });
+        const stillCurrent = requestId === state.expectationRequest
+          && state.account?.session_id === sessionId
+          && state.optimization?.optimization_id === optimizationId
+          && optimizationMatchesControls()
+          && Number(byId("expectation-domain").value) === domainId
+          && byId("expectation-start").value === startingInventory
+          && byId("expectation-budgets").value === budgetsText
+          && Number(byId("expectation-samples").value) === sampleCount;
+        if (!stillCurrent) return;
+        state.expectation = result;
+        renderExpectations(result);
+        setStatus("expectation-status", "期望配装计算完成；区间只反映概率抽样误差。");
+      } catch (error) {
+        if (requestId === state.expectationRequest) {
+          setStatus("expectation-status", error.message, true);
+        }
+      } finally {
+        if (requestId === state.expectationRequest) {
+          state.expectationPending = false;
+          updateExpectationButton();
+        }
+      }
+    });
+
+    ["expectation-domain", "expectation-start", "expectation-budgets", "expectation-samples"]
+      .forEach((id) => byId(id).addEventListener("input", invalidateExpectations));
+
+    byId("account-farming-button").addEventListener("click", async () => {
+      if (!state.account || !state.optimization || !optimizationMatchesControls()) return;
+      const budgetsText = byId("account-farming-budgets").value;
+      const rawBudgets = budgetsText.split(",").map((value) => value.trim());
+      const budgets = rawBudgets.map(Number);
+      if (!rawBudgets.length || rawBudgets.some((value) => !value)
+        || budgets.some((value) => !Number.isInteger(value) || value <= 0 || value % 20)) {
+        setStatus("account-farming-status", "请输入逗号分隔的正整数树脂预算，且每档为 20 的倍数。", true);
+        return;
+      }
+
+      const requestId = ++state.accountFarmingRequest;
+      const sessionId = state.account.session_id;
+      const optimizationId = state.optimization.optimization_id;
+      const selectedDomains = [...byId("account-farming-domain-list").querySelectorAll('input:checked')]
+        .map((input) => Number(input.value));
+      const startingInventory = byId("account-farming-start").value;
+      const sampleCount = Number(byId("account-farming-samples").value);
+      const targetGainPct = Number(byId("account-farming-target").value);
+      state.accountFarmingPending = true;
+      updateAccountFarmingButton();
+      setStatus("account-farming-status", "正在对每个秘境和预算抽样，并在共享库存上联合重配…");
+      try {
+        const result = await post("/api/account-farming", {
+          session_id: sessionId,
+          optimization_id: optimizationId,
+          domains: selectedDomains,
+          starting_inventory: startingInventory,
+          resin_budgets: budgets,
+          sample_count: sampleCount,
+          target_gain_pct: targetGainPct
+        });
+        const stillCurrent = requestId === state.accountFarmingRequest
+          && state.account?.session_id === sessionId
+          && state.optimization?.optimization_id === optimizationId
+          && optimizationMatchesControls()
+          && JSON.stringify(selectedDomains)
+            === JSON.stringify([...byId("account-farming-domain-list").querySelectorAll('input:checked')]
+              .map((input) => Number(input.value)))
+          && byId("account-farming-start").value === startingInventory
+          && byId("account-farming-budgets").value === budgetsText
+          && Number(byId("account-farming-samples").value) === sampleCount
+          && Number(byId("account-farming-target").value) === targetGainPct;
+        if (!stillCurrent) return;
+        state.accountFarming = result;
+        renderAccountFarming(result);
+        setStatus("account-farming-status", "账号刷本期望与风险估算完成。");
+      } catch (error) {
+        if (requestId === state.accountFarmingRequest) {
+          setStatus("account-farming-status", error.message, true);
+        }
+      } finally {
+        if (requestId === state.accountFarmingRequest) {
+          state.accountFarmingPending = false;
+          updateAccountFarmingButton();
+        }
+      }
+    });
+
+    [
+      "account-farming-start",
+      "account-farming-budgets",
+      "account-farming-samples",
+      "account-farming-target"
+    ].forEach((id) => byId(id).addEventListener("input", invalidateAccountFarming));
 
     byId("plan-button").addEventListener("click", async () => {
       if (!state.account || !state.optimization) return;

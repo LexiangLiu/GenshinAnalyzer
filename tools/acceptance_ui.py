@@ -1723,6 +1723,127 @@ class AcceptanceService:
                 "result": _public_plan(result),
             }
 
+    def expectations(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        with self._lock:
+            session = self._require_session(payload.get("session_id"))
+            previous = session.get("optimization")
+            if not isinstance(previous, dict) or payload.get("optimization_id") != previous["id"]:
+                raise ValueError("请先完成当前配置的单角色配装优化")
+            request = previous["request"]
+            if len(request.get("members", [])) != 1:
+                raise ValueError("树脂期望分析每次只支持一个角色，请切换到单角色优化")
+            from artifact_sim.__main__ import _party_members, _party_pieces
+            from planning.expectation import (
+                DEFAULT_SAMPLE_COUNT,
+                estimate_loadout_expectations,
+            )
+
+            domain = payload.get("domain_id")
+            starting_inventory = payload.get("starting_inventory", "inventory")
+            sample_count = _integer(
+                payload.get("sample_count", DEFAULT_SAMPLE_COUNT),
+                "抽样次数",
+                8,
+                64,
+            )
+            member_row = request["members"][0]
+            member = _party_members({"members": [member_row]})[0]["member"]
+            pieces = (
+                _party_pieces(
+                    {"expected_full_level": True},
+                    session["account_dir"] / "account.sqlite3",
+                )
+                if starting_inventory == "inventory"
+                else []
+            )
+            return estimate_loadout_expectations(
+                pieces,
+                model=member.model,
+                character=dict(member.character),
+                weapon=dict(member.weapon) if member.weapon is not None else None,
+                bonus_stats=dict(
+                    member.model.panel_bonus_stats
+                    if member.bonus_stats is None else member.bonus_stats
+                ),
+                domain=domain,
+                resin_budgets=payload.get("resin_budgets", ()),
+                starting_inventory=starting_inventory,
+                sample_count=sample_count,
+                seed=int(request.get("seed", 0)),
+                required_four_piece_set=member.fixed_four_piece_set,
+            )
+
+    def account_farming(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        with self._lock:
+            session = self._require_session(payload.get("session_id"))
+            previous = session.get("optimization")
+            if not isinstance(previous, dict) or payload.get("optimization_id") != previous["id"]:
+                raise ValueError("请先完成当前角色选择的配装优化，再继续规划")
+            request = previous["request"]
+            from artifact_sim.__main__ import _party_members, _party_pieces
+            from planning.account_farming import (
+                DEFAULT_ACCOUNT_BUDGETS,
+                DEFAULT_ACCOUNT_SAMPLES,
+                estimate_account_farming_priorities,
+            )
+
+            selected_domains = payload.get("domains")
+            available_domains = set()
+            for row in request.get("domains", []):
+                domain_id = row.get("id") if isinstance(row, dict) else row
+                if type(domain_id) is int:
+                    available_domains.add(domain_id)
+            if (
+                not isinstance(selected_domains, list)
+                or not selected_domains
+                or any(type(domain) is not int for domain in selected_domains)
+            ):
+                raise ValueError("至少选择一个有效秘境")
+            if len(set(selected_domains)) != len(selected_domains):
+                raise ValueError("不能重复选择同一秘境")
+            if any(domain not in available_domains for domain in selected_domains):
+                raise ValueError("所选秘境不在当前账号的可用列表中")
+
+            starting_inventory = payload.get("starting_inventory", "inventory")
+            if starting_inventory not in ("inventory", "zero"):
+                raise ValueError("起始库存必须是 inventory 或 zero")
+            sample_count = _integer(
+                payload.get("sample_count", DEFAULT_ACCOUNT_SAMPLES),
+                "抽样次数",
+                8,
+                64,
+            )
+            members = [
+                row["member"] for row in _party_members(
+                    {"members": request["members"]},
+                )
+            ]
+            pieces = (
+                _party_pieces(
+                    {"expected_full_level": True},
+                    session["account_dir"] / "account.sqlite3",
+                )
+                if starting_inventory == "inventory"
+                else []
+            )
+            return estimate_account_farming_priorities(
+                pieces,
+                members,
+                domains=selected_domains,
+                resin_budgets=payload.get(
+                    "resin_budgets",
+                    list(DEFAULT_ACCOUNT_BUDGETS),
+                ),
+                starting_inventory=starting_inventory,
+                sample_count=sample_count,
+                target_gain_pct=payload.get("target_gain_pct", 1.0),
+                seed=int(request.get("seed", 0)),
+            )
+
 
 class AcceptanceHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
@@ -1852,6 +1973,8 @@ class AcceptanceRequestHandler(BaseHTTPRequestHandler):
             "/api/generate": self.server.service.generate,
             "/api/optimize": self.server.service.optimize,
             "/api/plan": self.server.service.plan,
+            "/api/expectations": self.server.service.expectations,
+            "/api/account-farming": self.server.service.account_farming,
         }
         action = actions.get(route)
         if action is None:

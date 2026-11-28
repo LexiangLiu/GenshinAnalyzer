@@ -709,6 +709,48 @@ class ProjectionIntegrationTests(unittest.TestCase):
 
 
 class FormulaPresentationTests(unittest.TestCase):
+    def test_resin_expectation_controls_show_only_aggregate_results(self):
+        html_path = Path(__file__).resolve().parents[1] / "tools" / "acceptance_ui.html"
+        html = html_path.read_text(encoding="utf-8")
+        for control in (
+            'id="expectation-domain"',
+            'id="expectation-start"',
+            'id="expectation-budgets"',
+            'id="expectation-samples"',
+            'id="expectation-button"',
+            'id="expectation-results"',
+        ):
+            with self.subTest(control=control):
+                self.assertIn(control, html)
+        self.assertIn("0,200,600,1200", html)
+        self.assertIn("只展示统计期望，不展示抽样装备", html)
+        self.assertIn("满足固定四件套", html)
+        self.assertIn("空库存（无圣遗物约束）", html)
+        self.assertIn("state.expectationPending", html)
+        self.assertIn('post("/api/expectations"', html)
+
+    def test_account_farming_controls_use_shared_inventory_and_render_risk_breakdown(self):
+        html_path = Path(__file__).resolve().parents[1] / "tools" / "acceptance_ui.html"
+        html = html_path.read_text(encoding="utf-8")
+        for control in (
+            'id="account-farming-domain-list"',
+            'id="account-farming-start"',
+            'id="account-farming-budgets"',
+            'id="account-farming-samples"',
+            'id="account-farming-target"',
+            'id="account-farming-button"',
+            'id="account-farming-results"',
+        ):
+            with self.subTest(control=control):
+                self.assertIn(control, html)
+        self.assertIn('post("/api/account-farming"', html)
+        self.assertIn("selectedCount > 8", html)
+        self.assertIn("共享库存上联合重配", html)
+        self.assertIn("Wilson 95%", html)
+        self.assertIn("P10–P90", html)
+        self.assertIn("panel_delta", html)
+        self.assertIn("account_gain_contribution_pct", html)
+
     def test_long_expression_wraps_products_without_changing_formula_tokens(self):
         source = (
             "(ATK + 0.25 * ELEMENTAL_MASTERY) * "

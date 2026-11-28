@@ -58,6 +58,28 @@ def _members():
 
 
 class PartyOptimizerTests(unittest.TestCase):
+    def test_partial_party_builds_allow_zero_and_incomplete_inventories(self):
+        members = _members()
+
+        empty_result = optimize_party([], members, allow_partial=True)
+        self.assertEqual(len(empty_result.members), 2)
+        self.assertGreater(empty_result.total_objective, 0)
+        self.assertTrue(empty_result.exact)
+        self.assertTrue(all(not assignment.loadout.artifacts() for assignment in empty_result.members))
+        self.assertIn("目标四件套不作硬约束", " ".join(empty_result.warnings))
+
+        partial_result = optimize_party(
+            _pieces(Simulator(19), 15031, count=1)[:1],
+            members,
+            allow_partial=True,
+        )
+        equipped = [
+            piece
+            for assignment in partial_result.members
+            for piece in assignment.loadout.artifacts()
+        ]
+        self.assertLessEqual(len(equipped), 1)
+
     def test_cli_and_optimizer_reject_multiple_traveler_forms_or_appearances(self):
         for members in (
             [{"character": "Aether"}, {"character": "Lumine"}],
