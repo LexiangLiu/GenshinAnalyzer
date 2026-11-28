@@ -55,6 +55,7 @@ python -m tools.acceptance_ui --state-dir C:\path\to\genshin-analyzer-state
 ```powershell
 python tools/run_acceptance_suite.py
 python tools/benchmark_growth.py --repeats 5
+python tools/run_preflight.py
 ```
 
 基准输出包含公式覆盖、方案计算/持久化和备份恢复的本机耗时，不设硬件 SLA，不声称配装或 Monte Carlo 的真实生产吞吐量。
