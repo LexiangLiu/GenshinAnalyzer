@@ -378,6 +378,7 @@
               <textarea id="account-import-json" rows="5" maxlength="65536" placeholder='{"source":{"kind":"manual"},"characters":[],"inventory":{},"equipment":{},"metadata":{"missing_fields":[]}}'></textarea>
             </label>
             <div class="button-row"><button id="account-import-button" class="button" type="button">校验并保存本地快照</button></div>
+            <div class="button-row"><button id="account-export-button" class="button" type="button" disabled>导出当前快照 JSON</button></div>
             <div id="account-import-status" class="status" role="status"></div>
             <p class="section-label">养成资源需求原型</p>
             <div class="advanced">
@@ -2247,6 +2248,7 @@
           goal_id: result.goal_id,
           plan_id: result.plan_id
         };
+        byId("account-export-button").disabled = false;
         byId("resource-update-button").disabled = false;
         byId("resource-list-button").disabled = false;
         byId("resource-compare-first").value = result.plan_id;
@@ -2553,6 +2555,20 @@
             `已保存本地快照 ${result.snapshot_id}；官方同步未实现，缺失字段仍标记为 unknown。`
           );
         }
+      } catch (error) {
+        setStatus("account-import-status", error.message, true);
+      }
+    });
+
+    byId("account-export-button").addEventListener("click", async () => {
+      if (!state.resourcePlan) return;
+      setStatus("account-import-status", "正在导出当前结构化账号快照…");
+      try {
+        const result = await post("/api/account-export", {
+          snapshot_id: state.resourcePlan.snapshot_id,
+        });
+        byId("account-import-json").value = JSON.stringify(result, null, 2);
+        setStatus("account-import-status", "当前快照 JSON 已导出到文本框，可复制保存或重新导入。");
       } catch (error) {
         setStatus("account-import-status", error.message, true);
       }

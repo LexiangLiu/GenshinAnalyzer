@@ -145,6 +145,7 @@ class ValidateGenerationTests(unittest.TestCase):
         self.assertIn(b"decision-query-button", page)
         self.assertIn("结构化账号导入边界".encode("utf-8"), page)
         self.assertIn(b"account-import-button", page)
+        self.assertIn(b"account-export-button", page)
         self.assertIn(b"engine_results", page)
         self.assertIn("公式目录覆盖审计".encode("utf-8"), page)
         self.assertIn(b"coverage-audit-button", page)

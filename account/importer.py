@@ -9,22 +9,30 @@ def import_account_snapshot(payload: object) -> AccountSnapshot:
     """Validate a structured local account snapshot; never call an external API."""
     if not isinstance(payload, Mapping):
         raise ValueError("账号导入内容必须是 JSON 对象")
+    if (
+        payload.get("export_format") is not None
+        and payload.get("export_format") != "genshin-analyzer-account"
+    ):
+        raise ValueError("不支持的账号导出格式")
     value = payload.get("snapshot") if isinstance(payload.get("snapshot"), Mapping) else payload
     source = value.get("source")
     if not isinstance(source, Mapping):
         raise ValueError("账号导入必须提供 source")
     kind = source.get("kind")
-    if kind not in ("manual", "legacy_import"):
-        raise ValueError("账号导入只支持 manual 或 legacy_import；external_api 不被接受")
+    if kind not in ("manual", "legacy_import", "simulation"):
+        raise ValueError("账号导入只支持 manual、legacy_import 或本地 simulation；external_api 不被接受")
+    if kind == "simulation" and payload.get("export_format") != "genshin-analyzer-account":
+        raise ValueError("simulation 来源只能通过 genshin-analyzer-account 导出格式导入")
     if kind == "legacy_import" and not isinstance(value.get("inventory"), Mapping):
         raise ValueError("legacy_import 需要结构化 inventory")
     snapshot = AccountSnapshot.from_dict(value)
     metadata = dict(snapshot.metadata)
-    missing = list(metadata.get("missing_fields", ()))
-    if "import_source" not in missing:
-        missing.append("import_source")
-    metadata["missing_fields"] = sorted(set(missing))
-    metadata["import_status"] = "validated_local_structured"
+    if payload.get("export_format") != "genshin-analyzer-account":
+        missing = list(metadata.get("missing_fields", ()))
+        if "import_source" not in missing:
+            missing.append("import_source")
+        metadata["missing_fields"] = sorted(set(missing))
+        metadata["import_status"] = "validated_local_structured"
     return AccountSnapshot(
         source=dict(snapshot.source),
         characters=snapshot.characters,

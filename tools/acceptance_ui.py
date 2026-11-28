@@ -1290,6 +1290,22 @@ class AcceptanceService:
     def import_account_snapshot_batch(self, payload: object) -> dict[str, Any]:
         return import_account_snapshot_batch(payload)
 
+    def export_account_snapshot(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        snapshot_id = payload.get("snapshot_id")
+        if not isinstance(snapshot_id, str) or not snapshot_id:
+            raise ValueError("snapshot_id 必须是有效字符串")
+        return self._planning.export_snapshot(snapshot_id)
+
+    def import_persisted_account_snapshot(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        return self._planning.import_snapshot(
+            payload,
+            name=payload.get("name"),
+        )
+
     def persistence_health(self) -> dict[str, Any]:
         return self._planning.health()
 
@@ -2273,6 +2289,8 @@ class AcceptanceRequestHandler(BaseHTTPRequestHandler):
             "/api/resource-plan": self.server.service.resource_plan,
             "/api/account-import": self.server.service.import_account_snapshot,
             "/api/account-import-batch": self.server.service.import_account_snapshot_batch,
+            "/api/account-export": self.server.service.export_account_snapshot,
+            "/api/account-snapshot-import": self.server.service.import_persisted_account_snapshot,
             "/api/persistence/backup": self.server.service.persistence_backup,
             "/api/persistence/restore": self.server.service.persistence_restore,
             "/api/account-state-update": self.server.service.update_account_state,

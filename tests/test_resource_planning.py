@@ -338,6 +338,25 @@ class ResourcePlanningTests(unittest.TestCase):
                 "characters": [],
             })
 
+    def test_account_snapshot_export_import_round_trip(self):
+        service = PlanningService(self.root)
+        snapshot_id = service.accounts.save(self.snapshot, "往返账号")
+        exported = service.export_snapshot(snapshot_id)
+        imported = service.import_snapshot(
+            exported,
+            name="导入往返账号",
+        )
+        imported_snapshot = imported["snapshot"]["snapshot"]
+        self.assertEqual(exported["export_format"], "genshin-analyzer-account")
+        self.assertEqual(imported_snapshot["characters"][0]["identity"], "Neuvillette")
+        self.assertEqual(imported_snapshot["metadata"], exported["snapshot"]["metadata"])
+        with self.assertRaisesRegex(ValueError, "不支持的账号导出格式"):
+            import_account_snapshot({
+                "export_format": "unknown-format",
+                "source": {"kind": "manual"},
+                "characters": [],
+            })
+
     def test_batch_account_import_reports_partial_success_and_duplicates(self):
         valid = {
             "source": {"kind": "manual", "external_id": "manual-1"},

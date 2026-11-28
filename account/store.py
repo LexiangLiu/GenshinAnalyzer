@@ -87,6 +87,19 @@ class AccountStore:
             "updated_at": row["updated_at"],
         }
 
+    def export(self, snapshot_id: str) -> dict:
+        stored = self.get(snapshot_id)
+        return {
+            "schema_version": 1,
+            "export_format": "genshin-analyzer-account",
+            "snapshot": stored["snapshot"],
+            "metadata": {
+                "name": stored["name"],
+                "created_at": stored["created_at"],
+                "updated_at": stored["updated_at"],
+            },
+        }
+
     def list(self) -> list[dict]:
         with self._connect() as db:
             db.row_factory = sqlite3.Row

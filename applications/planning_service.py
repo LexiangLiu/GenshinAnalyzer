@@ -9,6 +9,7 @@ from contextlib import contextmanager
 
 from account.models import AccountSnapshot, CharacterState
 from account.store import AccountStore
+from account.importer import import_account_snapshot
 from goals.models import AccountGoal
 from goals.store import GoalStore
 from planning_v2.service import calculate_growth_plan
@@ -275,6 +276,20 @@ class PlanningService:
 
     def list_plans(self) -> list[dict]:
         return self.plans.list()
+
+    def export_snapshot(self, snapshot_id: str) -> dict:
+        return self.accounts.export(snapshot_id)
+
+    def import_snapshot(self, payload: Mapping[str, object], name: str | None = None) -> dict:
+        snapshot = import_account_snapshot(payload)
+        snapshot_id = self.accounts.save(
+            snapshot,
+            name or "导入账号快照",
+        )
+        return {
+            "snapshot_id": snapshot_id,
+            "snapshot": self.accounts.get(snapshot_id),
+        }
 
     def health(self) -> dict:
         return self.persistence.health()
