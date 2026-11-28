@@ -15,12 +15,19 @@ artifact-sim = "artifact_sim.__main__:main"
 [tool.setuptools]
 packages = [
     "artifact_sim",
+    "account",
+    "activities",
+    "applications",
     "core",
     "data",
     "damage",
+    "goals",
     "inventory",
     "optimization",
     "planning",
+    "planning_v2",
+    "plans",
+    "resources",
 ]
 
 [tool.setuptools.package-data]

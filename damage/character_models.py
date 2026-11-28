@@ -511,6 +511,80 @@ def catalog_character_coverage(character: str) -> dict | None:
     return None
 
 
+def catalog_coverage_audit() -> dict:
+    """Produce a read-only, machine-consumable formula-coverage snapshot."""
+    data = _catalog()
+    models = catalog_models()
+    by_character: dict[str, dict] = {}
+    for spec in models:
+        character = str(spec.get("character") or "")
+        row = by_character.setdefault(character, {
+            "character": character,
+            "character_zh": spec.get("character_zh"),
+            "models": [],
+            "categories": set(),
+            "attacks": set(),
+            "selectable_formula_keys": [],
+            "status": "calibrated",
+        })
+        row["models"].append(spec.get("key"))
+        if spec.get("category"):
+            row["categories"].add(str(spec["category"]))
+        if spec.get("attack"):
+            row["attacks"].add(str(spec["attack"]))
+        if spec.get("accuracy") in ("high", "medium"):
+            row["selectable_formula_keys"].append(str(spec["key"]))
+
+    explicit = {
+        str(row.get("character")): dict(row)
+        for row in data.get("coverage", [])
+        if isinstance(row, dict) and row.get("character")
+    }
+    for character, row in by_character.items():
+        row["categories"] = sorted(row["categories"])
+        row["attacks"] = sorted(row["attacks"])
+        row["models"] = sorted(set(row["models"]))
+        row["selectable_formula_keys"] = sorted(set(row["selectable_formula_keys"]))
+        coverage = explicit.get(character)
+        row["coverage_record"] = coverage
+        if coverage:
+            missing = coverage.get("missing")
+            row["missing"] = dict(missing) if isinstance(missing, dict) else {}
+        else:
+            row["missing"] = {}
+        if not row["selectable_formula_keys"]:
+            row["status"] = "uncalibrated"
+
+    calibrated_characters = sorted(
+        character
+        for character, row in by_character.items()
+        if row["status"] == "calibrated"
+    )
+    explicit_characters = sorted(explicit)
+    uncalibrated = sorted(
+        character
+        for character, row in by_character.items()
+        if row["status"] == "uncalibrated"
+    )
+    missing_record = sorted(set(calibrated_characters) - set(explicit_characters))
+    return {
+        "schema_version": 1,
+        "catalog_schema_version": data.get("schema_version", 1),
+        "generated_at": data.get("generated_at"),
+        "upstream": data.get("upstream"),
+        "model_count": len(models),
+        "character_count": len(by_character),
+        "calibrated_character_count": len(calibrated_characters),
+        "uncalibrated_character_count": len(uncalibrated),
+        "uncalibrated_characters": uncalibrated,
+        "missing_explicit_coverage_record": missing_record,
+        "characters": [
+            by_character[key]
+            for key in sorted(by_character)
+        ],
+    }
+
+
 def _token(value: object) -> str:
     return "".join(ch for ch in str(value).casefold() if ch.isalnum())
 

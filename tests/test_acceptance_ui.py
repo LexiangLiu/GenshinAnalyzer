@@ -6,7 +6,7 @@ import threading
 from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import urlencode
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 from damage.damage_models import DamageModel, get_damage_model
 from tools.acceptance_ui import (
@@ -137,6 +137,166 @@ class ValidateGenerationTests(unittest.TestCase):
         self.assertIn("旅行者元素".encode("utf-8"), page)
         self.assertIn("奇偶".encode("utf-8"), page)
         self.assertNotIn(b"__TRAVELER_ELEMENT_OPTIONS__", page)
+        self.assertIn("养成资源需求原型".encode("utf-8"), page)
+        self.assertIn(b"resource-plan-button", page)
+        self.assertIn("更新所选角色状态并重算".encode("utf-8"), page)
+        self.assertIn(b"resource-list-button", page)
+        self.assertIn("结构化养成决策查询".encode("utf-8"), page)
+        self.assertIn(b"decision-query-button", page)
+        self.assertIn("结构化账号导入边界".encode("utf-8"), page)
+        self.assertIn(b"account-import-button", page)
+        self.assertIn(b"engine_results", page)
+        self.assertIn("公式目录覆盖审计".encode("utf-8"), page)
+        self.assertIn(b"coverage-audit-button", page)
+        self.assertIn("来源与版本追踪".encode("utf-8"), page)
+        self.assertIn(b"provenance-button", page)
+        self.assertIn("持久化健康与备份".encode("utf-8"), page)
+        self.assertIn(b"persistence-health-button", page)
+        self.assertIn(b"persistence-backup-button", page)
+
+    def test_live_http_resource_plans_survive_service_restart(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state_dir = Path(directory)
+            service = AcceptanceService(state_dir)
+            plan_id = service._planning.plans.save(
+                {"schema_version": 1, "resources": {"lines": []}},
+                name="持久化验收方案",
+            )
+            server = AcceptanceHTTPServer(("127.0.0.1", 0), service)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                base = f"http://127.0.0.1:{server.server_address[1]}"
+                with urlopen(f"{base}/api/health") as response:
+                    health = json.loads(response.read().decode("utf-8"))
+                self.assertTrue(health["ok"])
+                with urlopen(f"{base}/api/persistence/health") as response:
+                    persistence = json.loads(response.read().decode("utf-8"))
+                self.assertIn(persistence["status"], ("healthy", "degraded"))
+            finally:
+                server.shutdown()
+                thread.join(timeout=5)
+                server.server_close()
+                service.close()
+
+            restarted = AcceptanceService(state_dir)
+            server = AcceptanceHTTPServer(("127.0.0.1", 0), restarted)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                base = f"http://127.0.0.1:{server.server_address[1]}"
+                with urlopen(f"{base}/api/resource-plans") as response:
+                    result = json.loads(response.read().decode("utf-8"))
+                self.assertTrue(any(plan["id"] == plan_id for plan in result["plans"]))
+                with urlopen(f"{base}/api/coverage") as response:
+                    coverage = json.loads(response.read().decode("utf-8"))
+                self.assertEqual(coverage["schema_version"], 1)
+                self.assertGreater(coverage["model_count"], 0)
+                with urlopen(f"{base}/api/provenance") as response:
+                    provenance = json.loads(response.read().decode("utf-8"))
+                self.assertEqual(provenance["schema_version"], 1)
+                self.assertIn("real_account_sync", {
+                    item["field"] for item in provenance["unknown"]
+                })
+            finally:
+                server.shutdown()
+                thread.join(timeout=5)
+                server.server_close()
+                restarted.close()
+
+    def test_live_http_full_growth_workflow(self):
+        with tempfile.TemporaryDirectory() as directory:
+            service = AcceptanceService(directory)
+            server = AcceptanceHTTPServer(("127.0.0.1", 0), service)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+
+            def post_json(base, route, payload):
+                request = Request(
+                    f"{base}{route}",
+                    data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                with urlopen(request) as response:
+                    return json.loads(response.read().decode("utf-8"))
+
+            try:
+                base = f"http://127.0.0.1:{server.server_address[1]}"
+                generated = post_json(base, "/api/generate", {
+                    "characters": 3,
+                    "artifacts": 20,
+                    "seed": 73,
+                })
+                row = generated["account"]["optimizable_roster"][0]
+                goal = {
+                    "name": "live养成目标",
+                    "horizon": "short",
+                    "characters": [{
+                        "character_id": row["character"],
+                        "target_level": 90,
+                        "target_constellation": 0,
+                        "target_talents": {"auto": 10, "skill": 10, "burst": 10},
+                        "build": {
+                            "weapon_id": row.get("weapon"),
+                            "weapon_target_level": 90,
+                            "weapon_target_refinement": 1,
+                            "four_piece_set": row.get("model_target_four_piece_set"),
+                            "main_stats": {},
+                            "substat_weights": {},
+                            "formula_objectives": [],
+                        },
+                        "short_term_priority": 1.0,
+                        "long_term_priority": 1.0,
+                    }],
+                    "global_weights": {},
+                    "resource_caps": {},
+                    "activity_rules": [],
+                    "status": "active",
+                }
+                first = post_json(base, "/api/resource-plan", {
+                    "session_id": generated["session_id"],
+                    "name": "live方案一",
+                    "seed": 73,
+                    "max_nodes": 50000,
+                    "goal": goal,
+                    "inventory": [],
+                })
+                snapshot_id = first["snapshot_id"]
+                goal_id = first["goal_id"]
+                updated = post_json(base, "/api/account-state-update", {
+                    "snapshot_id": snapshot_id,
+                    "character_updates": {
+                        row["character"]: {
+                            "level": 90,
+                            "talents": {"auto": 10, "skill": 10, "burst": 10},
+                            "weapon_level": 90,
+                        }
+                    },
+                    "metadata_updates": {"live_e2e": True},
+                })
+                second = post_json(base, "/api/recalculate-resource-plan", {
+                    "snapshot_id": updated["snapshot_id"],
+                    "goal_id": goal_id,
+                    "name": "live方案二",
+                    "inventory": [],
+                })
+                comparison = post_json(base, "/api/resource-plans/compare", {
+                    "first_id": first["plan_id"],
+                    "second_id": second["plan_id"],
+                })
+                with urlopen(f"{base}/api/resource-plans") as response:
+                    listed = json.loads(response.read().decode("utf-8"))
+
+                self.assertEqual(updated["changed_characters"], [row["character"]])
+                self.assertEqual(comparison["first"]["plan_id"], first["plan_id"])
+                self.assertEqual(comparison["second"]["plan_id"], second["plan_id"])
+                self.assertGreaterEqual(len(listed["plans"]), 2)
+            finally:
+                server.shutdown()
+                thread.join(timeout=5)
+                server.server_close()
+                service.close()
 
     def test_optimizer_roster_scales_with_inventory_without_capping_owned_roster(self):
         roster_limit = available_character_count()
@@ -339,6 +499,56 @@ class BuildSelectedRequestTests(unittest.TestCase):
 
 
 class ProjectionIntegrationTests(unittest.TestCase):
+    def test_resource_plan_automatically_runs_existing_loadout_engine(self):
+        with tempfile.TemporaryDirectory() as directory:
+            service = AcceptanceService(directory)
+            try:
+                generated = service.generate({
+                    "characters": 3,
+                    "artifacts": 20,
+                    "seed": 73,
+                })
+                optimizable = generated["account"]["optimizable_roster"]
+                self.assertTrue(optimizable)
+                row = optimizable[0]
+                result = service.resource_plan({
+                    "session_id": generated["session_id"],
+                    "name": "自动引擎方案",
+                    "seed": 73,
+                    "max_nodes": 50000,
+                    "goal": {
+                        "name": "自动养成目标",
+                        "horizon": "short",
+                        "characters": [{
+                            "character_id": row["character"],
+                            "target_level": 90,
+                            "target_constellation": 0,
+                            "target_talents": {"auto": 10, "skill": 10, "burst": 10},
+                            "build": {
+                                "weapon_id": row.get("weapon"),
+                                "weapon_target_level": 90,
+                                "weapon_target_refinement": 1,
+                                "four_piece_set": row.get("model_target_four_piece_set"),
+                                "main_stats": {},
+                                "substat_weights": {},
+                                "formula_objectives": [],
+                            },
+                            "short_term_priority": 1.0,
+                            "long_term_priority": 1.0,
+                        }],
+                        "global_weights": {},
+                        "resource_caps": {},
+                        "activity_rules": [],
+                        "status": "active",
+                    },
+                })
+                data = result["plan"]["data"]
+                self.assertIn("engine_results", data)
+                self.assertIn(data["method"]["loadout_search"], ("completed", "not_run"))
+                self.assertIn("warnings", data)
+            finally:
+                service.close()
+
     def test_formula_catalog_lists_multiple_models_and_marks_the_scoring_model(self):
         selected = DamageModel(
             key="demo_primary",

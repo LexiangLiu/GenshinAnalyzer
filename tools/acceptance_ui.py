@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 import sys
+import sqlite3
 import tempfile
 import threading
 import uuid
@@ -50,6 +51,11 @@ from tools.simulate_account import (
     validate_artifact_count,
 )
 from data.game_data import SETS
+from account.models import AccountSnapshot, CharacterState
+from account.importer import import_account_snapshot
+from account.importer import import_account_snapshot_batch
+from applications.planning_service import PlanningService
+from goals.models import AccountGoal
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -1250,14 +1256,289 @@ def _loadout_ids(result: dict[str, Any]) -> dict[str, tuple[str, ...]]:
 
 
 class AcceptanceService:
-    def __init__(self) -> None:
+    def __init__(self, state_dir: str | Path | None = None) -> None:
         self._temporary_directory = tempfile.TemporaryDirectory(prefix="genshin-acceptance-")
         self._root = Path(self._temporary_directory.name)
+        if state_dir is None:
+            state_dir = os.environ.get(
+                "GENSHIN_ANALYZER_STATE_DIR",
+                str(Path.home() / ".genshin-analyzer"),
+            )
+        self._planning = PlanningService(Path(state_dir) / "planning")
         self._lock = threading.RLock()
         self._session: dict[str, Any] | None = None
 
     def close(self) -> None:
         self._temporary_directory.cleanup()
+
+    def import_account_snapshot(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        snapshot = import_account_snapshot(payload)
+        snapshot_id = self._planning.accounts.save(
+            snapshot,
+            str(payload.get("name") or "结构化导入账号"),
+        )
+        return {
+            "schema_version": 1,
+            "snapshot_id": snapshot_id,
+            "snapshot": self._planning.accounts.get(snapshot_id),
+            "source": "local_structured_import",
+            "external_api": "not_implemented",
+        }
+
+    def import_account_snapshot_batch(self, payload: object) -> dict[str, Any]:
+        return import_account_snapshot_batch(payload)
+
+    def persistence_health(self) -> dict[str, Any]:
+        return self._planning.health()
+
+    def persistence_backup(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        destination = payload.get("destination")
+        if not isinstance(destination, str) or not destination:
+            destination = str(Path.home() / ".genshin-analyzer" / "backups")
+        return self._planning.backup(destination)
+
+    def persistence_restore(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        backup_dir = payload.get("backup_dir")
+        if not isinstance(backup_dir, str) or not backup_dir:
+            raise ValueError("backup_dir 必须是有效目录")
+        return self._planning.restore(backup_dir)
+
+    def update_account_state(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        snapshot_id = payload.get("snapshot_id")
+        if not isinstance(snapshot_id, str) or not snapshot_id:
+            raise ValueError("snapshot_id 必须是有效字符串")
+        return self._planning.update_snapshot(
+            snapshot_id,
+            character_updates=payload.get("character_updates"),
+            inventory_updates=payload.get("inventory_updates"),
+            equipment_updates=payload.get("equipment_updates"),
+            metadata_updates=payload.get("metadata_updates"),
+            name=payload.get("name"),
+        )
+
+    def recalculate_resource_plan(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        snapshot_id = payload.get("snapshot_id")
+        goal_id = payload.get("goal_id")
+        if not isinstance(snapshot_id, str) or not snapshot_id:
+            raise ValueError("snapshot_id 必须是有效字符串")
+        if not isinstance(goal_id, str) or not goal_id:
+            raise ValueError("goal_id 必须是有效字符串")
+        return self._planning.recalculate(
+            account_snapshot_id=snapshot_id,
+            goal_id=goal_id,
+            name=str(payload.get("name") or "更新后养成方案"),
+            inventory=payload.get("inventory"),
+            engine_results=payload.get("engine_results"),
+        )
+
+    def list_resource_plans(self, payload: object = None) -> dict[str, Any]:
+        return {"plans": self._planning.list_plans()}
+
+    def compare_resource_plans(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        first_id = payload.get("first_id")
+        second_id = payload.get("second_id")
+        if not isinstance(first_id, str) or not isinstance(second_id, str):
+            raise ValueError("first_id 和 second_id 必须是有效字符串")
+        return self._planning.compare_plans(first_id, second_id)
+
+    def decision_query(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        query = payload.get("query")
+        if not isinstance(query, str):
+            raise ValueError("query 必须是字符串")
+        return self._planning.decision_query(
+            query,
+            plan_id=payload.get("plan_id"),
+            second_plan_id=payload.get("second_plan_id"),
+        )
+
+    def _automatic_engine_results(
+        self,
+        session_id: str,
+        goal: AccountGoal,
+        payload: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Run existing engines through their public methods and attach traceable results."""
+        explicit = payload.get("engine_results")
+        if isinstance(explicit, dict):
+            engine_results = dict(explicit)
+        else:
+            engine_results = {}
+        errors = list(engine_results.get("errors", ()))
+
+        optimizable = [
+            character.character_id
+            for character in goal.characters
+            if isinstance(character.character_id, str)
+        ]
+        available = {
+            member.get("character")
+            for member in (self._session.get("party_request", {}).get("members", [])
+                           if isinstance(self._session, dict) else [])
+            if isinstance(member, dict)
+        }
+        optimizable = [name for name in optimizable if name in available]
+        if not optimizable:
+            errors.append({
+                "engine": "loadout_formula",
+                "reason": "目标角色不在当前账号的可配装角色列表中",
+            })
+        if optimizable and "loadout" not in engine_results:
+            try:
+                optimization_payload = {
+                    "session_id": session_id,
+                    "selected_characters": optimizable,
+                    "mode": "single" if len(optimizable) == 1 else "multi",
+                    "seed": int(payload.get("seed", 42)),
+                    "max_nodes": int(payload.get("max_nodes", 300000)),
+                    "fixed_four_piece_sets": {
+                        character.character_id: character.build.four_piece_set
+                        for character in goal.characters
+                        if character.build.four_piece_set is not None
+                    },
+                }
+                optimization = self.optimize(optimization_payload)
+                engine_results["loadout"] = optimization["result"]
+                engine_results["formula"] = {
+                    "mode": "existing_formula_objectives",
+                    "members": optimization["result"].get("members", []),
+                }
+            except (ValueError, RuntimeError, TypeError) as exc:
+                errors.append({
+                    "engine": "loadout_formula",
+                    "reason": str(exc),
+                })
+
+        expectation_payload = payload.get("expectation")
+        if isinstance(expectation_payload, dict) and "expectation" not in engine_results:
+            try:
+                expectation_payload = dict(expectation_payload)
+                expectation_payload["session_id"] = session_id
+                if "optimization_id" not in expectation_payload:
+                    previous = (
+                        self._session.get("optimization")
+                        if isinstance(self._session, dict) else None
+                    )
+                    if not isinstance(previous, dict) or "id" not in previous:
+                        raise ValueError("请先完成配装优化，再运行树脂期望")
+                    expectation_payload["optimization_id"] = previous["id"]
+                engine_results["expectation"] = self.expectations(expectation_payload)
+            except (ValueError, RuntimeError, TypeError) as exc:
+                errors.append({
+                    "engine": "resin_expectation",
+                    "reason": str(exc),
+                })
+
+        account_farming_payload = payload.get("account_farming")
+        if isinstance(account_farming_payload, dict) and "monte_carlo" not in engine_results:
+            try:
+                account_farming_payload = dict(account_farming_payload)
+                account_farming_payload["session_id"] = session_id
+                if "optimization_id" not in account_farming_payload:
+                    previous = (
+                        self._session.get("optimization")
+                        if isinstance(self._session, dict) else None
+                    )
+                    if not isinstance(previous, dict) or "id" not in previous:
+                        raise ValueError("请先完成配装优化，再运行账号刷本")
+                    account_farming_payload["optimization_id"] = previous["id"]
+                engine_results["monte_carlo"] = self.account_farming(account_farming_payload)
+            except (ValueError, RuntimeError, TypeError) as exc:
+                errors.append({
+                    "engine": "monte_carlo_account_farming",
+                    "reason": str(exc),
+                })
+
+        if errors:
+            engine_results["errors"] = errors
+        return engine_results
+
+    def resource_plan(self, payload: object) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise ValueError("请求内容必须是 JSON 对象")
+        with self._lock:
+            session = self._require_session(payload.get("session_id"))
+            goal_payload = payload.get("goal")
+            if not isinstance(goal_payload, dict):
+                raise ValueError("resource plan 需要 goal 对象")
+            goal = AccountGoal.from_dict(goal_payload)
+            engine_results = self._automatic_engine_results(
+                str(payload["session_id"]),
+                goal,
+                payload,
+            )
+
+            characters = []
+            for row in session["account"].get("roster", []):
+                identity = row.get("character")
+                if not isinstance(identity, str) or not identity:
+                    continue
+                talents = row.get("talents") or {"auto": 1, "skill": 1, "burst": 1}
+                characters.append(CharacterState(
+                    identity=identity,
+                    level=int(row.get("level", 1)),
+                    ascension=int(row.get("ascension", 0)),
+                    constellation=int(row.get("constellation", 0)),
+                    talents={
+                        "auto": int(talents.get("auto", 1)),
+                        "skill": int(talents.get("skill", 1)),
+                        "burst": int(talents.get("burst", 1)),
+                    },
+                    weapon_id=row.get("weapon"),
+                    weapon_level=int(row.get("level", 1)),
+                    weapon_refinement=int(row.get("weapon_refinement", 1)),
+                ))
+            meta = session["account"].get("meta", {})
+            snapshot = AccountSnapshot(
+                source={
+                    "kind": "simulation",
+                    "reproducible_seed": meta.get("seed"),
+                },
+                characters=characters,
+                inventory={
+                    "items": payload.get("inventory", []),
+                    "artifact_count": meta.get("artifact_count"),
+                },
+                metadata={
+                    "game_version": meta.get("game_version"),
+                    "missing_fields": [
+                        "real_account_inventory",
+                        "mora_inventory",
+                        "character_experience",
+                        "constellation_cost_table",
+                        "activity_rewards",
+                    ],
+                },
+            )
+            snapshot_id = self._planning.accounts.save(snapshot, "验收模拟账号")
+            goal_id = self._planning.goals.save(goal)
+            outcome = self._planning.calculate_and_save(
+                account_snapshot_id=snapshot_id,
+                goal_id=goal_id,
+                name=str(payload.get("name") or "养成资源方案"),
+                inventory={
+                    "items": payload.get("inventory", []),
+                },
+                engine_results=engine_results,
+            )
+            return {
+                **outcome,
+                "snapshot_id": snapshot_id,
+                "goal_id": goal_id,
+            }
 
     def details(
         self,
@@ -1896,6 +2177,20 @@ class AcceptanceRequestHandler(BaseHTTPRequestHandler):
         if route == "/api/health":
             self._send_json(200, {"ok": True})
             return
+        if route == "/api/persistence/health":
+            self._send_json(200, self.server.service.persistence_health())
+            return
+        if route == "/api/resource-plans":
+            self._send_json(200, self.server.service.list_resource_plans())
+            return
+        if route == "/api/coverage":
+            from damage.character_models import catalog_coverage_audit
+            self._send_json(200, catalog_coverage_audit())
+            return
+        if route == "/api/provenance":
+            from data.provenance import provenance_snapshot
+            self._send_json(200, provenance_snapshot())
+            return
         if route == "/api/details":
             try:
                 parameters = parse_qs(parsed.query, keep_blank_values=True, max_num_fields=6)
@@ -1975,6 +2270,15 @@ class AcceptanceRequestHandler(BaseHTTPRequestHandler):
             "/api/plan": self.server.service.plan,
             "/api/expectations": self.server.service.expectations,
             "/api/account-farming": self.server.service.account_farming,
+            "/api/resource-plan": self.server.service.resource_plan,
+            "/api/account-import": self.server.service.import_account_snapshot,
+            "/api/account-import-batch": self.server.service.import_account_snapshot_batch,
+            "/api/persistence/backup": self.server.service.persistence_backup,
+            "/api/persistence/restore": self.server.service.persistence_restore,
+            "/api/account-state-update": self.server.service.update_account_state,
+            "/api/recalculate-resource-plan": self.server.service.recalculate_resource_plan,
+            "/api/resource-plans/compare": self.server.service.compare_resource_plans,
+            "/api/decision-query": self.server.service.decision_query,
         }
         action = actions.get(route)
         if action is None:
@@ -1988,6 +2292,9 @@ class AcceptanceRequestHandler(BaseHTTPRequestHandler):
         except RuntimeError as exc:
             self._send_json(500, {"error": str(exc)})
             return
+        except (sqlite3.Error, OSError) as exc:
+            self._send_json(500, {"error": f"持久化操作失败：{exc}"})
+            return
         self._send_json(200, result)
 
 
@@ -1995,10 +2302,16 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="启动本地实验效果验收界面")
     parser.add_argument("--port", type=int, default=8765, help="本地监听端口，传 0 可自动分配")
     parser.add_argument("--no-browser", action="store_true", help="启动后不自动打开浏览器")
+    parser.add_argument(
+        "--state-dir",
+        type=Path,
+        default=None,
+        help="持久化账号快照、目标和方案的目录；模拟账号库存仍存临时目录",
+    )
     args = parser.parse_args()
     if not 0 <= args.port <= 65535:
         parser.error("--port 必须介于 0 和 65535 之间")
-    service = AcceptanceService()
+    service = AcceptanceService(args.state_dir)
     try:
         server = AcceptanceHTTPServer(("127.0.0.1", args.port), service)
     except OSError as exc:

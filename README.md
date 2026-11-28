@@ -36,6 +36,28 @@ python tools\build_manekin_combat_reference.py --source-dir <AstaPS ExcelBinOutp
 ```powershell
 python -m tools.acceptance_ui
 ```
+可通过环境变量或命令行指定持久化目录：
+
+```powershell
+python -m tools.acceptance_ui --state-dir C:\path\to\genshin-analyzer-state
+```
+
+`--state-dir` 下保存账号快照、养成目标、方案和计算缓存；本次模拟账号的角色和圣遗物仍保存在临时目录，关闭服务后清理。未提供参数时使用 `~/.genshin-analyzer/planning`。
+
+持久化 SQLite 使用 WAL、忙等待和 schema 版本迁移。旧表启动时会补齐缺失列与索引，不要求手工迁移。并发写入使用 10 秒 busy timeout；缓存只复用相同快照、目标、库存和引擎输入。
+
+结构化账号导入只接受 `manual` 或 `legacy_import` 来源，不提供真实官方账号同步。活动配置只接受带 `source_ref`、有效期、置信度和验证状态的结构化输入，过期或未验证规则不计入收益。
+
+## 发布与维护清单
+
+- 发布前运行 `python tools/run_acceptance_suite.py`，并保留完整测试输出。
+- 发布前运行旧 SQLite 迁移测试、并发保存测试、live HTTP 全工作流测试和持久化重启测试。
+- 公式目录更新时同时更新来源提交、生成时间、校准精度和覆盖审计；未校准公式不得进入可组合评分。
+- 图鉴快照更新时核对 manifest SHA-256 与分类计数，不通过手工猜测补齐缺失字段。
+- 活动配置必须保留来源、有效期、置信度和验证状态；过期、未验证或低置信度配置只降级。
+- `--state-dir` 指向持久目录前先备份 SQLite 和 WAL 文件；恢复时使用新进程启动，不删除旧快照或方案。
+- 恢复是显式操作：备份 manifest 会校验数据库版本、SHA-256 和 `quick_check`，应用不会静默覆盖现有持久化。
+- 发布不自动执行真实账号同步、实时活动抓取、合并、推送、公开发布或生产部署；这些操作需要明确授权与可靠凭据。
 
 使用 uv 管理 Python 时，也可在仓库根目录执行 `uv run --python 3.12 python -m tools.acceptance_ui`。启动后在 Chrome、Edge 或其他浏览器打开终端打印的 `http://127.0.0.1:8765/` 地址即可使用，服务只监听本机；按 Ctrl+C 关闭。`--port 0` 可使用系统分配的可用端口，`--no-browser` 可禁止自动打开浏览器。账号数据库和请求结果写入临时目录，服务关闭时清理。
 
@@ -65,6 +87,7 @@ python -m artifact_sim -o piece-4.json enhance piece.json --to 4 --seed 9
 python -m artifact_sim -o piece-20.json enhance piece-4.json --to 20 --seed 9
 python -m artifact_sim reset piece-20.json
 python -m unittest discover -s tests -v
+python tools/run_acceptance_suite.py
 ```
 
 示例生成的「炉火融炼之心」生之花在 +0 预览第 4 条元素充能效率 **6.48%**，与游戏界面保留一位小数后的 6.5% 对应。强化至 +4 时，`pending_substat` 变为 `null`，同一条数值进入 `active_substats`，历史记为 `activate`。三词条件在 +8、+12、+16、+20 强化已有词条，四词条件从 +4 开始强化已有词条。强化可停在任意整数等级。
