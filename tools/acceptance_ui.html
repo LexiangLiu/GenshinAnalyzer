@@ -207,6 +207,25 @@
     .account-role strong { color: #dce8e8; }
     .footnote { color: #6e7d86; font-size: 10px; line-height: 1.55; margin: 13px 0 0; }
     .hidden { display: none !important; }
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -48px;
+      z-index: 100;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: #d8ebe7;
+      color: #102329;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 12px; }
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid #78a7a1;
+      outline-offset: 2px;
+    }
     @media (max-width: 900px) {
       .hero { grid-template-columns: 1fr; }
       .hero-note { max-width: 660px; }
@@ -238,7 +257,8 @@
   </style>
 </head>
 <body>
-  <main class="shell">
+  <a class="skip-link" href="#main-content">跳到主要内容</a>
+  <main id="main-content" class="shell" tabindex="-1">
     <div class="topline">
       <div class="brand"><span class="brand-mark">GA</span><span>Genshin Analyzer</span></div>
       <span class="local-tag">本地运行 · 真实模拟数据</span>
@@ -353,6 +373,82 @@
             <div class="button-row"><button id="account-farming-button" class="button" type="button" disabled>比较账号刷本优先级</button></div>
             <div id="account-farming-status" class="status" role="status"></div>
             <div id="account-farming-results" class="domain-results hidden"></div>
+            <p class="section-label">结构化账号导入边界</p>
+            <label class="field">本地账号快照 JSON
+              <textarea id="account-import-json" rows="5" maxlength="65536" placeholder='{"source":{"kind":"manual"},"characters":[],"inventory":{},"equipment":{},"metadata":{"missing_fields":[]}}'></textarea>
+            </label>
+            <div class="button-row"><button id="account-import-button" class="button" type="button">校验并保存本地快照</button></div>
+            <div class="button-row"><button id="account-export-button" class="button" type="button" disabled>导出当前快照 JSON</button></div>
+            <div id="account-import-status" class="status" role="status"></div>
+            <p class="section-label">养成资源需求原型</p>
+            <div class="advanced">
+              <label class="field">目标角色等级
+                <input id="resource-target-level" type="number" min="1" max="90" value="90">
+              </label>
+              <label class="field">目标天赋等级
+                <input id="resource-target-talent" type="number" min="1" max="10" value="10">
+              </label>
+              <label class="field">目标武器等级
+                <input id="resource-target-weapon-level" type="number" min="1" max="90" value="90">
+              </label>
+            </div>
+            <p class="expectation-note">本原型只汇总离线图鉴中可确认的突破、天赋、武器费用和摩拉；真实库存、命座费用、角色经验、活动收益和树脂值必须另行维护或标记 unknown。</p>
+            <div class="button-row"><button id="resource-plan-button" class="button" type="button" disabled>保存并计算养成资源需求</button></div>
+            <div id="resource-plan-status" class="status" role="status"></div>
+            <div id="resource-plan-results" class="domain-results hidden"></div>
+            <p class="section-label">方案闭环</p>
+            <div class="button-row">
+              <button id="resource-update-button" class="button" type="button" disabled>更新所选角色状态并重算</button>
+              <button id="resource-list-button" class="button" type="button" disabled>列出保存方案</button>
+            </div>
+            <div class="advanced">
+              <label class="field">比较方案 A ID
+                <input id="resource-compare-first" type="text" maxlength="80">
+              </label>
+              <label class="field">比较方案 B ID
+                <input id="resource-compare-second" type="text" maxlength="80">
+              </label>
+            </div>
+            <div class="button-row"><button id="resource-compare-button" class="button" type="button" disabled>比较两套方案</button></div>
+            <div id="resource-loop-status" class="status" role="status"></div>
+            <div id="resource-loop-results" class="domain-results hidden"></div>
+            <p class="section-label">结构化养成决策查询</p>
+            <label class="field">常见问题
+              <select id="decision-query-type">
+                <option value="weapon_or_character">升级武器还是角色</option>
+                <option value="next_domain">先刷哪个秘境</option>
+                <option value="next_goal">先完成哪个目标</option>
+                <option value="missing_resources">缺多少资源</option>
+                <option value="plan_difference">重算后方案差异</option>
+              </select>
+            </label>
+            <div class="button-row"><button id="decision-query-button" class="button" type="button" disabled>查询养成决策</button></div>
+            <div id="decision-query-status" class="status" role="status"></div>
+            <div id="decision-query-results" class="domain-results hidden"></div>
+            <p class="section-label">公式目录覆盖审计</p>
+            <div class="button-row"><button id="coverage-audit-button" class="button" type="button">查看公式覆盖与来源版本</button></div>
+            <div id="coverage-audit-status" class="status" role="status"></div>
+            <div id="coverage-audit-results" class="domain-results hidden"></div>
+            <p class="section-label">来源与版本追踪</p>
+            <div class="button-row"><button id="provenance-button" class="button" type="button">查看离线来源清单</button></div>
+            <div id="provenance-status" class="status" role="status"></div>
+            <div id="provenance-results" class="domain-results hidden"></div>
+            <p class="section-label">持久化健康与备份</p>
+            <div class="field-grid">
+              <label class="field">备份目标目录
+                <input id="persistence-backup-dir" type="text" maxlength="260" placeholder="留空时使用 ~/.genshin-analyzer/backups">
+              </label>
+              <label class="field">恢复备份目录
+                <input id="persistence-restore-dir" type="text" maxlength="260" placeholder="完整 backup 目录路径">
+              </label>
+            </div>
+            <div class="button-row">
+              <button id="persistence-health-button" class="button" type="button">检查持久化健康</button>
+              <button id="persistence-backup-button" class="button" type="button">创建一致性备份</button>
+              <button id="persistence-restore-button" class="button" type="button">恢复备份（覆盖现有持久化）</button>
+            </div>
+            <div id="persistence-status" class="status" role="status"></div>
+            <div id="persistence-results" class="domain-results hidden"></div>
           </div>
         </section>
 
@@ -458,6 +554,7 @@
       accountFarming: null,
       accountFarmingPending: false,
       accountFarmingRequest: 0,
+      resourcePlan: null,
       fixedSets: {},
       formulaObjectives: {},
       detailKind: "characters",
@@ -490,6 +587,9 @@
 
     function setStatus(id, message, error = false) {
       const box = byId(id);
+      box.setAttribute("role", "status");
+      box.setAttribute("aria-live", error ? "assertive" : "polite");
+      box.setAttribute("aria-atomic", "true");
       box.textContent = message;
       box.classList.toggle("visible", Boolean(message));
       box.classList.toggle("error", error);
@@ -833,6 +933,7 @@
       }
       updatePlanButton();
       updateExpectationButton();
+      byId("resource-plan-button").disabled = !state.account || checked.length === 0;
     }
 
     function renderRoster(roster) {
@@ -2043,6 +2144,435 @@
 
     ["expectation-domain", "expectation-start", "expectation-budgets", "expectation-samples"]
       .forEach((id) => byId(id).addEventListener("input", invalidateExpectations));
+
+    byId("resource-plan-button").addEventListener("click", async () => {
+      if (!state.account) return;
+      const targetLevel = Number(byId("resource-target-level").value);
+      const targetTalent = Number(byId("resource-target-talent").value);
+      const targetWeaponLevel = Number(byId("resource-target-weapon-level").value);
+      const selected = selectedCharacters();
+      const fixedSets = selectedFixedSets();
+      const formulaObjectives = selectedFormulaObjectives();
+      const roster = state.account.account.optimizable_roster || [];
+      const characters = selected.map((character) => {
+        const row = roster.find((item) => item.character === character) || {};
+        return {
+          character_id: character,
+          target_level: targetLevel,
+          target_constellation: 0,
+          target_talents: {
+            auto: targetTalent,
+            skill: targetTalent,
+            burst: targetTalent
+          },
+          build: {
+            weapon_id: row.weapon || null,
+            weapon_target_level: targetWeaponLevel,
+            weapon_target_refinement: 1,
+            four_piece_set: fixedSets[character] || row.model_target_four_piece_set || null,
+            main_stats: {},
+            substat_weights: {},
+            formula_objectives: formulaObjectives[character]
+              ? [formulaObjectives[character]]
+              : []
+          },
+          short_term_priority: 1,
+          long_term_priority: 1
+        };
+      });
+      const goal = {
+        name: "验收养成资源方案",
+        horizon: "mixed",
+        characters,
+        global_weights: {},
+        resource_caps: {},
+        activity_rules: [],
+        status: "draft"
+      };
+      const button = byId("resource-plan-button");
+      button.disabled = true;
+      setStatus("resource-plan-status", "正在汇总离线图鉴资源、保存方案并标记缺失字段…");
+      try {
+        const result = await post("/api/resource-plan", {
+          session_id: state.account.session_id,
+          name: "验收养成资源方案",
+          goal,
+          inventory: [],
+          engine_results: {
+            loadout: state.optimization?.result || null,
+            formula: state.optimization?.formula_objectives
+              ? {objectives: state.optimization.formula_objectives}
+              : null,
+            expectation: state.expectation || null,
+            monte_carlo: state.accountFarming || null
+          }
+        });
+        const plan = result.plan || {};
+        const data = plan.data || {};
+        const resources = data.resources || {};
+        const content = byId("resource-plan-results");
+        content.replaceChildren();
+        (resources.lines || []).forEach((line) => {
+          const card = document.createElement("div");
+          card.className = "domain-card";
+          const heading = document.createElement("strong");
+          heading.textContent = `${line.name}：需求 ${number(line.count, 0)}，剩余需求 ${number(line.remaining, 0)}`;
+          card.append(heading);
+          content.append(card);
+        });
+        (resources.unknown || []).forEach((item) => {
+          const card = document.createElement("div");
+          card.className = "domain-card";
+          card.textContent = `unknown · ${item.character || "账号"} · ${item.field}：${item.reason}`;
+          content.append(card);
+        });
+        (resources.actions || []).forEach((action) => {
+          const card = document.createElement("div");
+          card.className = "domain-card";
+          card.textContent = `圣遗物行动：目标套装 ${action.target_four_piece_set}，树脂 ${action.resin}`;
+          content.append(card);
+        });
+        const confidenceCard = document.createElement("div");
+        confidenceCard.className = "domain-card";
+        confidenceCard.textContent = `可信度：${data.confidence?.status || "unknown"}；配装搜索：${data.method?.loadout_search || "unknown"}；Monte Carlo：${data.method?.monte_carlo || "unknown"}`;
+        content.append(confidenceCard);
+        (data.warnings || []).slice(0, 8).forEach((warning) => {
+          const card = document.createElement("div");
+          card.className = "domain-card";
+          card.textContent = `warning · ${warning.field || "来源"}：${warning.reason || warning}`;
+          content.append(card);
+        });
+        content.classList.remove("hidden");
+        state.resourcePlan = {
+          snapshot_id: result.snapshot_id,
+          goal_id: result.goal_id,
+          plan_id: result.plan_id
+        };
+        byId("account-export-button").disabled = false;
+        byId("resource-update-button").disabled = false;
+        byId("resource-list-button").disabled = false;
+        byId("resource-compare-first").value = result.plan_id;
+        byId("decision-query-button").disabled = false;
+        setStatus(
+          "resource-plan-status",
+          `方案已保存（${result.plan_id}）；缺失字段不会按零或成功计入。`
+        );
+      } catch (error) {
+        setStatus("resource-plan-status", error.message, true);
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    byId("resource-update-button").addEventListener("click", async () => {
+      if (!state.resourcePlan) return;
+      const targetLevel = Number(byId("resource-target-level").value);
+      const targetTalent = Number(byId("resource-target-talent").value);
+      const targetWeaponLevel = Number(byId("resource-target-weapon-level").value);
+      const characterUpdates = Object.fromEntries(selectedCharacters().map((character) => [
+        character,
+        {
+          level: targetLevel,
+          talents: {
+            auto: targetTalent,
+            skill: targetTalent,
+            burst: targetTalent
+          },
+          weapon_level: targetWeaponLevel
+        }
+      ]));
+      setStatus("resource-loop-status", "正在创建更新后的账号快照并保留旧方案…");
+      try {
+        const updated = await post("/api/account-state-update", {
+          snapshot_id: state.resourcePlan.snapshot_id,
+          character_updates: characterUpdates,
+          metadata_updates: {
+            last_partial_update: "character_goal_state"
+          }
+        });
+        const recalculated = await post("/api/recalculate-resource-plan", {
+          snapshot_id: updated.snapshot_id,
+          goal_id: state.resourcePlan.goal_id,
+          name: "状态更新后养成方案",
+          inventory: [],
+          engine_results: {
+            loadout: state.optimization?.result || null,
+            formula: state.optimization?.formula_objectives
+              ? {objectives: state.optimization.formula_objectives}
+              : null,
+            expectation: state.expectation || null,
+            monte_carlo: state.accountFarming || null
+          }
+        });
+        state.resourcePlan = {
+          snapshot_id: updated.snapshot_id,
+          goal_id: state.resourcePlan.goal_id,
+          plan_id: recalculated.plan_id
+        };
+        byId("resource-compare-second").value = recalculated.plan_id;
+        byId("resource-loop-results").replaceChildren();
+        const card = document.createElement("div");
+        card.className = "domain-card";
+        card.textContent = `旧快照已保留：${updated.previous_snapshot_id}；新快照：${updated.snapshot_id}；新方案：${recalculated.plan_id}`;
+        byId("resource-loop-results").append(card);
+        byId("resource-loop-results").classList.remove("hidden");
+        setStatus("resource-loop-status", "状态已局部更新，旧方案仍保留，新方案已重算。");
+      } catch (error) {
+        setStatus("resource-loop-status", error.message, true);
+      }
+    });
+
+    byId("resource-list-button").addEventListener("click", async () => {
+      setStatus("resource-loop-status", "正在读取保存的养成方案…");
+      try {
+        const result = await get("/api/resource-plans");
+        const content = byId("resource-loop-results");
+        content.replaceChildren();
+        (result.plans || []).forEach((plan) => {
+          const card = document.createElement("div");
+          card.className = "domain-card";
+          card.textContent = `${plan.name} · ${plan.id} · ${plan.created_at}`;
+          content.append(card);
+        });
+        content.classList.toggle("hidden", !(result.plans || []).length);
+        setStatus("resource-loop-status", `共列出 ${(result.plans || []).length} 个方案。`);
+      } catch (error) {
+        setStatus("resource-loop-status", error.message, true);
+      }
+    });
+
+    byId("resource-compare-button").disabled = false;
+    byId("resource-compare-button").addEventListener("click", async () => {
+      const firstId = byId("resource-compare-first").value.trim();
+      const secondId = byId("resource-compare-second").value.trim();
+      if (!firstId || !secondId) {
+        setStatus("resource-loop-status", "请填写两个方案 ID。", true);
+        return;
+      }
+      setStatus("resource-loop-status", "正在比较成本、收益、风险、缺失与可达性…");
+      try {
+        const result = await post("/api/resource-plans/compare", {
+          first_id: firstId,
+          second_id: secondId
+        });
+        const content = byId("resource-loop-results");
+        content.replaceChildren();
+        for (const side of [result.first, result.second]) {
+          const card = document.createElement("div");
+          card.className = "domain-card";
+          const missing = (side.missing || []).length;
+          card.textContent = `${side.name}：可达性 ${side.feasibility}；预期收益 ${side.expected_benefit}；风险区间 ${side.risk?.interval || "unknown"}；缺失字段 ${missing}`;
+          content.append(card);
+        }
+        content.classList.remove("hidden");
+        setStatus("resource-loop-status", result.changed ? "两方案存在差异。" : "两方案计算输入一致。");
+      } catch (error) {
+        setStatus("resource-loop-status", error.message, true);
+      }
+    });
+
+    byId("persistence-health-button").addEventListener("click", async () => {
+      setStatus("persistence-status", "正在检查 SQLite 快照与 WAL 状态…");
+      try {
+        const health = await get("/api/persistence/health");
+        const content = byId("persistence-results");
+        content.replaceChildren();
+        for (const [name, result] of [["账号与方案", health.accounts], ["计算缓存", health.cache]]) {
+          const card = document.createElement("div");
+          card.className = "domain-card";
+          card.textContent = `${name}：${result.ok ? "健康" : `降级（${result.reason}）`}`;
+          content.append(card);
+        }
+        content.classList.remove("hidden");
+        setStatus("persistence-status", `持久化状态：${health.status}；WAL 文件 ${health.wal_files.length} 个。`);
+      } catch (error) {
+        setStatus("persistence-status", error.message, true);
+      }
+    });
+
+    byId("persistence-backup-button").addEventListener("click", async () => {
+      const destination = byId("persistence-backup-dir").value.trim();
+      setStatus("persistence-status", "正在创建一致性 SQLite 备份…");
+      try {
+        const result = await post("/api/persistence/backup", { destination: destination || null });
+        const card = document.createElement("div");
+        card.className = "domain-card";
+        card.textContent = `备份已创建：${result.backup_dir}`;
+        byId("persistence-results").replaceChildren(card);
+        byId("persistence-results").classList.remove("hidden");
+        setStatus("persistence-status", "备份已通过快速校验和 SHA-256 清单记录。");
+      } catch (error) {
+        setStatus("persistence-status", error.message, true);
+      }
+    });
+
+    byId("persistence-restore-button").addEventListener("click", async () => {
+      const backupDir = byId("persistence-restore-dir").value.trim();
+      if (!backupDir) {
+        setStatus("persistence-status", "请填写要恢复的完整备份目录。", true);
+        return;
+      }
+      if (!window.confirm("恢复会覆盖现有账号快照、目标、方案和缓存。是否继续？")) {
+        setStatus("persistence-status", "恢复已取消，现有持久化未修改。");
+        return;
+      }
+      setStatus("persistence-status", "正在校验 manifest、SHA-256 和 SQLite，并覆盖持久化…");
+      try {
+        const result = await post("/api/persistence/restore", { backup_dir: backupDir });
+        const card = document.createElement("div");
+        card.className = "domain-card";
+        card.textContent =
+          `恢复完成：${(result.restored || []).join("、") || "无数据库文件"}；`
+          + `健康状态 ${result.health?.status || "unknown"}。`;
+        byId("persistence-results").replaceChildren(card);
+        byId("persistence-results").classList.remove("hidden");
+        setStatus("persistence-status", "恢复完成；请重新加载或重新生成当前工作流。");
+      } catch (error) {
+        setStatus("persistence-status", error.message, true);
+      }
+    });
+
+    byId("provenance-button").addEventListener("click", async () => {
+      setStatus("provenance-status", "正在读取离线图鉴与公式目录来源…");
+      try {
+        const provenance = await get("/api/provenance");
+        const content = byId("provenance-results");
+        content.replaceChildren();
+        const game = document.createElement("div");
+        game.className = "domain-card";
+        game.textContent =
+          `图鉴版本 ${provenance.game_data.game_version || "unknown"}；`
+          + `角色图鉴 SHA256 ${provenance.game_data.character_category_sha256?.zh || "unknown"}。`;
+        content.append(game);
+        const formula = document.createElement("div");
+        formula.className = "domain-card";
+        formula.textContent =
+          `公式目录 ${provenance.formula_catalog.upstream || "unknown"}；`
+          + `生成时间 ${provenance.formula_catalog.generated_at || "unknown"}；`
+          + `模型数 ${provenance.formula_catalog.model_count ?? "unknown"}。`;
+        content.append(formula);
+        (provenance.unknown || []).forEach((item) => {
+          const card = document.createElement("div");
+          card.className = "domain-card";
+          card.textContent = `unknown · ${item.field}：${item.status}`;
+          content.append(card);
+        });
+        content.classList.remove("hidden");
+        setStatus("provenance-status", "来源清单已加载；未实现同步仍明确标记。");
+      } catch (error) {
+        setStatus("provenance-status", error.message, true);
+      }
+    });
+
+    byId("coverage-audit-button").addEventListener("click", async () => {
+      setStatus("coverage-audit-status", "正在读取固定伤害公式目录覆盖审计…");
+      try {
+        const audit = await get("/api/coverage");
+        const content = byId("coverage-audit-results");
+        content.replaceChildren();
+        const summary = document.createElement("div");
+        summary.className = "domain-card";
+        summary.textContent =
+          `目录版本 ${audit.catalog_schema_version}；${audit.character_count} 个角色、`
+          + `${audit.model_count} 个公式；可组合角色数 ${audit.calibrated_character_count}；`
+          + `未校准角色数 ${audit.uncalibrated_character_count}。`;
+        content.append(summary);
+        (audit.uncalibrated_characters || []).slice(0, 20).forEach((character) => {
+          const card = document.createElement("div");
+          card.className = "domain-card";
+          card.textContent = `${character}：目录公式不可参与可组合评分。`;
+          content.append(card);
+        });
+        (audit.missing_explicit_coverage_record || []).slice(0, 20).forEach((character) => {
+          const card = document.createElement("div");
+          card.className = "domain-card";
+          card.textContent = `${character}：缺少显式 coverage 缺口记录，状态按目录标记，不推断公式完整性。`;
+          content.append(card);
+        });
+        content.classList.remove("hidden");
+        setStatus("coverage-audit-status", `审计来源：${audit.upstream || "未知上游"}；不代表公式已覆盖全部战斗用途。`);
+      } catch (error) {
+        setStatus("coverage-audit-status", error.message, true);
+      }
+    });
+
+    byId("decision-query-button").addEventListener("click", async () => {
+      if (!state.resourcePlan) return;
+      const query = byId("decision-query-type").value;
+      const secondId = byId("resource-compare-second").value.trim();
+      setStatus("decision-query-status", "正在执行结构化养成决策查询…");
+      try {
+        const result = await post("/api/decision-query", {
+          query,
+          plan_id: state.resourcePlan.plan_id,
+          second_plan_id: query === "plan_difference" ? secondId : null
+        });
+        const content = byId("decision-query-results");
+        content.replaceChildren();
+        const card = document.createElement("div");
+        card.className = "domain-card";
+        if (result.recommendation) {
+          card.textContent = `${result.query}：推荐 ${result.recommendation.action_type || "待定"}，可达性 ${result.recommendation.feasibility || "unknown"}`;
+        } else if (result.reason) {
+          card.textContent = `${result.reason}`;
+        } else if (result.lines) {
+          card.textContent = `缺失资源行 ${result.lines.length}；未知字段 ${result.missing.length}`;
+        } else if (result.comparison) {
+          const first = result.comparison.first;
+          const second = result.comparison.second;
+          card.textContent = `方案差异 ${result.comparison.changed ? "有变化" : "无变化"}：A 可达性 ${first.feasibility}；B 可达性 ${second.feasibility}`;
+        } else {
+          card.textContent = `${result.query}：暂无可靠结论，缺失来源已保留。`;
+        }
+        content.append(card);
+        content.classList.remove("hidden");
+        setStatus("decision-query-status", "查询完成；结论受公式、搜索和来源可信度限制。");
+      } catch (error) {
+        setStatus("decision-query-status", error.message, true);
+      }
+    });
+
+    byId("account-import-button").addEventListener("click", async () => {
+      let payload;
+      try {
+        payload = JSON.parse(byId("account-import-json").value);
+      } catch (error) {
+        setStatus("account-import-status", "账号快照不是有效 JSON。", true);
+        return;
+      }
+      setStatus("account-import-status", "正在校验本地结构化快照，不调用外部账号 API…");
+      try {
+        if (payload.snapshots) {
+          const result = await post("/api/account-import-batch", payload);
+          setStatus(
+            "account-import-status",
+            `批量校验完成：接受 ${result.counts.accepted}，拒绝 ${result.counts.rejected}；官方同步未实现。`
+          );
+        } else {
+          const result = await post("/api/account-import", payload);
+          setStatus(
+            "account-import-status",
+            `已保存本地快照 ${result.snapshot_id}；官方同步未实现，缺失字段仍标记为 unknown。`
+          );
+        }
+      } catch (error) {
+        setStatus("account-import-status", error.message, true);
+      }
+    });
+
+    byId("account-export-button").addEventListener("click", async () => {
+      if (!state.resourcePlan) return;
+      setStatus("account-import-status", "正在导出当前结构化账号快照…");
+      try {
+        const result = await post("/api/account-export", {
+          snapshot_id: state.resourcePlan.snapshot_id,
+        });
+        byId("account-import-json").value = JSON.stringify(result, null, 2);
+        setStatus("account-import-status", "当前快照 JSON 已导出到文本框，可复制保存或重新导入。");
+      } catch (error) {
+        setStatus("account-import-status", error.message, true);
+      }
+    });
 
     byId("account-farming-button").addEventListener("click", async () => {
       if (!state.account || !state.optimization || !optimizationMatchesControls()) return;
